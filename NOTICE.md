@@ -54,3 +54,11 @@ and are **not** covered by openGym's AGPL license — they remain under that dat
 The media files are not distributed in this repository; they are downloaded from the upstream
 source on first run. If you redistribute openGym with the media included, review the upstream
 license first.
+
+## Nutrition formulas & food data
+
+The calorie target (IOM 2005 equations, activity categories, goal adjustment) is ported from
+[**OpenNutriTracker**](https://github.com/simonoppowa/OpenNutriTracker) by Simon Oppowa and
+contributors, GPL-3.0 — `lib/core/utils/calc/`. Food data comes from
+[**Open Food Facts**](https://world.openfoodfacts.org), © Open Food Facts contributors,
+available under the Open Database License (ODbL).

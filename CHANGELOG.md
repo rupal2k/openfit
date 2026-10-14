@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.3.0 — 2026-10-15
+
+Nutrition tracking arrives in openfit: a food diary with calorie and macronutrient targets directly in the app alongside your training log.
+
+- 🍎 **Food diary:** Track meals (breakfast, lunch, dinner, snacks) in grams with real-time calorie and macronutrient (P/C/F) breakdowns.
+- 🎯 **Targets from body weight:** TDEE, PAL categories, and energy calculations ported from OpenNutriTracker (IOM 2005 equations), customized with a lifter-focused protein target (1.6 g/kg of body weight) and manual calorie override option.
+- 🔍 **Open Food Facts search & barcode scanning:** Search foods via an authenticated backend proxy or scan barcodes with the device camera using the native BarcodeDetector API.
+- 🥗 **Custom foods & snapshots:** Create your own custom foods with per-100g macros; each diary entry stores an immutable snapshot of the food data.
+- ☁️ **Full state sync:** Nutrition days, foods, and targets live in the per-user state, syncing across devices and included in backup exports.
+
 ## v1.2.4 — 2026-08-01
 
 The effort ratings you have been recording since v1.2.3 now answer questions, and bodyweight
