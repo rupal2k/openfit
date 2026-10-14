@@ -1,0 +1,43 @@
+{
+  "name": "Mothers' Functional Posture & Core (3-Day)",
+  "week": {
+    "Monday": "Posture & Upper Alignment",
+    "Wednesday": "Pelvic & Lower Stability",
+    "Friday": "Full-Body Functional Strength"
+  },
+  "routines": [
+    {
+      "name": "Posture & Upper Alignment",
+      "emoji": "arm",
+      "exercises": [
+        { "name": "Cable Low Seated Row", "sets": 3, "reps": 12, "weight": 20 },
+        { "name": "Incline Push-Up", "sets": 3, "reps": 10, "weight": 0 },
+        { "name": "Dumbbell Standing Overhead Press", "sets": 3, "reps": 10, "weight": 6 },
+        { "name": "Dumbbell Lateral Raise", "sets": 3, "reps": 12, "weight": 4 },
+        { "name": "Bodyweight Incline Side Plank", "sets": 3, "reps": 30, "weight": 0 }
+      ]
+    },
+    {
+      "name": "Pelvic & Lower Stability",
+      "emoji": "legs",
+      "exercises": [
+        { "name": "Dumbbell Goblet Squat", "sets": 3, "reps": 10, "weight": 10 },
+        { "name": "Barbell Glute Bridge", "sets": 3, "reps": 12, "weight": 20 },
+        { "name": "Dumbbell Romanian Deadlift", "sets": 3, "reps": 10, "weight": 12 },
+        { "name": "Dumbbell Lunge", "sets": 3, "reps": 10, "weight": 6 },
+        { "name": "Lever Standing Calf Raise", "sets": 3, "reps": 15, "weight": 15 }
+      ]
+    },
+    {
+      "name": "Full-Body Functional Strength",
+      "emoji": "figureStrength",
+      "exercises": [
+        { "name": "Dumbbell Squat", "sets": 3, "reps": 10, "weight": 10 },
+        { "name": "Cable Lat Pulldown Full Range of Motion", "sets": 3, "reps": 12, "weight": 25 },
+        { "name": "Dumbbell Hammer Curl", "sets": 3, "reps": 12, "weight": 6 },
+        { "name": "Cable Triceps Pushdown (V-Bar)", "sets": 3, "reps": 12, "weight": 15 },
+        { "name": "Incline Push-Up", "sets": 3, "reps": 10, "weight": 0 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "name": "Metabolic Health & Co-Morbidity Fighting (3-Day)",
+  "week": {
+    "Monday": "Glucose Disposal & Upper Foundation",
+    "Wednesday": "Low-Impact Lower Metabolic Engine",
+    "Friday": "Total Body Longevity & Vitality"
+  },
+  "routines": [
+    {
+      "name": "Glucose Disposal & Upper Foundation",
+      "emoji": "machine",
+      "exercises": [
+        { "name": "Cable Seated Chest Press", "sets": 3, "reps": 12, "weight": 25 },
+        { "name": "Cable Lat Pulldown Full Range of Motion", "sets": 3, "reps": 12, "weight": 30 },
+        { "name": "Cable Low Seated Row", "sets": 3, "reps": 12, "weight": 25 },
+        { "name": "Dumbbell Lateral Raise", "sets": 3, "reps": 12, "weight": 4 },
+        { "name": "Lever Standing Calf Raise", "sets": 3, "reps": 15, "weight": 20 }
+      ]
+    },
+    {
+      "name": "Low-Impact Lower Metabolic Engine",
+      "emoji": "legs",
+      "exercises": [
+        { "name": "Sled 45° Leg Press", "sets": 3, "reps": 12, "weight": 60 },
+        { "name": "Lever Leg Extension", "sets": 3, "reps": 12, "weight": 25 },
+        { "name": "Dumbbell Romanian Deadlift", "sets": 3, "reps": 10, "weight": 14 },
+        { "name": "Lever Standing Calf Raise", "sets": 3, "reps": 15, "weight": 20 }
+      ]
+    },
+    {
+      "name": "Total Body Longevity & Vitality",
+      "emoji": "figureStrength",
+      "exercises": [
+        { "name": "Dumbbell Goblet Squat", "sets": 3, "reps": 10, "weight": 10 },
+        { "name": "Cable Lat Pulldown Full Range of Motion", "sets": 3, "reps": 12, "weight": 30 },
+        { "name": "Incline Push-Up", "sets": 3, "reps": 10, "weight": 0 },
+        { "name": "Dumbbell Hammer Curl", "sets": 3, "reps": 12, "weight": 6 },
+        { "name": "Cable Triceps Pushdown (V-Bar)", "sets": 3, "reps": 12, "weight": 15 }
+      ]
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import { fmtNum, uid } from './lib/format.js'
 import { targets, bodyKg, entryTotals, addEntry, updateEntry, removeEntry, recentFoods, MEALS } from './lib/nutrition.js'
 import { searchFoods, lookupBarcode, SEARCH_OK } from './lib/food.js'
 import { bwSheet } from './sheets.jsx'
+import { MOBILE } from './lib/mobile.js'
 import Icon from './components/Icon.jsx'
 import { Button, Segmented, SelectRow, NumberField, Row, Stepper, SearchField, TextField } from './components/ui.jsx'
 
@@ -131,7 +132,7 @@ export const foodSearchSheet = (iso, meal) => ui().openSheet(close => <FoodSearc
 function FoodSearch({ iso, meal, close }) {
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
-  const canSearch = SEARCH_OK && !!user
+  const canSearch = SEARCH_OK && (!!user || MOBILE)
   const [q, setQ] = useState('')
   const [res, setRes] = useState({ q: '', foods: [], busy: false, err: null })
   const seq = useRef(0)
@@ -159,7 +160,7 @@ function FoodSearch({ iso, meal, close }) {
     <h3>{t('Add to {0}', t(MEAL_LABEL[meal]))}</h3>
     {!SEARCH_OK ? (
       <div className="small muted">{t('Food search needs a self-hosted server. Scan a barcode or add your own food.')}</div>
-    ) : !user ? (
+    ) : !user && !MOBILE ? (
       <div className="small muted">{t('Sign in to search Open Food Facts. You can scan a barcode or add your own food.')}</div>
     ) : (
       <SearchField placeholder={t('Search foods')} value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} autoFocus />
@@ -218,7 +219,7 @@ function Barcode({ iso, meal, close }) {
     <h3>{t('Scan barcode')}</h3>
     {'BarcodeDetector' in window
       ? <video ref={video} playsInline muted style={{ width: '100%', borderRadius: 12, background: '#000', aspectRatio: '4/3', objectFit: 'cover' }} />
-      : <div className="small muted" style={{ marginBottom: 12 }}>{t('Camera auto-scanning requires Chrome on Android or macOS. Enter the barcode number below:')}</div>}
+      : <div className="small muted" style={{ marginBottom: 12 }}>{t('Automatic scanning isn’t supported here — type the number under the barcode.')}</div>}
     <div className="row" style={{ gap: 8, marginTop: 10 }}>
       <TextField inputMode="numeric" placeholder={t('Enter barcode (e.g. 3017624010701)')} value={code} onChange={e => setCode(e.target.value)} style={{ flex: 1 }} autoFocus={!('BarcodeDetector' in window)} />
       <Button size="sm" variant="tinted" onClick={() => find(code)}>{t('Look up')}</Button>

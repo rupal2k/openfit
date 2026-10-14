@@ -29,11 +29,19 @@ export default function Nutrition() {
   const goal = targets(S)
   const isToday = iso === todayISO()
 
+  const defaultMeal = () => {
+    const h = new Date().getHours() + new Date().getMinutes() / 60
+    if (h < 10.5) return 'breakfast'
+    if (h < 15) return 'lunch'
+    if (h < 21) return 'dinner'
+    return 'snack'
+  }
+
   return <div className="narrow">
     <div className="hdr">
       <div><h1>{t('Food')}</h1><div className="sub">{isToday ? t('Today') : fmtDate(iso, true)}</div></div>
       <div className="row" style={{ gap: 6 }}>
-        <button className="iconbtn" onClick={() => barcodeSheet(iso, 'snack')} aria-label={t('Scan barcode')}><Icon name="barcode" /></button>
+        <button className="iconbtn" onClick={() => barcodeSheet(iso, defaultMeal())} aria-label={t('Scan barcode')}><Icon name="barcode" /></button>
         <button className="iconbtn" onClick={nutritionProfileSheet} aria-label={t('Targets')}><Icon name="target" /></button>
       </div>
     </div>

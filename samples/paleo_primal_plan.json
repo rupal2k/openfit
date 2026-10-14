@@ -1,0 +1,54 @@
+{
+  "name": "Paleo Primal Strength (4-Day)",
+  "week": {
+    "Monday": "Upper Strength",
+    "Tuesday": "Lower Power",
+    "Thursday": "Posterior & Pull",
+    "Friday": "Primal Conditioning"
+  },
+  "routines": [
+    {
+      "name": "Upper Strength",
+      "emoji": "barbell",
+      "exercises": [
+        { "name": "Barbell Bench Press", "sets": 4, "reps": 8, "weight": 60 },
+        { "name": "Barbell Bent Over Row", "sets": 4, "reps": 8, "weight": 50 },
+        { "name": "Dumbbell Standing Overhead Press", "sets": 3, "reps": 10, "weight": 16 },
+        { "name": "Dumbbell Lateral Raise", "sets": 3, "reps": 12, "weight": 8 },
+        { "name": "Cable Triceps Pushdown", "sets": 3, "reps": 12, "weight": 25 }
+      ]
+    },
+    {
+      "name": "Lower Power",
+      "emoji": "legs",
+      "exercises": [
+        { "name": "Barbell Full Squat", "sets": 4, "reps": 8, "weight": 80 },
+        { "name": "Sled 45° Leg Press", "sets": 3, "reps": 10, "weight": 120 },
+        { "name": "Barbell Romanian Deadlift", "sets": 3, "reps": 10, "weight": 60 },
+        { "name": "Lever Leg Extension", "sets": 3, "reps": 12, "weight": 40 },
+        { "name": "Lever Lying Leg Curl", "sets": 3, "reps": 12, "weight": 35 }
+      ]
+    },
+    {
+      "name": "Posterior & Pull",
+      "emoji": "pullup",
+      "exercises": [
+        { "name": "Barbell Deadlift", "sets": 4, "reps": 6, "weight": 90 },
+        { "name": "Wide Grip Pull-Up", "sets": 4, "reps": 8, "weight": 0 },
+        { "name": "Cable Lat Pulldown Full Range of Motion", "sets": 3, "reps": 10, "weight": 45 },
+        { "name": "Barbell Curl", "sets": 3, "reps": 10, "weight": 25 },
+        { "name": "Dumbbell Hammer Curl", "sets": 3, "reps": 12, "weight": 12 }
+      ]
+    },
+    {
+      "name": "Primal Conditioning",
+      "emoji": "figureStrength",
+      "exercises": [
+        { "name": "Barbell Incline Bench Press", "sets": 4, "reps": 10, "weight": 50 },
+        { "name": "Chest Dip", "sets": 3, "reps": 10, "weight": 0 },
+        { "name": "Barbell Full Squat", "sets": 3, "reps": 10, "weight": 60 },
+        { "name": "Wide Grip Pull-Up", "sets": 3, "reps": 8, "weight": 0 }
+      ]
+    }
+  ]
+}
