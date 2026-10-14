@@ -6,10 +6,19 @@ import { MOBILE } from './mobile.js'
 import { DEMO } from './demo.js'
 import { OFF_FIELDS, normalizeOFF } from './off.js'
 
-export const SEARCH_OK = !MOBILE && !DEMO
+export const SEARCH_OK = !DEMO
+
+// The APK has no backend, but CapacitorHttp (capacitor.config.json) sends fetch through the
+// native stack, where CORS doesn't apply — so it queries Open Food Facts search directly.
+const OFF_SEARCH = 'https://search.openfoodfacts.org/search?page_size=25&fields=' + OFF_FIELDS + '&q='
 
 export async function searchFoods(q) {
-  const { hits } = await api('/api/food/search?q=' + encodeURIComponent(q))
+  let hits
+  if (MOBILE) {
+    const r = await fetch(OFF_SEARCH + encodeURIComponent(q))
+    if (!r.ok) throw new Error('food database error ' + r.status)
+    hits = (await r.json()).hits || []
+  } else hits = (await api('/api/food/search?q=' + encodeURIComponent(q))).hits
   return hits.map(normalizeOFF).filter(Boolean)
 }
 
