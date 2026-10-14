@@ -45,18 +45,44 @@ function Sheet({ sheet }) {
   }, [])
 
   const close = () => closeSheet(sheet.id)
+
+  // Accessible dialog: handle Escape key (unless locked)
+  useEffect(() => {
+    const onKeyDown = e => {
+      if (e.key === 'Escape' && !sheet.locked) {
+        e.preventDefault()
+        close()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [sheet.locked])
+
+  // Focus management: focus first focusable control on mount and restore on unmount
+  useEffect(() => {
+    const prevActive = document.activeElement
+    const el = ref.current
+    if (el) {
+      const focusable = el.querySelector('input:not([disabled]), button:not([disabled]), [tabindex="0"]')
+      if (focusable) focusable.focus()
+    }
+    return () => {
+      if (prevActive && prevActive.focus) prevActive.focus()
+    }
+  }, [])
+
   if (sheet.kind === 'center') {
     return (
       <div>
         <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
-        <div className="center">{sheet.render(close)}</div>
+        <div className="center" role="dialog" aria-modal="true" ref={ref}>{sheet.render(close)}</div>
       </div>
     )
   }
   return (
     <div>
       <div className="mback" onClick={() => { if (!sheet.locked) close() }} />
-      <div className="sheet" ref={ref} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <div className="sheet" role="dialog" aria-modal="true" ref={ref} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="grab" />
         {sheet.render(close)}
       </div>
@@ -67,13 +93,19 @@ function Sheet({ sheet }) {
 export default function Modals() {
   const sheets = useUI(s => s.sheets)
 
-  // lock the page behind any open sheet (iOS-safe)
+  // lock the page behind any open sheet (iOS-safe) and mark background inert (H3)
   useEffect(() => {
     if (!sheets.length) return
+    const appEl = document.getElementById('app')
+    const tabEl = document.getElementById('tabbar')
+    if (appEl) appEl.setAttribute('inert', '')
+    if (tabEl) tabEl.setAttribute('inert', '')
     const y = window.scrollY || 0
     const b = document.body.style
     b.position = 'fixed'; b.top = -y + 'px'; b.left = '0'; b.right = '0'; b.width = '100%'
     return () => {
+      if (appEl) appEl.removeAttribute('inert')
+      if (tabEl) tabEl.removeAttribute('inert')
       b.position = b.top = b.left = b.right = b.width = ''
       window.scrollTo(0, y)
     }

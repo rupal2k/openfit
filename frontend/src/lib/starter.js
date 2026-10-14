@@ -15,7 +15,7 @@ export const starterRoutines = () =>
 export const PLAN_TEMPLATES = [
   {
     id: 'ppl-3',
-    name: 'Push / Pull / Legs (3-day)',
+    name: 'Push / Pull / Legs (3‑day)',
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'barbell',
@@ -41,7 +41,7 @@ export const PLAN_TEMPLATES = [
   },
   {
     id: 'upper-lower-4',
-    name: 'Upper / Lower (4-day)',
+    name: 'Upper / Lower (4‑day)',
     badge: '4 days/wk',
     daysPerWeek: 4,
     icon: 'figureStrength',
@@ -72,7 +72,7 @@ export const PLAN_TEMPLATES = [
   },
   {
     id: 'full-body-3',
-    name: 'Full Body (3-day)',
+    name: 'Full Body (3‑day)',
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'dumbbell',

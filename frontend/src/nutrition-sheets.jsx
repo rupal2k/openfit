@@ -36,6 +36,10 @@ function NutritionProfile({ close }) {
 
   const save = () => {
     if (!valid) return
+    if (!preview) {
+      toast(t('Add birth year, height and a weigh-in — or set a calorie override.'))
+      return
+    }
     update(s => { s.nutrition.profile = p })
     close()
     toast(t('Targets saved'))
@@ -44,9 +48,9 @@ function NutritionProfile({ close }) {
     <h3>{t('Your targets')}</h3>
     <Row title={t('Sex')}><Segmented className="seg-inline" value={p.sex} onChange={set('sex')}
       options={[{ value: 'male', label: t('Male') }, { value: 'female', label: t('Female') }, { value: 'other', label: t('Other') }]} /></Row>
-    <Row title={t('Birth year')}><NumberField decimal={false} nullable value={p.birthYear} onChange={set('birthYear')} placeholder="1990" /></Row>
+    <Row title={t('Birth year')}><NumberField decimal={false} nullable value={p.birthYear} onChange={set('birthYear')} placeholder="1990" aria-label={t('Birth year')} /></Row>
     {!validBirth && <div className="small" style={{ color: 'var(--red)', marginTop: -6, marginBottom: 6 }}>{t('Enter a 4-digit birth year between 1900 and {0}', curYear - 10)}</div>}
-    <Row title={t('Height (cm)')}><NumberField decimal={false} nullable value={p.heightCm} onChange={set('heightCm')} placeholder="175" /></Row>
+    <Row title={t('Height (cm)')}><NumberField decimal={false} nullable value={p.heightCm} onChange={set('heightCm')} placeholder="175" aria-label={t('Height (cm)')} /></Row>
     {!validHeight && <div className="small" style={{ color: 'var(--red)', marginTop: -6, marginBottom: 6 }}>{t('Height must be between 50 and 280 cm')}</div>}
     <Row title={t('Body weight')} value={w ? fmtNum(w) + ' kg' : t('Not logged')} accessory="chevron" onClick={() => bwSheet()} />
     <SelectRow title={t('Activity')} value={p.pal} onChange={set('pal')} options={[
@@ -57,7 +61,7 @@ function NutritionProfile({ close }) {
     <Row title={t('Goal')}><Segmented className="seg-inline" value={p.goal} onChange={set('goal')}
       options={[{ value: 'lose', label: t('Lose') }, { value: 'maintain', label: t('Maintain') }, { value: 'gain', label: t('Gain') }]} /></Row>
     <Row title={t('Calorie override')} subtitle={t('Leave empty to calculate')}>
-      <NumberField decimal={false} nullable value={p.kcal} onChange={set('kcal')} placeholder="—" /></Row>
+      <NumberField decimal={false} nullable value={p.kcal} onChange={set('kcal')} placeholder="—" aria-label={t('Calorie override')} /></Row>
     {!validKcal && <div className="small" style={{ color: 'var(--red)', marginTop: -6, marginBottom: 6 }}>{t('Calories must be between 500 and 10,000 kcal')}</div>}
     <div className="card" style={{ margin: '12px 0' }}>
       {preview
@@ -65,7 +69,7 @@ function NutritionProfile({ close }) {
             <span className="small muted">{t('P {0} g · C {1} g · F {2} g', preview.protein, preview.carbs, preview.fat)}</span></div>
         : <div className="small muted">{t('Add birth year, height and a weigh-in — or set a calorie override.')}</div>}
     </div>
-    <Button variant="primary" disabled={!valid} onClick={save}>{t('Save')}</Button>
+    <Button variant="primary" disabled={!valid || !preview} onClick={save}>{t('Save')}</Button>
     <div className="small dim" style={{ marginTop: 8 }}>{t('Estimate from the IOM 2005 equations, as used by OpenNutriTracker. Protein: 1.6 g per kg body weight.')}</div>
   </>
 }
@@ -82,6 +86,7 @@ function FoodAmount({ iso, meal: meal0, food, entry, close }) {
     if (!(g > 0)) return toast(t('Enter an amount'))
     update(s => entry ? updateEntry(s, iso, entry.id, { g, meal }) : addEntry(s, iso, { meal, g, food }))
     close()
+    toast(entry ? t('Entry updated') : t('Added to {0}', t(MEAL_LABEL[meal])))
   }
   return <>
     <h3>{food.name}</h3>
@@ -95,7 +100,14 @@ function FoodAmount({ iso, meal: meal0, food, entry, close }) {
     </div>
     <Button variant="primary" onClick={save}>{entry ? t('Save') : t('Add')}</Button>
     {entry && <><div style={{ height: 8 }} />
-      <Button variant="danger" icon="trash" onClick={() => { update(s => removeEntry(s, iso, entry.id)); close() }}>{t('Remove')}</Button></>}
+      <Button variant="danger" icon="trash" onClick={() => {
+        const backupEntry = { ...entry }
+        update(s => removeEntry(s, iso, entry.id))
+        close()
+        toast(t('Entry removed'), {
+          undo: () => update(s => addEntry(s, iso, backupEntry))
+        })
+      }}>{t('Remove')}</Button></>}
   </>
 }
 
@@ -115,15 +127,16 @@ function CustomFood({ onDone, close }) {
       ;(s.nutrition.foods ||= []).push(food)
     })
     close(); onDone && onDone(food)
+    toast(t('Food added'))
   }
   return <>
     <h3>{t('New food')}</h3>
-    <TextField placeholder={t('Name')} value={name} onChange={e => setName(e.target.value)} autoFocus />
+    <TextField placeholder={t('Name')} value={name} onChange={e => setName(e.target.value)} autoFocus aria-label={t('Name')} />
     <h4 className="sec">{t('Per 100 g')}</h4>
-    <Row title={t('Calories (kcal)')}><NumberField nullable value={n.kcal} onChange={setK('kcal')} /></Row>
-    <Row title={t('Protein (g)')}><NumberField nullable value={n.p} onChange={setK('p')} /></Row>
-    <Row title={t('Carbs (g)')}><NumberField nullable value={n.c} onChange={setK('c')} /></Row>
-    <Row title={t('Fat (g)')}><NumberField nullable value={n.f} onChange={setK('f')} /></Row>
+    <Row title={t('Calories (kcal)')}><NumberField nullable value={n.kcal} onChange={setK('kcal')} placeholder="0" aria-label={t('Calories (kcal)')} /></Row>
+    <Row title={t('Protein (g)')}><NumberField nullable value={n.p} onChange={setK('p')} placeholder="0" aria-label={t('Protein (g)')} /></Row>
+    <Row title={t('Carbs (g)')}><NumberField nullable value={n.c} onChange={setK('c')} placeholder="0" aria-label={t('Carbs (g)')} /></Row>
+    <Row title={t('Fat (g)')}><NumberField nullable value={n.f} onChange={setK('f')} placeholder="0" aria-label={t('Fat (g)')} /></Row>
     <div style={{ height: 10 }} />
     <Button variant="primary" onClick={save}>{t('Save')}</Button>
   </>

@@ -15,9 +15,11 @@ function Bar({ label, val, goal, unit }) {
   return <div style={{ flex: 1, minWidth: 0 }}>
     <div className="small muted">{label}</div>
     <div style={{ fontWeight: 600, whiteSpace: 'nowrap', fontSize: '0.9rem' }}>{fmtNum(val)}{goal ? <span className="dim"> / {goal}</span> : null} {unit}</div>
-    <div style={{ height: 6, borderRadius: 3, background: 'var(--surface-3)', marginTop: 4, overflow: 'hidden' }}>
-      <div style={{ width: pct + '%', height: '100%', background: over ? 'var(--orange)' : 'var(--acc)' }} />
-    </div>
+    {goal ? (
+      <div style={{ height: 6, borderRadius: 3, background: 'var(--surface-3)', marginTop: 4, overflow: 'hidden' }}>
+        <div style={{ width: pct + '%', height: '100%', background: over ? 'var(--orange)' : 'var(--acc)' }} />
+      </div>
+    ) : null}
   </div>
 }
 

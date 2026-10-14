@@ -20,10 +20,15 @@ let workDone = null
 export const useUI = create((set, get) => ({
   sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked }
   toastMsg: '',
+  toastUndo: null,
   timer: null,         // rest countdown between sets — { left, total, endsAt }
   work: null,          // work countdown DURING a timed set (issue #16) — { left, total, endsAt, label }
 
   openSheet(render, { kind = 'sheet', locked = false } = {}) {
+    // Clear any lingering toast so it doesn't overlap sheet controls (Audit M6)
+    clearTimeout(toastTm)
+    set({ toastMsg: '', toastUndo: null })
+
     const id = uid()
     set(s => ({ sheets: [...s.sheets, { id, render, kind, locked }] }))
     const close = () => get().closeSheet(id)
@@ -32,10 +37,12 @@ export const useUI = create((set, get) => ({
   closeSheet(id) { set(s => ({ sheets: s.sheets.filter(x => x.id !== id) })) },
   closeAll() { set({ sheets: [] }) },
 
-  toast(msg) {
-    set({ toastMsg: msg })
+  toast(msg, opts = {}) {
+    const undo = typeof opts === 'function' ? opts : opts.undo || null
+    const duration = opts.duration || (undo ? 4500 : 2200)
+    set({ toastMsg: msg, toastUndo: undo })
     clearTimeout(toastTm)
-    toastTm = setTimeout(() => set({ toastMsg: '' }), 2200)
+    toastTm = setTimeout(() => set({ toastMsg: '', toastUndo: null }), duration)
   },
 
   startRest(sec) {

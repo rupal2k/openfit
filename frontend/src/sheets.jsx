@@ -162,7 +162,7 @@ function PlanCatalog({ close }) {
             : t('Configures your Mon–Sun training schedule.')}
         </div>
       </div>
-      <Switch checked={applySchedule} onChange={setApplySchedule} />
+      <Switch checked={applySchedule} onChange={setApplySchedule} aria-label={t('Assign to weekly schedule')} />
     </div>
 
     <Button variant="primary" icon="sparkles" onClick={apply}>
@@ -204,9 +204,9 @@ function WeightInput({ value, setValue, unit }) {
   const onSlide = v => setValue(clamp(v))
   return <>
     <div className="bwstep">
-      <button className="bw-pm" onClick={() => onSlide(value - 0.1)} aria-label="minus 0.1"><Icon name="minus" /></button>
+      <button className="bw-pm" onClick={() => onSlide(value - 0.1)} aria-label={t('Decrease 0.1')}><Icon name="minus" /></button>
       <div className="bw-read">{fmtNum(value)}<span className="u"> {unit}</span></div>
-      <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label="plus 0.1"><Icon name="plus" /></button>
+      <button className="bw-pm" onClick={() => onSlide(value + 0.1)} aria-label={t('Increase 0.1')}><Icon name="plus" /></button>
     </div>
     <div className="chips" style={{ justifyContent: 'center', margin: '8px 0' }}>
       <button className="chip" onClick={() => onSlide(value - 1)}>−1</button>
@@ -214,7 +214,7 @@ function WeightInput({ value, setValue, unit }) {
       <button className="chip" onClick={() => onSlide(value + 0.5)}>+0.5</button>
       <button className="chip" onClick={() => onSlide(value + 1)}>+1</button>
     </div>
-    <Slider value={sv} min={W_LO} max={W_HI} step={0.5} onChange={onSlide} />
+    <Slider value={sv} min={W_LO} max={W_HI} step={0.5} onChange={onSlide} aria-label={t('Body weight')} />
   </>
 }
 
@@ -237,7 +237,18 @@ function BwSheet({ required, onDone, close }) {
     if (onDone) onDone(n); else toast(t('Weight saved'))
   }
   const recent = [...st.bodyweight].reverse().slice(0, 3)
-  const delEntry = d => update(s => { s.bodyweight = s.bodyweight.filter(b => b.d !== d) })
+  const delEntry = d => {
+    const entry = st.bodyweight.find(b => b.d === d)
+    update(s => { s.bodyweight = s.bodyweight.filter(b => b.d !== d) })
+    if (entry) {
+      toast(t('Weigh-in deleted'), {
+        undo: () => update(s => {
+          s.bodyweight.push(entry)
+          s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
+        })
+      })
+    }
+  }
   return <>
     <h3>{required ? t('Quick check-in') : t('Log body weight')}</h3>
     <div className="muted small">{required ? t('Slide or tap to set your weight — tracked before every workout so your curve stays honest.') : t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
@@ -254,7 +265,7 @@ function BwSheet({ required, onDone, close }) {
         {recent.map(b => <div key={b.d} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
           <span className="small muted">{fmtDate(b.d, true)}</span>
           <span className="row" style={{ gap: 12 }}><b>{fmtNum(b.w)} {unit}</b>
-            <button className="iconbtn" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={() => delEntry(b.d)} aria-label="delete"><Icon name="trash" /></button></span>
+            <button className="iconbtn" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={() => delEntry(b.d)} aria-label={t('Delete')}><Icon name="trash" /></button></span>
         </div>)}
       </div>
     </>}
@@ -1074,6 +1085,11 @@ export function WorkoutRow({ w, onClick }) {
 
 /* ============================ workout lifecycle ============================ */
 export function startFlow(routineId) {
+  const last = lastBW(S())
+  if (last && last.d === todayISO() && last.w) {
+    beginWorkout(routineId, last.w)
+    return
+  }
   bwSheet({ required: true, onDone: bw => beginWorkout(routineId, bw) })
 }
 export function beginWorkout(routineId, bw) {

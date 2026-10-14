@@ -15,6 +15,7 @@
 
 import { useRef, useState, useEffect, useCallback, forwardRef } from 'react'
 import Icon from './Icon.jsx'
+import { t } from '../lib/i18n.js'
 
 /* ============================ text ============================ */
 
@@ -76,11 +77,13 @@ export function SearchField({ value, onChange, onClear, ...rest }) {
 
 /* ============================ switch ============================ */
 
-export function Switch({ checked, onChange, disabled }) {
+export function Switch({ checked, onChange, disabled, 'aria-label': ariaLabel, label }) {
   return (
     <button
+      type="button"
       role="switch"
       aria-checked={!!checked}
+      aria-label={ariaLabel || label}
       disabled={disabled}
       className={'sw' + (checked ? ' on' : '')}
       onClick={() => onChange(!checked)}
@@ -101,6 +104,7 @@ export function Segmented({ options, value, onChange, className = '' }) {
       {options.map(o => (
         <button
           key={o.value}
+          type="button"
           className={o.value === value ? 'on' : ''}
           aria-pressed={o.value === value}
           onClick={() => onChange(o.value)}
@@ -119,12 +123,12 @@ export function Stepper({ value, step = 1, onChange, decimal = true, className =
   const set = v => onChange(Math.max(0, Math.round((v || 0) * 100) / 100))
   const inner = (
     <div className={'stp ' + className}>
-      <button onClick={() => set((+value || 0) - step)} aria-label="Decrease"><Icon name="minus" /></button>
+      <button type="button" onClick={() => set((+value || 0) - step)} aria-label={label ? `${t('Decrease')} ${label}` : t('Decrease')}><Icon name="minus" /></button>
       <span className="val">
-        <NumberField value={value} decimal={decimal} onChange={onChange} />
+        <NumberField value={value} decimal={decimal} onChange={onChange} aria-label={label} />
         {unit && <i>{unit}</i>}
       </span>
-      <button onClick={() => set((+value || 0) + step)} aria-label="Increase"><Icon name="plus" /></button>
+      <button type="button" onClick={() => set((+value || 0) + step)} aria-label={label ? `${t('Increase')} ${label}` : t('Increase')}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner
@@ -136,7 +140,7 @@ export function Stepper({ value, step = 1, onChange, decimal = true, className =
 // Pointer-driven so the fill, track and thumb are all ours — no ::-webkit-*
 // pseudo-elements, which is the only way the control looks identical on every
 // platform and can pick up the accent colour.
-export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '' }) {
+export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '', 'aria-label': ariaLabel, label }) {
   const ref = useRef(null)
   const [drag, setDrag] = useState(false)
   const pct = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
@@ -183,6 +187,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       className={'sld' + (drag ? ' dragging' : '') + ' ' + className}
       role="slider"
       tabIndex={0}
+      aria-label={ariaLabel || label || t('Slider')}
       aria-valuenow={value} aria-valuemin={min} aria-valuemax={max}
       data-nodrag                                  /* keeps the sheet from swipe-dismissing */
       onKeyDown={key}
@@ -196,11 +201,13 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
 
 /* ============================ checkbox ============================ */
 
-export function Check({ checked, onChange, className = '', size }) {
+export function Check({ checked, onChange, className = '', size, 'aria-label': ariaLabel }) {
   return (
     <button
+      type="button"
       role="checkbox"
       aria-checked={!!checked}
+      aria-label={ariaLabel}
       className={'chk' + (checked ? ' on' : '') + ' ' + className}
       style={size ? { width: size, height: size } : null}
       onClick={() => onChange(!checked)}
@@ -228,7 +235,7 @@ export function Section({ title, footer, children, className = '' }) {
 export function Row({ icon, iconTint, title, subtitle, value, accessory = 'none', onClick, danger, children, className = '' }) {
   const Tag = onClick ? 'button' : 'div'
   return (
-    <Tag className={'lrow' + (onClick ? ' tap' : '') + (danger ? ' danger' : '') + ' ' + className} onClick={onClick}>
+    <Tag type={Tag === 'button' ? 'button' : undefined} className={'lrow' + (onClick ? ' tap' : '') + (danger ? ' danger' : '') + ' ' + className} onClick={onClick}>
       {icon && <span className="lrow-i" style={iconTint ? { '--tint': iconTint } : null}><Icon name={icon} /></span>}
       <span className="lrow-m">
         <span className="lrow-t">{title}</span>
@@ -285,9 +292,9 @@ function require_ui() {
 
 /* ============================ buttons ============================ */
 
-export function Button({ variant = 'plain', size, icon, trailingIcon, children, className = '', ...rest }) {
+export function Button({ variant = 'plain', size, icon, trailingIcon, children, className = '', type = 'button', ...rest }) {
   return (
-    <button className={`btn ${variant}${size ? ' ' + size : ''} ${className}`} {...rest}>
+    <button type={type} className={`btn ${variant}${size ? ' ' + size : ''} ${className}`} {...rest}>
       {icon && <Icon name={icon} />}
       {children && <span>{children}</span>}
       {trailingIcon && <Icon name={trailingIcon} />}

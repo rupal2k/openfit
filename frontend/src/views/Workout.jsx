@@ -140,7 +140,7 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemov
             set off itself. The checkbox stays for anyone who timed it on their own watch. */}
         {timed && <button className="setgo" aria-label={t('Start set')} disabled={s.done || !!working}
           onClick={() => onStartTimed(i)}><Icon name="play" /></button>}
-        <Check checked={s.done} onChange={() => onToggle(i)} />
+        <Check checked={s.done} onChange={() => onToggle(i)} aria-label={t('Set {0} done', i + 1)} />
       </div>)}
       <div style={{ height: 8 }} />
       <div className="row">
