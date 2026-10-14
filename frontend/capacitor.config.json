@@ -1,9 +1,14 @@
 {
-  "appId": "ch.duartesantos.opengym",
-  "appName": "openGym",
+  "appId": "com.rupal2k.openfit",
+  "appName": "openfit",
   "webDir": "dist",
   "backgroundColor": "#0c0e12",
   "android": {
     "allowMixedContent": false
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
   }
 }
