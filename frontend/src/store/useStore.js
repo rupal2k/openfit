@@ -21,10 +21,20 @@ export const DEF = {
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
+export function normalizeState(raw) {
+  const s = Object.assign(clone(DEF), raw || {})
+  s.nutrition = {
+    profile: s.nutrition?.profile || null,
+    days: s.nutrition?.days || {},
+    foods: Array.isArray(s.nutrition?.foods) ? s.nutrition.foods : []
+  }
+  return s
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return Object.assign(clone(DEF), JSON.parse(raw))
+    if (raw) return normalizeState(JSON.parse(raw))
   } catch (e) { /* ignore */ }
   return clone(DEF)
 }
@@ -93,7 +103,7 @@ export const useStore = create((set, get) => {
       mut(S)
       persist(S, push)
     },
-    replaceState(S, push = false) { persist(clone(S), push) },
+    replaceState(S, push = false) { persist(normalizeState(S), push) },
 
     isGuest: () => localStorage.getItem('gym_guest') === '1',
     setGuest(v) { if (v) localStorage.setItem('gym_guest', '1'); else localStorage.removeItem('gym_guest'); set({}) },
@@ -117,7 +127,7 @@ export const useStore = create((set, get) => {
         const dirty = localStorage.getItem('gym_dirty') === '1'
         if (state && (!hasData(S) || ((state._ts || 0) >= (S._ts || 0) && !dirty))) {
           const active = S.active
-          const next = Object.assign(clone(DEF), state)
+          const next = normalizeState(state)
           if (active) next.active = active
           persist(next, false)
         } else if (hasData(S)) { await get().pushState() }
@@ -145,7 +155,7 @@ export const useStore = create((set, get) => {
     async resetDemo() {
       const { buildDemoState } = await import('../lib/demoSeed.js')
       localStorage.removeItem('gym_dirty')
-      persist(Object.assign(clone(DEF), buildDemoState()), false)
+      persist(normalizeState(buildDemoState()), false)
     },
 
     // Boot: ask the server who we are, then pull.
@@ -156,7 +166,7 @@ export const useStore = create((set, get) => {
         const saved = await nativeLoad()
         const S = get().S
         if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
-          persist(Object.assign(clone(DEF), saved), false)
+          persist(normalizeState(saved), false)
         } else if (hasData(S)) {
           nativeSave(S)   // first run after an update from a file-less version: seed the mirror
         }

@@ -1,6 +1,6 @@
-# Contributing to openGym
+# Contributing to openfit
 
-Thanks for taking a look! openGym is intentionally small and dependency-light, and the goal is
+Thanks for taking a look! openfit is intentionally small and dependency-light, and the goal is
 to keep it that way — easy to read, easy to self-host.
 
 ## Project layout
@@ -8,10 +8,11 @@ to keep it that way — easy to read, easy to self-host.
 ```
 frontend/  React + Vite app (src/views, src/components, src/store, src/lib). Builds to static files.
            android/ + ios/ are the Capacitor shells for the standalone mobile app (docs/MOBILE.md).
-api/       backend — server.js (Node, no framework), one dependency (@simplewebauthn/server).
+api/       backend — server.js (Node, no framework), WebAuthn passkeys, Open Food Facts proxy.
 web/       multi-stage Dockerfile (builds frontend → nginx) + nginx.conf (serves app, proxies /api).
+samples/   curated starter routine templates (Push/Pull/Legs, Upper/Lower, Functional in CSV/JSON).
 media/     exercise img/gif (gitignored, fetched at runtime).
-docs/      self-hosting guide.
+docs/      self-hosting guide, mobile docs, architecture records.
 ```
 
 ## Running for development
@@ -21,40 +22,40 @@ cp .env.example .env
 docker compose up -d --build      # api + web + media on :8080
 # frontend hot reload:
 cd frontend && npm install && npm run dev
-# training logic (progression rules, 1RM, how a session is read back):
+# test suite (progression rules, 1RM, nutrition math, barcode/OFF parsing):
 cd frontend && npm test
 ```
 
 ## Guidelines
 
-- **Keep it dependency-light.** The frontend uses React + Router + Zustand and nothing else;
-  new deps (front or back) are a hard sell. `api/` has two (`@simplewebauthn/server` for passkeys,
+- **Keep it dependency-light.** The frontend uses React + Router + Zustand and minimal native helpers;
+  new dependencies (frontend or backend) are a hard sell. `api/` has two (`@simplewebauthn/server` for passkeys,
   `web-push` for notifications) — keep it near that.
 - **Match the style.** Small components, clear names, comments only where the "why" isn't obvious.
-  State lives in the Zustand store (`src/store`); pure helpers in `src/lib`.
+  State lives in the Zustand store (`src/store`); pure math and helpers in `src/lib`.
 - **Don't commit** the exercise media (`media/`) or `data/` — they're gitignored.
-- **Test the flow** you touched — click through the affected screens (and the workout flow) in a
-  browser before opening a PR.
-- **Training logic gets a unit test.** Anything deciding what you lift next, or reading a logged
-  session back, belongs in a pure helper in `src/lib` with tests beside it (`npm test`). These
-  rules are easy to get subtly wrong and nearly impossible to verify by clicking — the
-  progression engine grew two real bugs that only a test pinned down.
+- **Test the flow** you touched — click through the affected screens (workout player, food diary, plan importer)
+  in a browser before opening a PR.
+- **Math and domain logic get unit tests.** Anything deciding what you lift next, calculating nutritional
+  targets, parsing barcode data, or reading a logged session back belongs in a pure helper in `src/lib`
+  with tests beside it (`npm test`).
 
 ## Good first issues
 
-- Additional starter plans (upper/lower, full-body, 5×5…)
+- Additional spreadsheet plan templates in `samples/`
 - More languages for the exercise instructions (the dataset ships several)
 - Percentage / training-max programming (5/3/1-style) on top of the progression engine in
-  `src/lib/progression.js` — the policy interface is already there
-- Accessibility passes on the workout and chart screens
+  `src/lib/progression.js`
+- Additional nutritional analytics and meal macro breakdown visualizations
+- Accessibility passes on the workout, food diary, and chart screens
 
 ## Where to ask what
 
 | You have | Goes to |
 | --- | --- |
-| A question, or self-hosting that won't behave | [Discussions → Q&A](https://github.com/DuarteSantos8/openGym/discussions/categories/q-a) |
-| An idea you're not sure about yet | [Discussions → Ideas](https://github.com/DuarteSantos8/openGym/discussions/categories/ideas) |
-| A reproducible bug | [Issues](https://github.com/DuarteSantos8/openGym/issues) |
+| A question, or self-hosting that won't behave | [Discussions → Q&A](https://github.com/rupal2k/openfit/discussions/categories/q-a) |
+| An idea you're not sure about yet | [Discussions → Ideas](https://github.com/rupal2k/openfit/discussions/categories/ideas) |
+| A reproducible bug | [Issues](https://github.com/rupal2k/openfit/issues) |
 | A change you've already built | A pull request |
 
 An answered question in Q&A is worth more than the same answer buried in a closed issue — the

@@ -74,15 +74,18 @@ export function dayTotals(entries) {
 // Mutators take the draft S handed out by useStore().update(mut).
 export function addEntry(S, iso, { meal, g, food }) {
   const e = { id: uid(), meal, g, t: Date.now(), food: structuredClone(food) }
+  S.nutrition ||= { profile: null, days: {}, foods: [] }
+  S.nutrition.days ||= {}
   ;(S.nutrition.days[iso] ||= []).push(e)
   return e
 }
 export function updateEntry(S, iso, id, patch) {
-  const e = (S.nutrition.days[iso] || []).find(x => x.id === id)
+  const e = (S.nutrition?.days?.[iso] || []).find(x => x.id === id)
   if (e) Object.assign(e, patch)
 }
 export function removeEntry(S, iso, id) {
-  const list = (S.nutrition.days[iso] || []).filter(x => x.id !== id)
+  if (!S.nutrition?.days?.[iso]) return
+  const list = S.nutrition.days[iso].filter(x => x.id !== id)
   if (list.length) S.nutrition.days[iso] = list
   else delete S.nutrition.days[iso]
 }

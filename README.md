@@ -15,12 +15,13 @@ No subscription, no ads, no cloud lock-in, zero telemetry. Just `docker compose 
 <br>
 
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-a3e635?style=flat-square)](LICENSE)
-![Self-hosted](https://img.shields.io/badge/self--hosted-%F0%9F%8F%A0-60a5fa?style=flat-square)
-![PWA](https://img.shields.io/badge/PWA-installable-a78bfa?style=flat-square)
+![Self-hosted](https://img.shields.io/badge/self--hosted-%F0%9F%8F%A0-22d3ee?style=flat-square)
+![PWA](https://img.shields.io/badge/PWA-installable-06b6d4?style=flat-square)
 ![React](https://img.shields.io/badge/React-19-38bdf8?style=flat-square&logo=react&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-compose-2496ED?style=flat-square&logo=docker&logoColor=white)
-![No tracking](https://img.shields.io/badge/telemetry-none-f472b6?style=flat-square)
-[![Target Repo](https://img.shields.io/badge/github-rupal2k%2Fopenfit-181717?style=flat-square&logo=github)](https://github.com/rupal2k/openfit)
+![Nutrition](https://img.shields.io/badge/nutrition-barcode--scanner-f43f5e?style=flat-square)
+![Privacy](https://img.shields.io/badge/telemetry-none-a3e635?style=flat-square)
+[![Target Repo](https://img.shields.io/badge/github-rupal2k%2Fopenfit-0c0e12?style=flat-square&logo=github)](https://github.com/rupal2k/openfit)
 
 </div>
 
@@ -29,10 +30,11 @@ No subscription, no ads, no cloud lock-in, zero telemetry. Just `docker compose 
 <div align="center">
 <table>
 <tr>
-<td align="center"><img src="assets/screenshots/home.png" alt="Home" width="220"><br><sub><b>Home</b> — today's session & weight</sub></td>
-<td align="center"><img src="assets/screenshots/workout.png" alt="Workout" width="220"><br><sub><b>Guided workout</b> — animations & rest timers</sub></td>
-<td align="center"><img src="assets/screenshots/stats.png" alt="Stats" width="220"><br><sub><b>Stats</b> — heatmaps, charts & 1RM</sub></td>
-<td align="center"><img src="assets/screenshots/plan.png" alt="Plan" width="220"><br><sub><b>Plan</b> — schedule & custom split</sub></td>
+<td align="center"><img src="assets/screenshots/home.png" alt="Home" width="175"><br><sub><b>Home</b> — today's session & weight</sub></td>
+<td align="center"><img src="assets/screenshots/workout.png" alt="Workout" width="175"><br><sub><b>Guided workout</b> — animations & rest timers</sub></td>
+<td align="center"><img src="assets/screenshots/nutrition.png" alt="Nutrition" width="175"><br><sub><b>Nutrition</b> — diary & barcode scan</sub></td>
+<td align="center"><img src="assets/screenshots/stats.png" alt="Stats" width="175"><br><sub><b>Stats</b> — heatmaps, charts & 1RM</sub></td>
+<td align="center"><img src="assets/screenshots/plan.png" alt="Plan" width="175"><br><sub><b>Plan</b> — schedule & custom split</sub></td>
 </tr>
 </table>
 </div>
@@ -79,6 +81,12 @@ Most fitness apps lock your training data behind paywalls, bombard you with subs
 - **Downloadable Sample Plans:** Direct sample CSV downloads for popular splits (Push/Pull/Legs, Upper/Lower, Functional Full-Body).
 - **Curated Starter Templates:** Built-in workout templates ready to instantiate with one click.
 - **Printable PDF Cards:** Generate clean, non-splitting single-page PDF workout printouts for gym binders.
+
+### 🎨 Theme & Design System
+- **Volt Lime (`#a3e635`):** High-energy gym workout driver, linear progression milestones, and Personal Record badges.
+- **Cyber Cyan (`#22d3ee` / `#06b6d4`):** Progressive overload calculations, bodyweight curves, and analytics heatmaps.
+- **Coral Flare (`#f43f5e`):** Nutrition food diary, macro progress rings, and real-time barcode laser targeting.
+- **Obsidian Dark (`#0c0e12` / `#161922`):** Pure AMOLED deep-dark contrast mode optimized for low battery draw and high readability in gym environments.
 
 ### 🔒 Privacy, Security & Data Ownership
 - **Passkey Login (WebAuthn):** Fast, passwordless biometric authentication. Private keys never leave your device.

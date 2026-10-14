@@ -96,4 +96,14 @@ describe('diary mutators', () => {
     expect(recentFoods(S).map(f => f.name)).toEqual(['Nonfat Greek Yogurt', 'Oats'])
     expect(recentFoods(S, 1)).toHaveLength(1)
   })
+  it('handles partial or missing nutrition objects defensively', () => {
+    const sEmpty = {}
+    expect(() => addEntry(sEmpty, '2026-06-01', { meal: 'lunch', g: 50, food: OAT })).not.toThrow()
+    expect(sEmpty.nutrition.days['2026-06-01']).toHaveLength(1)
+
+    const sPartial = { nutrition: {} }
+    expect(() => updateEntry(sPartial, '2026-06-01', 'nonexistent', { g: 100 })).not.toThrow()
+    expect(() => removeEntry(sPartial, '2026-06-01', 'nonexistent')).not.toThrow()
+    expect(recentFoods(sPartial)).toEqual([])
+  })
 })

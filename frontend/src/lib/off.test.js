@@ -23,4 +23,11 @@ describe('normalizeOFF', () => {
     expect(normalizeOFF({ code: '1', nutriments: { 'energy-kcal_100g': 10 } })).toBeNull()
     expect(normalizeOFF(null)).toBeNull()
   })
+  it('rejects implausible energy (>900 kcal/100g or negative) and negative macros', () => {
+    expect(normalizeOFF({ code: '1', product_name: 'Super Fat', nutriments: { 'energy-kcal_100g': 901 } })).toBeNull()
+    expect(normalizeOFF({ code: '1', product_name: 'Bad Kcal', nutriments: { 'energy-kcal_100g': -5 } })).toBeNull()
+    expect(normalizeOFF({ code: '1', product_name: 'Negative Protein', nutriments: { 'energy-kcal_100g': 100, proteins_100g: -2 } })).toBeNull()
+    expect(normalizeOFF({ code: '1', product_name: 'Negative Carb', nutriments: { 'energy-kcal_100g': 100, carbohydrates_100g: -1 } })).toBeNull()
+    expect(normalizeOFF({ code: '1', product_name: 'Negative Fat', nutriments: { 'energy-kcal_100g': 100, fat_100g: -0.5 } })).toBeNull()
+  })
 })

@@ -110,7 +110,10 @@ function CustomFood({ onDone, close }) {
     if (!name.trim() || n.kcal === null) return toast(t('Name and calories are required'))
     const food = { src: 'custom', id: uid(), code: '', name: name.trim(), brand: '', serving: null,
       per100: { kcal: n.kcal, p: n.p ?? 0, c: n.c ?? 0, f: n.f ?? 0 } }
-    update(s => { s.nutrition.foods.push(food) })
+    update(s => {
+      s.nutrition ||= { profile: null, days: {}, foods: [] }
+      ;(s.nutrition.foods ||= []).push(food)
+    })
     close(); onDone && onDone(food)
   }
   return <>

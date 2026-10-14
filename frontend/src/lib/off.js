@@ -10,11 +10,16 @@ export function normalizeOFF(p) {
   let kcal = num(n['energy-kcal_100g'])
   if (kcal === null && num(n.energy_100g) !== null) kcal = Math.round(num(n.energy_100g) / 4.184 * 10) / 10
   const name = (p.product_name || p.product_name_en || '').trim()
-  if (!name || kcal === null) return null
+  if (!name || kcal === null || kcal < 0 || kcal > 900) return null
+  const pProt = num(n.proteins_100g) ?? 0
+  const pCarb = num(n.carbohydrates_100g) ?? 0
+  const pFat = num(n.fat_100g) ?? 0
+  if (pProt < 0 || pCarb < 0 || pFat < 0) return null
   const brand = Array.isArray(p.brands) ? p.brands[0] || '' : String(p.brands || '').split(',')[0].trim()
   return {
     src: 'off', code: String(p.code || ''), name, brand,
     serving: num(p.serving_quantity),
-    per100: { kcal, p: num(n.proteins_100g) ?? 0, c: num(n.carbohydrates_100g) ?? 0, f: num(n.fat_100g) ?? 0 }
+    per100: { kcal, p: pProt, c: pCarb, f: pFat }
   }
 }
+
