@@ -2,6 +2,8 @@
 // (GPL-3.0, github.com/simonoppowa/OpenNutriTracker, lib/core/utils/calc/): IOM 2005 TDEE,
 // its PAL categories and the ±500 kcal goal adjustment. Protein deliberately differs — a gym
 // app targets 1.6 g/kg bodyweight, not 15 % of energy.
+import { uid } from './format.js'
+
 export const MEALS = ['breakfast', 'lunch', 'dinner', 'snack']
 export const PAL = { sedentary: 1.25, low: 1.5, active: 1.75, very: 2.2 }
 export const GOAL_ADJ = { lose: -500, maintain: 0, gain: 500 }
@@ -50,4 +52,50 @@ export function targets(S, now = new Date()) {
   const fat = Math.round(kcal * FAT_SHARE / 9)
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4))
   return { kcal, protein, carbs, fat }
+}
+
+const r1 = x => Math.round(x * 10) / 10
+const ZERO = () => ({ kcal: 0, p: 0, c: 0, f: 0 })
+
+export function entryTotals({ g, food }) {
+  const k = g / 100, n = food.per100
+  return { kcal: r1(n.kcal * k), p: r1(n.p * k), c: r1(n.c * k), f: r1(n.f * k) }
+}
+
+export function dayTotals(entries) {
+  const sum = ZERO()
+  for (const e of entries || []) {
+    const k = e.g / 100, n = e.food.per100
+    sum.kcal += n.kcal * k; sum.p += n.p * k; sum.c += n.c * k; sum.f += n.f * k
+  }
+  return { kcal: r1(sum.kcal), p: r1(sum.p), c: r1(sum.c), f: r1(sum.f) }
+}
+
+// Mutators take the draft S handed out by useStore().update(mut).
+export function addEntry(S, iso, { meal, g, food }) {
+  const e = { id: uid(), meal, g, t: Date.now(), food: structuredClone(food) }
+  ;(S.nutrition.days[iso] ||= []).push(e)
+  return e
+}
+export function updateEntry(S, iso, id, patch) {
+  const e = (S.nutrition.days[iso] || []).find(x => x.id === id)
+  if (e) Object.assign(e, patch)
+}
+export function removeEntry(S, iso, id) {
+  const list = (S.nutrition.days[iso] || []).filter(x => x.id !== id)
+  if (list.length) S.nutrition.days[iso] = list
+  else delete S.nutrition.days[iso]
+}
+
+// ponytail: scans every logged day; fine for years of logs. Index it if it ever shows in a profile.
+export function recentFoods(S, limit = 20) {
+  const all = Object.values(S.nutrition?.days || {}).flat().sort((a, b) => b.t - a.t)
+  const seen = new Set(), out = []
+  for (const e of all) {
+    const key = e.food.code || e.food.name.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key); out.push(e.food)
+    if (out.length >= limit) break
+  }
+  return out
 }
