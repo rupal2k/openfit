@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore.js'
 import { targets, dayTotals, entryTotals, MEALS } from '../lib/nutrition.js'
 import { todayISO, isoOf, fmtNum, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
-import { nutritionProfileSheet, foodSearchSheet, foodAmountSheet, MEAL_LABEL } from '../nutrition-sheets.jsx'
+import { nutritionProfileSheet, foodSearchSheet, foodAmountSheet, barcodeSheet, MEAL_LABEL } from '../nutrition-sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 
@@ -32,7 +32,10 @@ export default function Nutrition() {
   return <div className="narrow">
     <div className="hdr">
       <div><h1>{t('Food')}</h1><div className="sub">{isToday ? t('Today') : fmtDate(iso, true)}</div></div>
-      <button className="iconbtn" onClick={nutritionProfileSheet} aria-label={t('Targets')}><Icon name="target" /></button>
+      <div className="row" style={{ gap: 6 }}>
+        <button className="iconbtn" onClick={() => barcodeSheet(iso, 'snack')} aria-label={t('Scan barcode')}><Icon name="barcode" /></button>
+        <button className="iconbtn" onClick={nutritionProfileSheet} aria-label={t('Targets')}><Icon name="target" /></button>
+      </div>
     </div>
 
     <div className="card">

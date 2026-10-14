@@ -144,7 +144,7 @@ function FoodSearch({ iso, meal, close }) {
       ? <SearchField placeholder={t('Search foods')} value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} autoFocus />
       : <div className="small muted">{t('Food search needs a self-hosted server. Scan a barcode or add your own food.')}</div>}
     <div className="row" style={{ gap: 8, margin: '10px 0' }}>
-      {'BarcodeDetector' in window && <Button size="sm" variant="tinted" icon="barcode" onClick={() => { close(); barcodeSheet(iso, meal) }}>{t('Scan barcode')}</Button>}
+      <Button size="sm" variant="tinted" icon="barcode" onClick={() => { close(); barcodeSheet(iso, meal) }}>{t('Scan barcode')}</Button>
       <Button size="sm" variant="tinted" icon="plus" onClick={() => { close(); customFoodSheet(f => foodAmountSheet(iso, meal, f)) }}>{t('New food')}</Button>
     </div>
     {res.busy && <div className="small muted">{t('Searching…')}</div>}
@@ -195,9 +195,11 @@ function Barcode({ iso, meal, close }) {
 
   return <>
     <h3>{t('Scan barcode')}</h3>
-    {'BarcodeDetector' in window && <video ref={video} playsInline muted style={{ width: '100%', borderRadius: 12, background: '#000', aspectRatio: '4/3', objectFit: 'cover' }} />}
+    {'BarcodeDetector' in window
+      ? <video ref={video} playsInline muted style={{ width: '100%', borderRadius: 12, background: '#000', aspectRatio: '4/3', objectFit: 'cover' }} />
+      : <div className="small muted" style={{ marginBottom: 12 }}>{t('Camera auto-scanning requires Chrome on Android or macOS. Enter the barcode number below:')}</div>}
     <div className="row" style={{ gap: 8, marginTop: 10 }}>
-      <TextField inputMode="numeric" placeholder={t('Or type the code')} value={code} onChange={e => setCode(e.target.value)} style={{ flex: 1 }} />
+      <TextField inputMode="numeric" placeholder={t('Enter barcode (e.g. 3017624010701)')} value={code} onChange={e => setCode(e.target.value)} style={{ flex: 1 }} autoFocus={!('BarcodeDetector' in window)} />
       <Button size="sm" variant="tinted" onClick={() => find(code)}>{t('Look up')}</Button>
     </div>
     {msg && <div className="small muted" style={{ marginTop: 8 }}>{msg}</div>}
