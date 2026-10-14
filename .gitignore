@@ -8,3 +8,6 @@ dist/
 # Local plan templates/samples
 *_plan.csv
 *_plan.json
+
+# subagent-driven-development scratch
+.superpowers/
