@@ -260,6 +260,27 @@ Leg Day,Friday,Sled 45° Leg Press,3,12,120
 Leg Day,Friday,Lever Leg Extension,3,12,40
 Leg Day,Friday,Lever Lying Leg Curl,3,12,35`
 
+export const SAMPLE_PRIMAL_CSV = `Routine,Day,Exercise,Sets,Reps,Weight
+Upper Strength,Monday,Barbell Bench Press,4,8,60
+Upper Strength,Monday,Barbell Bent Over Row,4,8,50
+Upper Strength,Monday,Dumbbell Standing Overhead Press,3,10,16
+Upper Strength,Monday,Dumbbell Lateral Raise,3,12,8
+Upper Strength,Monday,Cable Triceps Pushdown,3,12,25
+Lower Power,Tuesday,Barbell Full Squat,4,8,80
+Lower Power,Tuesday,Sled 45° Leg Press,3,10,120
+Lower Power,Tuesday,Barbell Romanian Deadlift,3,10,60
+Lower Power,Tuesday,Lever Leg Extension,3,12,40
+Lower Power,Tuesday,Lever Lying Leg Curl,3,12,35
+Posterior & Pull,Thursday,Barbell Deadlift,4,6,90
+Posterior & Pull,Thursday,Wide Grip Pull-Up,4,8,0
+Posterior & Pull,Thursday,Cable Lat Pulldown Full Range of Motion,3,10,45
+Posterior & Pull,Thursday,Barbell Curl,3,10,25
+Posterior & Pull,Thursday,Dumbbell Hammer Curl,3,12,12
+Primal Conditioning,Friday,Barbell Incline Bench Press,4,10,50
+Primal Conditioning,Friday,Chest Dip,3,10,0
+Primal Conditioning,Friday,Barbell Full Squat,3,10,60
+Primal Conditioning,Friday,Wide Grip Pull-Up,3,8,0`
+
 export const SAMPLE_JSON = {
   name: "Push / Pull / Legs",
   week: {
@@ -304,11 +325,17 @@ export const SAMPLE_JSON = {
   ]
 }
 
-export function downloadSampleCSV() {
-  const blob = new Blob([SAMPLE_CSV], { type: 'text/csv;charset=utf-8;' })
+export function downloadSampleCSV(variant = 'ppl') {
+  let content = SAMPLE_CSV
+  let filename = 'openfit_sample_plan_ppl.csv'
+  if (variant === 'primal') {
+    content = SAMPLE_PRIMAL_CSV
+    filename = 'openfit_sample_upper_lower.csv'
+  }
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = 'opengym_plan_template.csv'
+  a.download = filename
   a.click()
   URL.revokeObjectURL(a.href)
 }
@@ -317,7 +344,7 @@ export function downloadSampleJSON() {
   const blob = new Blob([JSON.stringify(SAMPLE_JSON, null, 2)], { type: 'application/json;charset=utf-8;' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = 'opengym_plan_template.json'
+  a.download = 'openfit_sample_plan.json'
   a.click()
   URL.revokeObjectURL(a.href)
 }

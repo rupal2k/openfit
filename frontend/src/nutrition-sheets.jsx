@@ -27,13 +27,26 @@ function NutritionProfile({ close }) {
   const set = k => v => setP(o => ({ ...o, [k]: v }))
   const preview = targets({ ...S, nutrition: { ...S.nutrition, profile: p } })
   const w = bodyKg(S)
-  const save = () => { update(s => { s.nutrition.profile = p }); close(); toast(t('Targets saved')) }
+  const curYear = new Date().getFullYear()
+  const validBirth = !p.birthYear || (p.birthYear >= 1900 && p.birthYear <= curYear - 10)
+  const validHeight = !p.heightCm || (p.heightCm >= 50 && p.heightCm <= 280)
+  const validKcal = !p.kcal || (p.kcal >= 500 && p.kcal <= 10000)
+  const valid = validBirth && validHeight && validKcal
+
+  const save = () => {
+    if (!valid) return
+    update(s => { s.nutrition.profile = p })
+    close()
+    toast(t('Targets saved'))
+  }
   return <>
     <h3>{t('Your targets')}</h3>
     <Row title={t('Sex')}><Segmented className="seg-inline" value={p.sex} onChange={set('sex')}
       options={[{ value: 'male', label: t('Male') }, { value: 'female', label: t('Female') }, { value: 'other', label: t('Other') }]} /></Row>
     <Row title={t('Birth year')}><NumberField decimal={false} nullable value={p.birthYear} onChange={set('birthYear')} placeholder="1990" /></Row>
+    {!validBirth && <div className="small" style={{ color: 'var(--red)', marginTop: -6, marginBottom: 6 }}>{t('Enter a 4-digit birth year between 1900 and {0}', curYear - 10)}</div>}
     <Row title={t('Height (cm)')}><NumberField decimal={false} nullable value={p.heightCm} onChange={set('heightCm')} placeholder="175" /></Row>
+    {!validHeight && <div className="small" style={{ color: 'var(--red)', marginTop: -6, marginBottom: 6 }}>{t('Height must be between 50 and 280 cm')}</div>}
     <Row title={t('Body weight')} value={w ? fmtNum(w) + ' kg' : t('Not logged')} accessory="chevron" onClick={() => bwSheet()} />
     <SelectRow title={t('Activity')} value={p.pal} onChange={set('pal')} options={[
       { value: 'sedentary', label: t('Sedentary'), subtitle: t('Desk job, little walking') },
@@ -44,13 +57,14 @@ function NutritionProfile({ close }) {
       options={[{ value: 'lose', label: t('Lose') }, { value: 'maintain', label: t('Maintain') }, { value: 'gain', label: t('Gain') }]} /></Row>
     <Row title={t('Calorie override')} subtitle={t('Leave empty to calculate')}>
       <NumberField decimal={false} nullable value={p.kcal} onChange={set('kcal')} placeholder="—" /></Row>
+    {!validKcal && <div className="small" style={{ color: 'var(--red)', marginTop: -6, marginBottom: 6 }}>{t('Calories must be between 500 and 10,000 kcal')}</div>}
     <div className="card" style={{ margin: '12px 0' }}>
       {preview
         ? <div className="row between"><b className="accent">{preview.kcal} kcal</b>
             <span className="small muted">{t('P {0} g · C {1} g · F {2} g', preview.protein, preview.carbs, preview.fat)}</span></div>
         : <div className="small muted">{t('Add birth year, height and a weigh-in — or set a calorie override.')}</div>}
     </div>
-    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+    <Button variant="primary" disabled={!valid} onClick={save}>{t('Save')}</Button>
     <div className="small dim" style={{ marginTop: 8 }}>{t('Estimate from the IOM 2005 equations, as used by OpenNutriTracker. Protein: 1.6 g per kg body weight.')}</div>
   </>
 }
@@ -116,23 +130,26 @@ export const foodSearchSheet = (iso, meal) => ui().openSheet(close => <FoodSearc
 
 function FoodSearch({ iso, meal, close }) {
   const S = useStore(s => s.S)
+  const user = useStore(s => s.user)
+  const canSearch = SEARCH_OK && !!user
   const [q, setQ] = useState('')
   const [res, setRes] = useState({ q: '', foods: [], busy: false, err: null })
   const seq = useRef(0)
   useEffect(() => {
     const term = q.trim()
-    if (!SEARCH_OK || term.length < 2) { setRes({ q: '', foods: [], busy: false, err: null }); return }
+    if (!canSearch || term.length < 2) { setRes({ q: '', foods: [], busy: false, err: null }); return }
     const my = ++seq.current
     setRes(r => ({ ...r, busy: true, err: null }))
     const tm = setTimeout(() => searchFoods(term)
       .then(foods => { if (my === seq.current) setRes({ q: term, foods, busy: false, err: null }) })
       .catch(e => { if (my === seq.current) setRes({ q: term, foods: [], busy: false, err: e.message }) }), 400)
     return () => clearTimeout(tm)
-  }, [q])
+  }, [q, canSearch])
 
   const pick = food => { close(); foodAmountSheet(iso, meal, food) }
   const term = q.trim().toLowerCase()
-  const mine = S.nutrition.foods.filter(f => !term || f.name.toLowerCase().includes(term))
+  const foodsList = S.nutrition?.foods || []
+  const mine = foodsList.filter(f => !term || f.name.toLowerCase().includes(term))
   const recent = term ? [] : recentFoods(S, 15)
   const row = (f, i) => <Row key={(f.code || f.id || f.name) + i} title={f.name}
     subtitle={[f.brand, t('{0} kcal / 100 g', fmtNum(f.per100.kcal))].filter(Boolean).join(' · ')}
@@ -140,9 +157,13 @@ function FoodSearch({ iso, meal, close }) {
 
   return <>
     <h3>{t('Add to {0}', t(MEAL_LABEL[meal]))}</h3>
-    {SEARCH_OK
-      ? <SearchField placeholder={t('Search foods')} value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} autoFocus />
-      : <div className="small muted">{t('Food search needs a self-hosted server. Scan a barcode or add your own food.')}</div>}
+    {!SEARCH_OK ? (
+      <div className="small muted">{t('Food search needs a self-hosted server. Scan a barcode or add your own food.')}</div>
+    ) : !user ? (
+      <div className="small muted">{t('Sign in to search Open Food Facts. You can scan a barcode or add your own food.')}</div>
+    ) : (
+      <SearchField placeholder={t('Search foods')} value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} autoFocus />
+    )}
     <div className="row" style={{ gap: 8, margin: '10px 0' }}>
       <Button size="sm" variant="tinted" icon="barcode" onClick={() => { close(); barcodeSheet(iso, meal) }}>{t('Scan barcode')}</Button>
       <Button size="sm" variant="tinted" icon="plus" onClick={() => { close(); customFoodSheet(f => foodAmountSheet(iso, meal, f)) }}>{t('New food')}</Button>

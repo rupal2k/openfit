@@ -412,7 +412,9 @@ const routes = {
         { headers: { 'User-Agent': OFF_UA }, signal: AbortSignal.timeout(8000) });
     } catch { return json(res, 502, { error: 'food database unreachable' }); }
     if (!r.ok) return json(res, 502, { error: 'food database error ' + r.status });
-    const hits = (await r.json()).hits || [];
+    let data;
+    try { data = await r.json(); } catch { return json(res, 502, { error: 'food database error' }); }
+    const hits = data?.hits || [];
     foodCache.set(key, { at: Date.now(), hits });
     if (foodCache.size > FOOD_CACHE_MAX) foodCache.delete(foodCache.keys().next().value);
     json(res, 200, { hits });

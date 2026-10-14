@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore.js'
 import { DAYN, uid, exCount } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { dayAssignSheet, loadStarterPlan, planToolsSheet, planCatalogSheet, planUploadSheet } from '../sheets.jsx'
+import { downloadSampleCSV } from '../lib/plan-upload.js'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import { glyphOf, DEFAULT_GLYPH } from '../lib/glyphs.js'
@@ -51,6 +52,8 @@ export default function Plan() {
         <Button variant="primary" icon="sparkles" onClick={planCatalogSheet}>{t('Choose a workout plan')}</Button>
         <div style={{ height: 8 }} />
         <Button variant="tinted" icon="upload" onClick={planUploadSheet}>{t('Upload plan (Excel / JSON)')}</Button>
+        <div style={{ height: 8 }} />
+        <Button variant="ghost" icon="download" onClick={() => downloadSampleCSV('ppl')}>{t('Download sample CSV')}</Button>
       </>}
     </div></div>
   </>

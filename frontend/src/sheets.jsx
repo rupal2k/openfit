@@ -798,6 +798,7 @@ function PlanTools({ close }) {
     {!hasRoutines && <div className="dim small" style={{ margin: '12px 2px 0' }}>{t('Add an exercise to a routine first — an empty plan has nothing to share.')}</div>}
     <h4 className="sec">{t('Upload a plan')}</h4>
     <Button variant="ghost" icon="upload" onClick={() => { close(); planUploadSheet() }}>{t('Upload Excel (CSV) or JSON')}</Button>
+    <Button size="sm" variant="ghost" icon="download" onClick={() => downloadSampleCSV('ppl')}>{t('Download sample CSV')}</Button>
     <h4 className="sec">{t('Need inspiration?')}</h4>
     <Button variant="ghost" icon="sparkles" onClick={() => { close(); planCatalogSheet() }}>{t('Browse plan templates')}</Button>
   </>
@@ -908,19 +909,26 @@ function PlanUpload({ close }) {
     </div>
     <input ref={fileRef} type="file" accept=".csv,.json,.txt,.xlsx,text/csv,application/json" onChange={e => { const f = e.target.files[0]; e.target.value = ''; if (f) handleFile(f) }} hidden />
 
-    <div className="card" style={{ padding: '12px 14px', marginBottom: 16, background: 'var(--surface-2)' }}>
-      <div className="tt" style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{t('Download sample templates')}</div>
+    <div className="card" style={{ padding: '14px', marginBottom: 16, background: 'var(--surface-2)' }}>
+      <div className="row between" style={{ alignItems: 'center', marginBottom: 6 }}>
+        <div className="tt" style={{ fontSize: 14, fontWeight: 600 }}>{t('Download sample templates')}</div>
+        <span className="tag">{t('Ready to edit')}</span>
+      </div>
       <div className="dim small" style={{ marginBottom: 10, lineHeight: 1.4 }}>
-        {t('Open the Excel CSV or JSON template, replace with your routines, and upload it back.')}
+        {t('Download a sample spreadsheet (CSV) or JSON, edit in Excel, and upload your custom plan.')}
       </div>
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <Button size="sm" variant="tinted" icon="download" onClick={downloadSampleCSV}>{t('Excel / CSV template')}</Button>
-        <Button size="sm" variant="tinted" icon="download" onClick={downloadSampleJSON}>{t('JSON template')}</Button>
+        <Button size="sm" variant="tinted" icon="download" onClick={() => downloadSampleCSV('ppl')}>{t('Download sample CSV')}</Button>
+        <Button size="sm" variant="tinted" icon="download" onClick={() => downloadSampleCSV('primal')}>{t('Sample CSV (Upper / Lower)')}</Button>
+        <Button size="sm" variant="tinted" icon="download" onClick={downloadSampleJSON}>{t('Sample JSON')}</Button>
       </div>
     </div>
 
     <div style={{ marginBottom: 16 }}>
-      <h4 className="sec" style={{ margin: '0 0 6px' }}>{t('Spreadsheet format')}</h4>
+      <div className="row between" style={{ margin: '0 0 6px', alignItems: 'center' }}>
+        <h4 className="sec" style={{ margin: 0 }}>{t('Spreadsheet format')}</h4>
+        <Button size="sm" variant="ghost" icon="download" onClick={() => downloadSampleCSV('ppl')}>{t('Download sample CSV')}</Button>
+      </div>
       <div className="dim small" style={{ marginBottom: 8 }}>
         {t('Columns: Routine, Day, Exercise, Sets, Reps, Weight')}
       </div>

@@ -14,7 +14,7 @@ function Bar({ label, val, goal, unit }) {
   const over = goal && val > goal
   return <div style={{ flex: 1, minWidth: 0 }}>
     <div className="small muted">{label}</div>
-    <div style={{ fontWeight: 600 }}>{fmtNum(val)}{goal ? <span className="dim"> / {goal}</span> : null} {unit}</div>
+    <div style={{ fontWeight: 600, whiteSpace: 'nowrap', fontSize: '0.9rem' }}>{fmtNum(val)}{goal ? <span className="dim"> / {goal}</span> : null} {unit}</div>
     <div style={{ height: 6, borderRadius: 3, background: 'var(--surface-3)', marginTop: 4, overflow: 'hidden' }}>
       <div style={{ width: pct + '%', height: '100%', background: over ? 'var(--orange)' : 'var(--acc)' }} />
     </div>
@@ -57,7 +57,7 @@ export default function Nutrition() {
       const list = entries.filter(e => e.meal === m)
       const kcal = dayTotals(list).kcal
       return <section className="sect" key={m}>
-        <h2 className="sect-t row between"><span>{t(MEAL_LABEL[m])}</span>{kcal > 0 && <span className="dim">{fmtNum(kcal)} kcal</span>}</h2>
+        <h2 className="sect-t" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><span>{t(MEAL_LABEL[m])}</span>{kcal > 0 && <span className="dim">{fmtNum(kcal)} kcal</span>}</h2>
         <div className="sect-b">
           {list.map(e => <button key={e.id} className="lrow tap" onClick={() => foodAmountSheet(iso, m, e.food, e)}>
             <span className="lrow-m"><span className="lrow-t">{e.food.name}</span><span className="lrow-s">{e.g} g</span></span>

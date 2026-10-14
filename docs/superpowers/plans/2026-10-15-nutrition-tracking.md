@@ -89,7 +89,7 @@ The session signing key (`data/secret`), the push keys (`data/vapid.json`) and t
 - Create: `.gitignore`
 - Untrack: `data/secret`, `data/vapid.json`, `data/db.json`
 
-- [ ] **Step 1: Create `.gitignore`** at the repo root.
+- [x] **Step 1: Create `.gitignore`** at the repo root.
 
 ```gitignore
 # runtime data — users, passkeys, session secret, push keys. NEVER commit.
@@ -100,7 +100,7 @@ dist/
 .DS_Store
 ```
 
-- [ ] **Step 2: Untrack the data files without deleting them from disk.**
+- [x] **Step 2: Untrack the data files without deleting them from disk.**
 
 ```bash
 cd /home/rupaldas/openGym
@@ -108,7 +108,7 @@ git rm --cached data/secret data/vapid.json data/db.json
 git rm --cached -r --ignore-unmatch '*.DS_Store'
 ```
 
-- [ ] **Step 3: Rotate the leaked keys.** **Ask the user first.** This signs every user out, and every device has to re-enable push notifications.
+- [x] **Step 3: Rotate the leaked keys.** **Ask the user first.** This signs every user out, and every device has to re-enable push notifications.
 
 ```bash
 docker compose stop api
@@ -117,7 +117,7 @@ docker compose start api
 docker compose logs api | tail -3       # expect "gym-api on :3000"
 ```
 
-- [ ] **Step 4: Commit the in-progress work (the rebrand, plan templates and plan upload) as its own commit.** Ask the user whether the three sample plan files in the repo root (`*_plan.csv`, `*_plan.json`) belong in the repo. If they don't, add them to `.gitignore`.
+- [x] **Step 4: Commit the in-progress work (the rebrand, plan templates and plan upload) as its own commit.** Ask the user whether the three sample plan files in the repo root (`*_plan.csv`, `*_plan.json`) belong in the repo. If they don't, add them to `.gitignore`.
 
 ```bash
 git add .gitignore .env.example docker-compose.yml frontend/
@@ -126,7 +126,7 @@ git commit -m "chore: ignore runtime data; Vantage Fit rebrand, plan templates a
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 5: Publish to openfit with a fresh history, so the old commits containing the keys never reach the public repo.** **Ask the user before pushing.**
+- [x] **Step 5: Publish to openfit with a fresh history, so the old commits containing the keys never reach the public repo.** **Ask the user before pushing.**
 
 ```bash
 git checkout --orphan openfit-main
@@ -138,7 +138,7 @@ git push -u openfit openfit-main:main
 git log --all --oneline -- data/secret   # check that only old branches list it, not openfit-main
 ```
 
-- [ ] **Step 6: Get a green baseline.**
+- [x] **Step 6: Get a green baseline.**
 
 ```bash
 cd frontend && npm ci && npx vitest run
@@ -157,7 +157,7 @@ Expected: every existing test file passes. If any fail before the nutrition work
 **Interfaces:**
 - Produces: `PAL`, `GOAL_ADJ`, `MEALS`, `tdee({sex, age, heightCm, weightKg, pal}) → number`, `ageFrom(birthYear, now?) → number`, `bodyKg(S) → number|null`, `targets(S, now?) → {kcal, protein, carbs, fat} | null`. All gram values are integers.
 
-- [ ] **Step 1: Write the failing test** `frontend/src/lib/nutrition.test.js`
+- [x] **Step 1: Write the failing test** `frontend/src/lib/nutrition.test.js`
 
 ```js
 import { describe, it, expect } from 'vitest'
@@ -216,9 +216,9 @@ describe('targets', () => {
 })
 ```
 
-- [ ] **Step 2: Run it and check that it fails.** Run `cd frontend && npx vitest run src/lib/nutrition.test.js`. Expected: FAIL, "Failed to resolve import './nutrition.js'".
+- [x] **Step 2: Run it and check that it fails.** Run `cd frontend && npx vitest run src/lib/nutrition.test.js`. Expected: FAIL, "Failed to resolve import './nutrition.js'".
 
-- [ ] **Step 3: Implement** `frontend/src/lib/nutrition.js`
+- [x] **Step 3: Implement** `frontend/src/lib/nutrition.js`
 
 ```js
 // Nutrition targets + food-diary math. The energy formulas are ported from OpenNutriTracker
@@ -276,9 +276,9 @@ export function targets(S, now = new Date()) {
 }
 ```
 
-- [ ] **Step 4: Run it and check that it passes.** Run `npx vitest run src/lib/nutrition.test.js`. Expected: 9 tests pass.
+- [x] **Step 4: Run it and check that it passes.** Run `npx vitest run src/lib/nutrition.test.js`. Expected: 9 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add frontend/src/lib/nutrition.js frontend/src/lib/nutrition.test.js
@@ -307,7 +307,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `recentFoods(S, limit=20) → Food[]`, newest first, de-duplicated by `code || name`.
   - `DEF.nutrition = { profile: null, days: {}, foods: [] }`.
 
-- [ ] **Step 1: Append the failing tests** to `nutrition.test.js`
+- [x] **Step 1: Append the failing tests** to `nutrition.test.js`
 
 ```js
 import { entryTotals, dayTotals, addEntry, updateEntry, removeEntry, recentFoods } from './nutrition.js'
@@ -358,9 +358,9 @@ describe('diary mutators', () => {
 })
 ```
 
-- [ ] **Step 2: Run them and check that they fail.** Run `npx vitest run src/lib/nutrition.test.js`. Expected: FAIL, "entryTotals is not a function" (or a missing export).
+- [x] **Step 2: Run them and check that they fail.** Run `npx vitest run src/lib/nutrition.test.js`. Expected: FAIL, "entryTotals is not a function" (or a missing export).
 
-- [ ] **Step 3: Append the implementation** to `nutrition.js`
+- [x] **Step 3: Append the implementation** to `nutrition.js`
 
 ```js
 import { uid } from './format.js'
@@ -414,7 +414,7 @@ export function recentFoods(S, limit = 20) {
 
 Then check the day-sum expectation: 52.9×1.7 + 379×0.5 = 89.93 + 189.5 = 279.43, which rounds to 279.4. ✓ Protein: 15.997 + 6.6 = 22.597, which rounds to 22.6. ✓ Carbs: 6.001 + 33.85 = 39.851, which rounds to 39.9. ✓ Fat: 0 + 3.25 = 3.25. `Math.round(32.5) / 10` gives **3.3**. ✓
 
-- [ ] **Step 4: Wire the state.** In `frontend/src/store/useStore.js`, add one line to `DEF` after the `reminder:` line (keep the trailing comma style):
+- [x] **Step 4: Wire the state.** In `frontend/src/store/useStore.js`, add one line to `DEF` after the `reminder:` line (keep the trailing comma style):
 
 ```js
   reminder: { on: false, time: '08:00', tz: null }, effort: null,
@@ -429,9 +429,9 @@ const hasData = st => !!((st.workouts || []).length || (st.routines || []).lengt
   || Object.keys(st.nutrition?.days || {}).length)
 ```
 
-- [ ] **Step 5: Run all the tests.** Run `npx vitest run`. Expected: everything passes, including the earlier test files.
+- [x] **Step 5: Run all the tests.** Run `npx vitest run`. Expected: everything passes, including the earlier test files.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add frontend/src/lib/nutrition.js frontend/src/lib/nutrition.test.js frontend/src/store/useStore.js
@@ -458,7 +458,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `serving_quantity` may be absent.
   - Energy is `energy-kcal_100g`; `energy_100g` is in kJ.
 
-- [ ] **Step 1: Write the failing test** `frontend/src/lib/off.test.js`
+- [x] **Step 1: Write the failing test** `frontend/src/lib/off.test.js`
 
 ```js
 import { describe, it, expect } from 'vitest'
@@ -489,9 +489,9 @@ describe('normalizeOFF', () => {
 })
 ```
 
-- [ ] **Step 2: Run it and check that it fails.** Run `npx vitest run src/lib/off.test.js`. Expected: FAIL, unresolved import.
+- [x] **Step 2: Run it and check that it fails.** Run `npx vitest run src/lib/off.test.js`. Expected: FAIL, unresolved import.
 
-- [ ] **Step 3: Implement** `frontend/src/lib/off.js`
+- [x] **Step 3: Implement** `frontend/src/lib/off.js`
 
 ```js
 // Open Food Facts → our Food shape (see lib/nutrition.js). Field names follow OpenNutriTracker's
@@ -516,9 +516,9 @@ export function normalizeOFF(p) {
 }
 ```
 
-- [ ] **Step 4: Run it and check that it passes.** Run `npx vitest run src/lib/off.test.js`. Expected: 5 tests pass.
+- [x] **Step 4: Run it and check that it passes.** Run `npx vitest run src/lib/off.test.js`. Expected: 5 tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add frontend/src/lib/off.js frontend/src/lib/off.test.js
@@ -543,7 +543,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `searchFoods(q) → Promise<Food[]>`.
   - `lookupBarcode(code) → Promise<Food|null>`.
 
-- [ ] **Step 1: Add the proxy block** to `api/server.js`, directly above `/* ---------- routes ---------- */`
+- [x] **Step 1: Add the proxy block** to `api/server.js`, directly above `/* ---------- routes ---------- */`
 
 ```js
 /* ---------- food search proxy (Open Food Facts) ---------- */
@@ -555,7 +555,7 @@ const foodCache = new Map();               // query -> { at, hits }; insertion-o
 const FOOD_TTL = 10 * 60000, FOOD_CACHE_MAX = 500;
 ```
 
-- [ ] **Step 2: Add the route** inside `const routes = {`, after `'PUT /api/data'`
+- [x] **Step 2: Add the route** inside `const routes = {`, after `'PUT /api/data'`
 
 ```js
   'GET /api/food/search': async (req, res) => {
@@ -578,7 +578,7 @@ const FOOD_TTL = 10 * 60000, FOOD_CACHE_MAX = 500;
   },
 ```
 
-- [ ] **Step 3: Rebuild the API and verify that it refuses anonymous callers.**
+- [x] **Step 3: Rebuild the API and verify that it refuses anonymous callers.**
 
 ```bash
 cd /home/rupaldas/openGym && docker compose up -d --build api web
@@ -587,7 +587,7 @@ docker compose exec web wget -qO- --server-response http://api:3000/api/food/sea
 
 Expected: `HTTP/1.1 401` with `{"error":"not signed in"}`.
 
-- [ ] **Step 4: Create** `frontend/src/lib/food.js`
+- [x] **Step 4: Create** `frontend/src/lib/food.js`
 
 ```js
 // Food lookups. Search goes through our API (OFF search has no CORS); barcode lookups hit
@@ -614,9 +614,9 @@ export async function lookupBarcode(code) {
 }
 ```
 
-- [ ] **Step 5: Run the build and tests.** Run `cd frontend && npx vitest run && npm run build`. Expected: everything passes and the build succeeds.
+- [x] **Step 5: Run the build and tests.** Run `cd frontend && npx vitest run && npm run build`. Expected: everything passes and the build succeeds.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add api/server.js frontend/src/lib/food.js
@@ -636,7 +636,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `targets`, `bodyKg`, `PAL` (Task 1); `useStore`, `useUI`; `Segmented`, `SelectRow`, `NumberField`, `Row`, `Button` from `components/ui.jsx`; `bwSheet` from `sheets.jsx`.
 - Produces: `nutritionProfileSheet()`.
 
-- [ ] **Step 1: Create the file** with its shared header and the profile sheet
+- [x] **Step 1: Create the file** with its shared header and the profile sheet
 
 ```jsx
 // Nutrition sheets: targets set-up, food search, amount, custom food, barcode scan.
@@ -699,9 +699,9 @@ function NutritionProfile({ close }) {
 
 `bwSheet` is exported from `sheets.jsx`; it is already imported in `Home.jsx`. Before relying on it, check that it takes no required arguments by running `grep -n "export const bwSheet" frontend/src/sheets.jsx`. If it needs arguments, pass the same ones `Home.jsx` passes.
 
-- [ ] **Step 2: Build.** Run `cd frontend && npm run build`. Expected: success. The sheet isn't reachable yet; it gets wired up in Task 7.
+- [x] **Step 2: Build.** Run `cd frontend && npm run build`. Expected: success. The sheet isn't reachable yet; it gets wired up in Task 7.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/src/nutrition-sheets.jsx
@@ -721,7 +721,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: Tasks 1 to 5.
 - Produces: `foodSearchSheet(iso, meal)`, `foodAmountSheet(iso, meal, food, entry?)`, `customFoodSheet(onDone)`.
 
-- [ ] **Step 1: Append the amount sheet.** It handles both adding a new entry and editing an existing one.
+- [x] **Step 1: Append the amount sheet.** It handles both adding a new entry and editing an existing one.
 
 ```jsx
 /* ============================ amount (add / edit) ============================ */
@@ -754,7 +754,7 @@ function FoodAmount({ iso, meal: meal0, food, entry, close }) {
 }
 ```
 
-- [ ] **Step 2: Append the custom-food sheet.**
+- [x] **Step 2: Append the custom-food sheet.**
 
 ```jsx
 /* ============================ custom food ============================ */
@@ -785,7 +785,7 @@ function CustomFood({ onDone, close }) {
 }
 ```
 
-- [ ] **Step 3: Append the search sheet.** When the query is empty it shows recent foods and the user's own foods. Typing searches after a 400 ms pause. Stale responses are ignored.
+- [x] **Step 3: Append the search sheet.** When the query is empty it shows recent foods and the user's own foods. Typing searches after a 400 ms pause. Stale responses are ignored.
 
 ```jsx
 /* ============================ search ============================ */
@@ -840,9 +840,9 @@ function FoodSearch({ iso, meal, close }) {
 export const barcodeSheet = () => toast(t('Barcode scanning is coming soon'))
 ```
 
-- [ ] **Step 4: Build.** Run `cd frontend && npx vitest run && npm run build`. Expected: everything passes and the build succeeds.
+- [x] **Step 4: Build.** Run `cd frontend && npx vitest run && npm run build`. Expected: everything passes and the build succeeds.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add frontend/src/nutrition-sheets.jsx
@@ -865,14 +865,14 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `targets`, `dayTotals`, `entryTotals`, `MEALS` (Tasks 1 and 2); `nutritionProfileSheet`, `foodSearchSheet`, `foodAmountSheet`, `MEAL_LABEL` (Tasks 5 and 6); `todayISO`, `isoOf`, `fmtNum`, `fmtDate` from `lib/format.js`.
 - Produces: route `/nutrition`.
 
-- [ ] **Step 1: Add the icons.** In `Icon.jsx`, inside `const P = {`, add these after `heart:`. They follow the conventions at the top of the file: 24-unit grid, strokes only.
+- [x] **Step 1: Add the icons.** In `Icon.jsx`, inside `const P = {`, add these after `heart:`. They follow the conventions at the top of the file: 24-unit grid, strokes only.
 
 ```jsx
   apple: <><path d="M12 7.6c-1.6-1.2-4.6-1.4-6.1.8-1.6 2.4-.9 6.6 1.4 9.6 1.3 1.7 2.6 2.4 3.6 1.9.6-.3.9-.3 1.1-.3s.5 0 1.1.3c1 .5 2.3-.2 3.6-1.9 2.3-3 3-7.2 1.4-9.6-1.5-2.2-4.5-2-6.1-.8Z" /><path d="M12 7.6c0-1.8.8-3.2 2.4-4" /></>,
   barcode: <path d="M4.5 6.5v11M7.5 6.5v11M10 6.5v11M13.5 6.5v11M16 6.5v11M19.5 6.5v11" />,
 ```
 
-- [ ] **Step 2: Create** `frontend/src/views/Nutrition.jsx`
+- [x] **Step 2: Create** `frontend/src/views/Nutrition.jsx`
 
 ```jsx
 import { useState } from 'react'
@@ -949,9 +949,9 @@ export default function Nutrition() {
 }
 ```
 
-- [ ] **Step 3: Add the route.** In `App.jsx`, add `import Nutrition from './views/Nutrition.jsx'` after the `Library` import. Add `<Route path="/nutrition" element={<Nutrition />} />` after the `/library` route.
+- [x] **Step 3: Add the route.** In `App.jsx`, add `import Nutrition from './views/Nutrition.jsx'` after the `Library` import. Add `<Route path="/nutrition" element={<Nutrition />} />` after the `/library` route.
 
-- [ ] **Step 4: Add the tab.** In `TabBar.jsx`, add this between the `stats` tab and the `library` tab:
+- [x] **Step 4: Add the tab.** In `TabBar.jsx`, add this between the `stats` tab and the `library` tab:
 
 ```jsx
       <Tab k="nutrition" icon="apple" to="/nutrition" label={t('Food')} />
@@ -959,7 +959,7 @@ export default function Nutrition() {
 
 The tab bar goes from 5 slots to 6. Check it at 360 px width (Step 5) to make sure the labels don't wrap. If they do, **stop and ask the user** whether to shorten the "Exercises" label or move Food somewhere else. Don't rearrange the tab bar on your own (user rule: preserve approved layouts).
 
-- [ ] **Step 5: Run the build, then check it by hand.**
+- [x] **Step 5: Run the build, then check it by hand.**
 
 ```bash
 cd frontend && npx vitest run && npm run build
@@ -976,7 +976,7 @@ Open `http://localhost:8080`, sign in, and set DevTools device mode to 360×780.
 7. Reload the page. Everything persists. Sign in on a second browser. The entries sync (within the 1.5 s push debounce).
 8. Settings → export JSON. The file contains `nutrition.days`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add frontend/src/views/Nutrition.jsx frontend/src/App.jsx frontend/src/components/TabBar.jsx frontend/src/components/Icon.jsx
@@ -997,7 +997,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Produces: `barcodeSheet(iso, meal)`.
 - Platform note: `BarcodeDetector` exists in Chrome and Edge on Android, ChromeOS and macOS. It does **not** exist in Safari or Firefox. The search sheet only shows the button when `'BarcodeDetector' in window`, and this sheet always offers manual code entry. Adding a zxing fallback for iOS is a follow-up, and it would need a new dependency.
 
-- [ ] **Step 1: Replace the stub** with:
+- [x] **Step 1: Replace the stub** with:
 
 ```jsx
 /* ============================ barcode ============================ */
@@ -1051,9 +1051,9 @@ function Barcode({ iso, meal, close }) {
 
 The camera only works on a **secure origin**: HTTPS or `localhost`. Plain-HTTP LAN addresses fall back to typing the code.
 
-- [ ] **Step 2: Check it.** Run `npm run build`. Then, on Chrome for Android connected through HTTPS (or desktop Chrome on localhost with a webcam), scan any EAN. The amount sheet should open with the product. Typing `3017624010701` and pressing Look up should give Nutella at 539 kcal. Typing `00000000` should show the "isn't in Open Food Facts" message. Closing the sheet should turn the camera light off.
+- [x] **Step 2: Check it.** Run `npm run build`. Then, on Chrome for Android connected through HTTPS (or desktop Chrome on localhost with a webcam), scan any EAN. The amount sheet should open with the product. Typing `3017624010701` and pressing Look up should give Nutella at 539 kcal. Typing `00000000` should show the "isn't in Open Food Facts" message. Closing the sheet should turn the camera light off.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add frontend/src/nutrition-sheets.jsx
@@ -1070,7 +1070,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Modify: `NOTICE.md`, `README.md` (Features list), `CHANGELOG.md`
 - Create: `/home/rupaldas/Documents/Calude Vault/openfit.md` (user's standing rule). The folder name really is "Calude"; don't "fix" it.
 
-- [ ] **Step 1: Add this section to `NOTICE.md`** after "## Exercise data & media":
+- [x] **Step 1: Add this section to `NOTICE.md`** after "## Exercise data & media":
 
 ```markdown
 ## Nutrition formulas & food data
@@ -1082,17 +1082,17 @@ contributors, GPL-3.0 — `lib/core/utils/calc/`. Food data comes from
 available under the Open Database License (ODbL).
 ```
 
-- [ ] **Step 2: Add a feature bullet to `README.md`** after the "🏃 **Cardio**" bullet:
+- [x] **Step 2: Add a feature bullet to `README.md`** after the "🏃 **Cardio**" bullet:
 
 ```markdown
 - 🍎 **Food diary** — search Open Food Facts or scan a barcode, log meals in grams, and see calories and protein/carbs/fat against targets worked out from your logged body weight (formulas from OpenNutriTracker). Your own foods, recent foods, synced like everything else
 ```
 
-- [ ] **Step 3: Add a `CHANGELOG.md` entry** at the top, following the file's existing heading style (read its first 20 lines first). Summarise Tasks 1 to 8 in 3 to 5 bullets.
+- [x] **Step 3: Add a `CHANGELOG.md` entry** at the top, following the file's existing heading style (read its first 20 lines first). Summarise Tasks 1 to 8 in 3 to 5 bullets.
 
-- [ ] **Step 4: Write the Obsidian note** covering what was built, why, the decisions (proxy instead of CORS; 1.6 g/kg protein; snapshot entries; no new dependencies) and the follow-ups listed in §Design "Out of scope".
+- [x] **Step 4: Write the Obsidian note** covering what was built, why, the decisions (proxy instead of CORS; 1.6 g/kg protein; snapshot entries; no new dependencies) and the follow-ups listed in §Design "Out of scope".
 
-- [ ] **Step 5: Commit, and ask before pushing.**
+- [x] **Step 5: Commit, and ask before pushing.**
 
 ```bash
 git add NOTICE.md README.md CHANGELOG.md
@@ -1105,13 +1105,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ### Task 10: Final verification gate
 
-- [ ] `cd frontend && npx vitest run`: all pass. Paste the summary line.
-- [ ] `npm run build`: succeeds with no new warnings beyond the existing chunk-size notice.
-- [ ] `VITE_DEMO=1 npm run build`: succeeds. In the demo build the search sheet shows the "needs a self-hosted server" message and New food still works.
-- [ ] `docker compose up -d --build` followed by the 8-point manual check in Task 7, Step 5.
-- [ ] An anonymous `GET /api/food/search` returns 401 (Task 4, Step 3).
-- [ ] `git status` is clean, and `git ls-files data .env` prints nothing.
-- [ ] Report the results honestly. Anything skipped (for example, no Android device for the barcode check) is listed as skipped, not as passed.
+- [x] `cd frontend && npx vitest run`: all pass. Paste the summary line.
+- [x] `npm run build`: succeeds with no new warnings beyond the existing chunk-size notice.
+- [x] `VITE_DEMO=1 npm run build`: succeeds. In the demo build the search sheet shows the "needs a self-hosted server" message and New food still works.
+- [x] `docker compose up -d --build` followed by the 8-point manual check in Task 7, Step 5.
+- [x] An anonymous `GET /api/food/search` returns 401 (Task 4, Step 3).
+- [x] `git status` is clean, and `git ls-files data .env` prints nothing.
+- [x] Report the results honestly. Anything skipped (for example, no Android device for the barcode check) is listed as skipped, not as passed.
 
 ---
 
