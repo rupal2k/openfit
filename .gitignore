@@ -1,0 +1,10 @@
+# runtime data — users, passkeys, session secret, push keys. NEVER commit.
+data/
+.env
+node_modules/
+dist/
+.DS_Store
+
+# Local plan templates/samples
+*_plan.csv
+*_plan.json
