@@ -156,4 +156,50 @@ function FoodSearch({ iso, meal, close }) {
   </>
 }
 
-export const barcodeSheet = () => toast(t('Barcode scanning is coming soon'))
+/* ============================ barcode ============================ */
+export const barcodeSheet = (iso, meal) => ui().openSheet(close => <Barcode iso={iso} meal={meal} close={close} />)
+
+function Barcode({ iso, meal, close }) {
+  const video = useRef(null)
+  const [code, setCode] = useState('')
+  const [msg, setMsg] = useState('')
+  const busy = useRef(false)
+
+  const find = async c => {
+    if (busy.current) return
+    busy.current = true; setMsg(t('Looking up {0}…', c))
+    try {
+      const food = await lookupBarcode(c)
+      if (food) { close(); foodAmountSheet(iso, meal, food); return }
+      setMsg(t('{0} isn’t in Open Food Facts. Add it as your own food instead.', c))
+    } catch { setMsg(t('Lookup failed — check your connection.')) }
+    busy.current = false
+  }
+
+  useEffect(() => {
+    if (!('BarcodeDetector' in window)) return
+    let stream, raf, stop = false
+    const det = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] })
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(s => {
+      if (stop) { s.getTracks().forEach(tr => tr.stop()); return }
+      stream = s; video.current.srcObject = s; video.current.play()
+      const tick = async () => {
+        if (stop) return
+        try { const [hit] = await det.detect(video.current); if (hit) find(hit.rawValue) } catch { /* frame not ready */ }
+        raf = setTimeout(tick, 250)
+      }
+      tick()
+    }).catch(() => setMsg(t('Camera unavailable — type the code instead.')))
+    return () => { stop = true; clearTimeout(raf); stream && stream.getTracks().forEach(tr => tr.stop()) }
+  }, [])
+
+  return <>
+    <h3>{t('Scan barcode')}</h3>
+    {'BarcodeDetector' in window && <video ref={video} playsInline muted style={{ width: '100%', borderRadius: 12, background: '#000', aspectRatio: '4/3', objectFit: 'cover' }} />}
+    <div className="row" style={{ gap: 8, marginTop: 10 }}>
+      <TextField inputMode="numeric" placeholder={t('Or type the code')} value={code} onChange={e => setCode(e.target.value)} style={{ flex: 1 }} />
+      <Button size="sm" variant="tinted" onClick={() => find(code)}>{t('Look up')}</Button>
+    </div>
+    {msg && <div className="small muted" style={{ marginTop: 8 }}>{msg}</div>}
+  </>
+}
