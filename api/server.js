@@ -251,6 +251,14 @@ function livePresence(uid) {
 }
 setInterval(() => { for (const [k, v] of presence) if (Date.now() - v.updatedAt > PRESENCE_TTL) presence.delete(k); }, 30000).unref();
 
+/* ---------- food search proxy (Open Food Facts) ---------- */
+// search.openfoodfacts.org sends no CORS headers, so the browser can't query it itself.
+// Signed-in users only — never an open proxy. Cached briefly: search-as-you-type repeats a lot.
+const OFF_UA = 'openfit/1 (self-hosted; github.com/rupal2k/openfit)';
+const OFF_FIELDS = 'code,product_name,product_name_en,brands,nutriments,serving_quantity';
+const foodCache = new Map();               // query -> { at, hits }; insertion-ordered = FIFO
+const FOOD_TTL = 10 * 60000, FOOD_CACHE_MAX = 500;
+
 /* ---------- routes ---------- */
 const routes = {
   'GET /api/health': async (req, res) => json(res, 200, { ok: true, users: db.users.length }),
@@ -389,6 +397,25 @@ const routes = {
     delete body.state.active;              // in-progress workouts stay device-local
     atomicWrite(stateFile(user.id), JSON.stringify(body.state));
     json(res, 200, { ok: true, ts: body.state._ts || null });
+  },
+
+  'GET /api/food/search': async (req, res) => {
+    if (!readSession(req)) return json(res, 401, { error: 'not signed in' });
+    const q = (new URL(req.url, 'http://x').searchParams.get('q') || '').trim().slice(0, 100);
+    if (q.length < 2) return json(res, 400, { error: 'query too short' });
+    const key = q.toLowerCase();
+    const c = foodCache.get(key);
+    if (c && Date.now() - c.at < FOOD_TTL) return json(res, 200, { hits: c.hits });
+    let r;
+    try {
+      r = await fetch('https://search.openfoodfacts.org/search?page_size=25&fields=' + OFF_FIELDS + '&q=' + encodeURIComponent(q),
+        { headers: { 'User-Agent': OFF_UA }, signal: AbortSignal.timeout(8000) });
+    } catch { return json(res, 502, { error: 'food database unreachable' }); }
+    if (!r.ok) return json(res, 502, { error: 'food database error ' + r.status });
+    const hits = (await r.json()).hits || [];
+    foodCache.set(key, { at: Date.now(), hits });
+    if (foodCache.size > FOOD_CACHE_MAX) foodCache.delete(foodCache.keys().next().value);
+    json(res, 200, { hits });
   },
 
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),
