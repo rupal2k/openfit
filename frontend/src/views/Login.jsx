@@ -51,14 +51,14 @@ export default function Login() {
   const head = <>
     <div style={{
       width: 72, height: 72, margin: '0 auto 12px', borderRadius: 22,
-      background: 'linear-gradient(135deg, var(--acc), #F4705A)',
+      background: 'linear-gradient(135deg, var(--acc), var(--acc-2))',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 36, color: '#fff',
+      fontSize: 36, color: 'var(--on-acc)',
       boxShadow: '0 8px 24px -4px color-mix(in srgb, var(--acc) 50%, transparent)'
     }}><Icon name="dumbbell" /></div>
-    <h1 style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-.025em', margin: '4px 0 4px' }}>openGym</h1>
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, margin: '0 auto 12px', padding: '3px 12px', borderRadius: 999, background: 'rgba(241, 81, 98, 0.15)', color: '#F15162', fontSize: 11, fontWeight: 600, letterSpacing: '.05em' }}>
-      VANTAGE FIT EDITION
+    <h1 style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-.025em', margin: '4px 0 4px' }}>openfit</h1>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, margin: '0 auto 12px', padding: '3px 12px', borderRadius: 999, background: 'var(--acc-soft)', color: 'var(--acc)', fontSize: 11, fontWeight: 600, letterSpacing: '.05em' }}>
+      FITNESS & NUTRITION
     </div>
   </>
   const wrap = { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }

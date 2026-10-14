@@ -18,7 +18,7 @@
 
 /* ---------------------------------------------------------------- tokens -- */
 :root {
-  /* surfaces — Vantage Fit dark mode (Dark Charcoal & Steel Gray) */
+  /* surfaces — openfit dark mode (Dark Charcoal & Steel Gray) */
   --bg:        #1D2228;   /* Dark Charcoal */
   --bg-el:     #242B33;   /* elevated backdrop (sheets, bars) */
   --surface:   #303740;   /* Steel Gray card / grouped-list fill */
@@ -28,7 +28,7 @@
   /* text */
   --label:     #ffffff;
   --label-2:   #A0AEC0;   /* muted secondary text */
-  --label-3:   #6A6A80;   /* navy-derived caption / subtle grey */
+  --label-3:   #8E95A8;   /* navy-derived caption / subtle grey (meets WCAG 4.5:1) */
   --label-4:   rgba(255,255,255,.14);
 
   /* lines & hairlines */
@@ -36,26 +36,36 @@
   --sep-op:    rgba(255,255,255,.06);   /* for edges sitting over blur */
   --hair:      .5px;
 
-  /* Vantage Fit brand palette */
-  --fit-red:   #F15162;   /* Fit Red (Primary Brand / CTA) */
-  --fit-coral: #F4705A;   /* Fit Coral (Gradient complement) */
-  --fit-mint:  #F15162;   /* Replaced with Fit Red */
-  --fit-orange:#FF9D57;   /* Sunrise Orange (Energy & Urgency) */
-  --fit-navy:  #29294C;   /* Midnight Navy (Base Light Text) */
+  /* openfit brand palette (Volt Lime & Cyber Cyan matching logo) */
+  --openfit-lime: #a3e635; /* Volt Lime (Primary Brand / CTA) */
+  --openfit-cyan: #22d3ee; /* Cyber Cyan (Laser / Accent) */
+  --fit-red:      #FF453A; /* Red (Danger / Error / Discard) */
+  --fit-coral:    #F4705A; /* Coral */
+  --fit-orange:   #FF9D57; /* Sunrise Orange */
+  --fit-navy:     #29294C; /* Base Light Text */
 
-  /* system palette mapped with Vantage Fit tones — all greens replaced with Fit Red */
-  --blue:#0a84ff; --green:#F15162; --red:#F15162; --orange:#FF9D57;
-  --yellow:#ffd60a; --teal:#F15162; --indigo:#5e5ce6; --pink:#ff375f;
-  --purple:#bf5af2; --mint:#F15162; --brown:#ac8e68; --grey:#8e8e93;
+  /* semantic system palette */
+  --blue:   #0a84ff;
+  --green:  #30D158;
+  --red:    #FF453A;
+  --orange: #FF9D57;
+  --yellow: #ffd60a;
+  --teal:   #22d3ee;
+  --indigo: #5e5ce6;
+  --pink:   #ff375f;
+  --purple: #bf5af2;
+  --mint:   #63e6e2;
+  --brown:  #ac8e68;
+  --grey:   #8e8e93;
 
-  /* accent — default: Vantage Fit Red */
-  --acc:      var(--fit-red);
-  --acc-2:    #d93b4e;
-  --on-acc:   #ffffff;
-  --acc-soft: rgba(241, 81, 98, 0.16);
-  --acc-line: rgba(241, 81, 98, 0.40);
+  /* accent — default: openfit Volt Lime with Cyber Cyan gradient */
+  --acc:      var(--openfit-lime);
+  --acc-2:    var(--openfit-cyan);
+  --on-acc:   #0c0e12;
+  --acc-soft: rgba(163, 230, 53, 0.16);
+  --acc-line: rgba(163, 230, 53, 0.40);
 
-  /* geometry — modern rounded Vantage Fit shapes */
+  /* geometry — modern rounded openfit shapes */
   --r-sm:8px; --r:14px; --r-lg:18px; --r-xl:24px; --r-card:18px; --r-pill:999px;
   --pad:16px;
   --icon-stroke:1.75;
@@ -77,37 +87,53 @@
 
   --label:     #29294C;   /* Midnight Navy */
   --label-2:   #6A6A80;   /* navy-derived secondary */
-  --label-3:   #9595AA;
+  --label-3:   #6A6A80;   /* WCAG 4.5:1 compliant caption */
   --label-4:   rgba(41,41,76,.14);
 
   --sep:       rgba(41,41,76,.10);
   --sep-op:    rgba(41,41,76,.06);
 
-  --blue:#007aff; --green:#F15162; --red:#F15162; --orange:#FF9D57;
-  --yellow:#ffcc00; --teal:#F15162; --indigo:#5856d6; --pink:#ff2d55;
-  --purple:#af52de; --mint:#F15162; --brown:#a2845e; --grey:#8e8e93;
-  --acc:       var(--fit-red);
-  --acc-2:     #d93b4e;
-  --on-acc:    #ffffff;
+  --blue:   #007aff;
+  --green:  #1E9E4A;
+  --red:    #D70015;
+  --orange: #ea580c;
+  --yellow: #b45309;
+  --teal:   #0891b2;
+  --indigo: #5856d6;
+  --pink:   #ff2d55;
+  --purple: #af52de;
+  --mint:   #0d9488;
+  --brown:  #a2845e;
+  --grey:   #8e8e93;
+
+  --acc:       #84cc16;
+  --acc-2:     #0891b2;
+  --on-acc:    #0c0e12;
+  --acc-soft:  rgba(132, 204, 22, 0.16);
+  --acc-line:  rgba(132, 204, 22, 0.40);
 }
 
 /* accents */
-:root[data-accent="vfit"]   { --acc:#F15162; --acc-2:#d93b4e; --on-acc:#fff; }
-:root[data-accent="mint"]   { --acc:#F15162; --acc-2:#d93b4e; --on-acc:#fff; }
-:root[data-accent="sunrise"]{ --acc:#FF9D57; --acc-2:#e6843d; --on-acc:#1D2228; }
-:root[data-accent="lime"]   { --acc:#F15162; --acc-2:#d93b4e; --on-acc:#fff; }
-:root[data-accent="sky"]    { --acc:#0a84ff; --acc-2:#0060df; --on-acc:#fff; }
-:root[data-accent="orange"] { --acc:#FF9D57; --acc-2:#c76b00; --on-acc:#000; }
-:root[data-accent="violet"] { --acc:#bf5af2; --acc-2:#8944ab; --on-acc:#fff; }
-:root[data-accent="pink"]   { --acc:#ff375f; --acc-2:#d70036; --on-acc:#fff; }
-:root[data-accent="red"]    { --acc:#F15162; --acc-2:#d70015; --on-acc:#fff; }
-:root[data-accent="teal"]   { --acc:#F15162; --acc-2:#d93b4e; --on-acc:#fff; }
-:root[data-accent="gold"]   { --acc:#ffd60a; --acc-2:#b25000; --on-acc:#000; }
+:root[data-accent="openfit"] { --acc:#a3e635; --acc-2:#22d3ee; --on-acc:#0c0e12; --acc-soft:rgba(163,230,53,.16); --acc-line:rgba(163,230,53,.4); }
+:root[data-accent="cyan"]    { --acc:#22d3ee; --acc-2:#06b6d4; --on-acc:#0c0e12; --acc-soft:rgba(34,211,238,.16); --acc-line:rgba(34,211,238,.4); }
+:root[data-accent="mint"]    { --acc:#63e6e2; --acc-2:#20c5ba; --on-acc:#0c0e12; --acc-soft:rgba(99,230,226,.16); --acc-line:rgba(99,230,226,.4); }
+:root[data-accent="vfit"]    { --acc:#F15162; --acc-2:#d93b4e; --on-acc:#fff; --acc-soft:rgba(241,81,98,.16); --acc-line:rgba(241,81,98,.4); }
+:root[data-accent="sunrise"] { --acc:#FF9D57; --acc-2:#e6843d; --on-acc:#1D2228; }
+:root[data-accent="lime"]    { --acc:#a3e635; --acc-2:#84cc16; --on-acc:#0c0e12; --acc-soft:rgba(163,230,53,.16); --acc-line:rgba(163,230,53,.4); }
+:root[data-accent="sky"]     { --acc:#0a84ff; --acc-2:#0060df; --on-acc:#fff; }
+:root[data-accent="orange"]  { --acc:#FF9D57; --acc-2:#c76b00; --on-acc:#000; }
+:root[data-accent="violet"]  { --acc:#bf5af2; --acc-2:#8944ab; --on-acc:#fff; }
+:root[data-accent="pink"]    { --acc:#ff375f; --acc-2:#d70036; --on-acc:#fff; }
+:root[data-accent="red"]     { --acc:#FF453A; --acc-2:#d70015; --on-acc:#fff; --acc-soft:rgba(255,69,58,.16); --acc-line:rgba(255,69,58,.4); }
+:root[data-accent="teal"]    { --acc:#22d3ee; --acc-2:#06b6d4; --on-acc:#0c0e12; }
+:root[data-accent="gold"]    { --acc:#ffd60a; --acc-2:#b25000; --on-acc:#000; }
 
-:root[data-theme="light"][data-accent="vfit"],
-:root[data-theme="light"][data-accent="mint"],
-:root[data-theme="light"][data-accent="lime"],
-:root[data-theme="light"][data-accent="teal"]    { --on-acc:#fff; }
+:root[data-theme="light"][data-accent="openfit"] { --acc:#84cc16; --acc-2:#0891b2; --on-acc:#0c0e12; }
+:root[data-theme="light"][data-accent="lime"]    { --acc:#84cc16; --acc-2:#65a30d; --on-acc:#0c0e12; }
+:root[data-theme="light"][data-accent="cyan"],
+:root[data-theme="light"][data-accent="teal"]    { --acc:#0891b2; --acc-2:#0e7490; --on-acc:#fff; }
+:root[data-theme="light"][data-accent="mint"]    { --acc:#0d9488; --acc-2:#0f766e; --on-acc:#fff; }
+:root[data-theme="light"][data-accent="vfit"]    { --on-acc:#fff; }
 :root[data-theme="light"][data-accent="sunrise"] { --on-acc:#1D2228; }
 :root[data-theme="light"][data-accent="sky"],
 :root[data-theme="light"][data-accent="violet"],
@@ -283,7 +309,7 @@ h4.sec{
 .btn .icn{font-size:19px}
 .btn:active{transform:scale(.975)}
 .btn.primary{
-  background:linear-gradient(135deg, var(--acc), #F4705A);
+  background:linear-gradient(135deg, var(--acc), var(--acc-2));
   color:var(--on-acc);
   box-shadow:0 4px 16px -2px color-mix(in srgb, var(--acc) 45%, transparent);
 }
@@ -309,7 +335,7 @@ h4.sec{
 :root[data-theme="light"] #tabbar{background:rgba(247,251,250,.85)}
 #tabbar button{
   flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-  color:var(--label-3);font-size:10px;font-weight:500;letter-spacing:.005em;padding-top:3px;
+  color:var(--label-3);font-size:11px;font-weight:500;letter-spacing:.005em;padding-top:3px;
   transition:color var(--fast);
 }
 /* The inactive tint is semi-transparent, so wherever two strokes cross inside an
@@ -323,7 +349,7 @@ h4.sec{
 #tabbar button.start{margin-top:-24px}
 #tabbar button.start .cir{
   width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg, var(--acc), #F4705A);
+  background:linear-gradient(135deg, var(--acc), var(--acc-2));
   color:var(--on-acc);
   display:flex;align-items:center;justify-content:center;position:relative;
   box-shadow:0 6px 20px -2px color-mix(in srgb,var(--acc) 50%,transparent);
@@ -359,7 +385,7 @@ h4.sec{
 .wday .dot.done{background:var(--acc)}
 .wday:active{background:var(--surface-2)}
 .wday.today .num{
-  background:linear-gradient(135deg, var(--acc), #F4705A);
+  background:linear-gradient(135deg, var(--acc), var(--acc-2));
   color:var(--on-acc);font-weight:600;
   width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;margin:2px auto;
@@ -408,7 +434,7 @@ h4.sec{
 }
 .chip:active{background:var(--surface-2)}
 .chip.on{
-  background:linear-gradient(135deg, var(--acc), #F4705A);
+  background:linear-gradient(135deg, var(--acc), var(--acc-2));
   color:var(--on-acc);font-weight:600;border-color:transparent;
   box-shadow:0 2px 10px -2px color-mix(in srgb, var(--acc) 45%, transparent);
 }
@@ -462,7 +488,7 @@ h4.sec{
   box-shadow:0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16);
   transition:transform var(--med) var(--ease),width var(--fast) var(--ease);
 }
-.sw.on{background:linear-gradient(135deg, var(--acc), #F4705A)}
+.sw.on{background:linear-gradient(135deg, var(--acc), var(--acc-2))}
 .sw.on .knob{transform:translateX(20px)}
 .sw:active .knob{width:31px}
 .sw.on:active .knob{transform:translateX(16px)}
@@ -540,7 +566,7 @@ h4.sec{
   position:absolute;left:0;right:0;height:6px;border-radius:99px;
   background:var(--surface-3);overflow:hidden;
 }
-.sld-fill{display:block;height:100%;background:linear-gradient(90deg, var(--acc), #F4705A);border-radius:99px}
+.sld-fill{display:block;height:100%;background:linear-gradient(90deg, var(--acc), var(--acc-2));border-radius:99px}
 .sld-knob{
   position:absolute;width:26px;height:26px;border-radius:50%;background:#fff;
   transform:translateX(-50%);
@@ -557,14 +583,14 @@ h4.sec{
   transition:background var(--fast),box-shadow var(--fast),color var(--fast),transform var(--fast);
 }
 .chk .icn{font-size:16px;--icon-stroke:2.6}
-.chk.on{background:var(--acc);box-shadow:none;color:var(--on-acc)}
+.chk.on{background:var(--green);box-shadow:none;color:#0c0e12}
 .chk:active,.ck:active{transform:scale(.9)}
 .ck svg{
   width:16px;height:16px;stroke:transparent;fill:none;stroke-width:2.6;
   stroke-linecap:round;stroke-linejoin:round;transition:stroke var(--fast);
 }
-.ck.on{background:var(--acc);box-shadow:none}
-.ck.on svg{stroke:var(--on-acc)}
+.ck.on{background:var(--green);box-shadow:none}
+.ck.on svg{stroke:#0c0e12}
 
 /* ------------------------------------------------------------- workout --- */
 .wprog{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}

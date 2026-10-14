@@ -31,7 +31,7 @@ bindUI(useUI)   // lets the shared controls open sheets without importing the st
 function applyPrefs(theme, accent) {
   const de = document.documentElement
   de.dataset.theme = theme === 'light' ? 'light' : 'dark'
-  de.dataset.accent = ACCENTS[accent] ? accent : 'vfit'
+  de.dataset.accent = ACCENTS[accent] ? accent : 'openfit'
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) meta.content = de.dataset.theme === 'light' ? '#F7FBFA' : '#1D2228'
 }
