@@ -1,7 +1,7 @@
 {
-  "name": "openGym",
-  "short_name": "openGym",
-  "description": "Personal gym & body weight tracker",
+  "name": "openfit",
+  "short_name": "openfit",
+  "description": "Personal gym, body weight & nutrition tracker",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
