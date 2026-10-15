@@ -40,7 +40,7 @@ export default function TabBar({ onStart }) {
       <Icon name={S.active ? 'play' : 'dumbbell'} />
     </button>}
     <nav id="tabbar">
-      <img className="dock-logo" src={import.meta.env.BASE_URL + 'favicon.svg'} alt="" />
+      <img className="dock-logo" src={import.meta.env.BASE_URL + 'icon-512.png'} alt="" />
       <Tab k="home" icon="house" to="/home" label={t('Home')} />
       <Tab k="plan" icon="calendar" to="/plan" label={t('My Plan')} />
       <Tab k="stats" icon="chart" to="/stats" label={t('My Stats')} />

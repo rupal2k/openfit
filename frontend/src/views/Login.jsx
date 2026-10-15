@@ -48,7 +48,7 @@ export default function Login() {
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(e.message || t('Sign-in failed')) }
   }
   const head = <>
-    <img src={import.meta.env.BASE_URL + 'favicon.svg'} alt="OPENFIT" width="72" height="72" style={{
+    <img src={import.meta.env.BASE_URL + 'icon-512.png'} alt="OPENFIT" width="72" height="72" style={{
       display: 'block', margin: '0 auto 12px', borderRadius: 22,
       boxShadow: '0 8px 24px -4px color-mix(in srgb, var(--acc) 50%, transparent)'
     }} />

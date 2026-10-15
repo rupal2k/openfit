@@ -47,7 +47,7 @@ export default function Home() {
 
   return <div className="narrow">
     <div className="hdr">
-      <div><h1 style={{ display: 'flex', alignItems: 'center', gap: 10, ...(user ? null : { fontWeight: 800, letterSpacing: '.02em' }) }}><img src={import.meta.env.BASE_URL + 'favicon.svg'} alt="" width="34" height="34" style={{ borderRadius: 9, flex: 'none' }} />{user ? t('Hi {0}', user.name) : 'OPENFIT'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+      <div><h1 style={{ display: 'flex', alignItems: 'center', gap: 10, ...(user ? null : { fontWeight: 800, letterSpacing: '.02em' }) }}><img src={import.meta.env.BASE_URL + 'icon-512.png'} alt="" width="34" height="34" style={{ borderRadius: 9, flex: 'none' }} />{user ? t('Hi {0}', user.name) : 'OPENFIT'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
     </div>
 
