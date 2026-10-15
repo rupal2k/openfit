@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.1 — 2026-10-16
+
+A visual refresh, plus fixes for two screens that overflowed on phones.
+
+- 🎨 **New look:** green-black theme with a soft lime glow; every text pair meets 4.5:1 contrast.
+- 🏠 **Home:** greeting header with avatar and streak, today's workout as a gradient hero card, and week rings (solid = trained, dashed = planned).
+- 🍎 **My Meals:** Calories, Protein, Carbs and Fat tiles now fit in one row instead of running off the screen.
+- 🏋️ **Exercises:** body-part and equipment filters are now two dropdown pills instead of chip rows that ran off the screen.
+
 ## v1.3.0 — 2026-10-15
 
 Nutrition tracking arrives in openfit: a food diary with calorie and macronutrient targets directly in the app alongside your training log.
