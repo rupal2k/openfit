@@ -18,17 +18,18 @@
 
 /* ---------------------------------------------------------------- tokens -- */
 :root {
-  /* surfaces — openfit dark mode (Dark Charcoal & Steel Gray) */
-  --bg:        #1D2228;   /* Dark Charcoal */
-  --bg-el:     #242B33;   /* elevated backdrop (sheets, bars) */
-  --surface:   #303740;   /* Steel Gray card / grouped-list fill */
-  --surface-2: #3A434F;   /* pressed + nested fill */
-  --surface-3: #454F5E;   /* controls (segmented track, switch off) */
+  /* surfaces — openfit dark mode: green-tinted near-black, so the lime accent glows.
+     All text pairs below are ≥4.5:1 (label-3 on surface-3 is the floor at 4.7). */
+  --bg:        #0D1210;
+  --bg-el:     #131A16;   /* elevated backdrop (sheets, bars) */
+  --surface:   #18201C;   /* card / grouped-list fill */
+  --surface-2: #212B25;   /* pressed + nested fill */
+  --surface-3: #2B372F;   /* controls (segmented track, switch off) */
 
   /* text */
   --label:     #ffffff;
-  --label-2:   #A0AEC0;   /* muted secondary text */
-  --label-3:   #8E95A8;   /* navy-derived caption / subtle grey (meets WCAG 4.5:1) */
+  --label-2:   #A8B5AD;   /* muted secondary text */
+  --label-3:   #95A39A;   /* caption grey (≥4.5:1 on every surface) */
   --label-4:   rgba(255,255,255,.14);
 
   /* lines & hairlines */
@@ -66,7 +67,7 @@
   --acc-line: rgba(163, 230, 53, 0.40);
 
   /* geometry — modern rounded openfit shapes */
-  --r-sm:8px; --r:14px; --r-lg:18px; --r-xl:24px; --r-card:18px; --r-pill:999px;
+  --r-sm:8px; --r:14px; --r-lg:18px; --r-xl:24px; --r-card:22px; --r-pill:999px;
   --pad:16px;
   --icon-stroke:1.75;
 
@@ -213,8 +214,8 @@ body.resting #app{padding-bottom:calc(250px + var(--sab))}
 
 .iconbtn{
   position:relative;
-  width:36px;height:36px;border-radius:50%;flex:none;
-  background:var(--surface);color:var(--label);
+  width:40px;height:40px;border-radius:50%;flex:none;
+  background:var(--surface);color:var(--label);border:1px solid var(--sep-op);
   display:flex;align-items:center;justify-content:center;font-size:18px;
   transition:background var(--fast),transform var(--fast);
 }
@@ -235,6 +236,11 @@ h4.sec,.sect-t{
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .row{display:flex;align-items:center;gap:12px}
 .row.between{justify-content:space-between}
+
+/* dark mode: a soft lime glow behind the top of every screen (scrolls away with the page) */
+:root:not([data-theme="light"]) body{
+  background:radial-gradient(120% 420px at 50% -120px, color-mix(in srgb,var(--acc) 16%,transparent), transparent 70%) no-repeat, var(--bg);
+}
 
 /* ----------------------------------------------------------------- card -- */
 .card{
@@ -386,17 +392,19 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 }
 .wday .lbl{font-size:11px;color:var(--label-2);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 .wday .num{font-size:17px;font-weight:400;margin:4px 0;letter-spacing:-.012em}
-.wday .dot{width:5px;height:5px;border-radius:50%;background:transparent;margin:0 auto}
-.wday .dot.plan{background:var(--label-3)}
-.wday .dot.ovr{background:var(--orange)}
-.wday .dot.done{background:var(--acc)}
+/* each day is a ring: solid lime = trained, dashed = planned (orange = rescheduled) */
+.wday .num{
+  width:34px;height:34px;border-radius:50%;margin:4px auto 0;
+  display:flex;align-items:center;justify-content:center;border:2px solid transparent;
+}
+.wday.plan .num{border:2px dashed var(--label-3)}
+.wday.ovr .num{border:2px dashed var(--orange)}
+.wday.done .num{border:2px solid var(--acc);box-shadow:0 0 10px -3px var(--acc)}
 .wday:active{background:var(--surface-2)}
 .wday.today .num{
   background:linear-gradient(135deg, var(--acc), var(--acc-2));
-  color:var(--on-acc);font-weight:600;
-  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;margin:2px auto;
-  box-shadow:0 2px 8px -1px color-mix(in srgb, var(--acc) 45%, transparent);
+  color:var(--on-acc);font-weight:600;border-color:transparent;
+  box-shadow:0 2px 10px -1px color-mix(in srgb, var(--acc) 50%, transparent);
 }
 
 /* ----------------------------------------------------------------- list -- */
@@ -962,18 +970,62 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 .ss-ex{position:relative}
 .ss-amp{text-align:center;font-size:15px;font-weight:600;color:var(--acc);margin:14px 0 8px}
 
-/* --- home: today's session row --- */
-.today-row{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  margin-top:12px;padding:12px 14px;border-radius:var(--r);background:var(--surface-2);
-  transition:background var(--fast);width:100%;text-align:left;border:none;color:inherit;font:inherit;cursor:pointer;
+/* --- home: greeting header --- */
+.home-hdr{align-items:center}
+.home-hdr h1{font-size:24px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-hdr .sub{font-size:14px;margin-top:2px}
+.avatar{
+  width:46px;height:46px;border-radius:50%;flex:none;object-fit:cover;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;
+  background:linear-gradient(135deg,var(--acc),var(--acc-2));color:var(--on-acc);
+  box-shadow:0 0 0 2px var(--bg),0 0 0 4px color-mix(in srgb,var(--acc) 55%,transparent);
 }
-.today-row:active{background:var(--surface-3)}
-.today-row .lbl2{font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--label-2)}
-.today-row .ttl{
-  font-weight:500;font-size:17px;line-height:1.25;text-transform:capitalize;
-  letter-spacing:-.012em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;
+.streak-btn{width:auto;min-width:40px;padding:0 10px;border-radius:var(--r-pill);gap:4px;color:var(--orange)}
+.streak-btn b{font-size:14px;font-weight:700;color:var(--label)}
+
+/* --- home: today's session hero (gradient card, one clear call to action) --- */
+.hero{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;cursor:pointer;
+  margin-bottom:12px;padding:16px;border-radius:var(--r-card);border:none;font:inherit;
+  background:linear-gradient(120deg,var(--acc),var(--acc-2));color:var(--on-acc);
+  box-shadow:0 10px 28px -10px color-mix(in srgb,var(--acc) 60%,transparent);
+  transition:transform var(--fast) var(--ease);
 }
+.hero:active{transform:scale(.985)}
+.hero-i{
+  width:52px;height:52px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  background:rgba(12,14,18,.88);color:var(--acc);font-size:24px;
+}
+.hero-m{display:flex;flex-direction:column;min-width:0;flex:1}
+.hero-l{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.7}
+.hero-t{font-size:19px;font-weight:700;letter-spacing:-.015em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:capitalize}
+.hero-s{font-size:13px;font-weight:500;opacity:.75;margin-top:1px}
+.hero-cta{
+  flex:none;padding:9px 16px;border-radius:var(--r-pill);font-weight:700;font-size:14px;
+  background:#0c0e12;color:#fff;display:flex;align-items:center;justify-content:center;min-height:38px;
+}
+.hero.rest{background:var(--surface);color:var(--label);border:1px solid var(--sep-op);box-shadow:none}
+.hero.rest .hero-i{background:var(--surface-3);color:var(--label-2)}
+.hero.rest .hero-cta{background:var(--acc);color:var(--on-acc)}
+.hero.rec{background:linear-gradient(120deg,var(--orange),#ffb36b)}
+.hero.rec .hero-i{color:var(--orange)}
+
+/* --- my meals: macro tiles (scroll sideways on narrow phones) --- */
+.mtiles{
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(118px,1fr);gap:10px;
+  overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;
+  margin:0 calc(-1 * var(--pad));padding:2px var(--pad) 4px;scroll-padding-inline:var(--pad);
+}
+.mtiles::-webkit-scrollbar{display:none}
+.mtile{
+  scroll-snap-align:start;background:var(--surface-2);border:1px solid var(--sep-op);
+  border-radius:var(--r-lg);padding:12px;min-width:0;
+}
+.mtile-i{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:8px}
+.mtile-v{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:2px;white-space:nowrap}
+.mtile-u{font-size:13px;font-weight:500;color:var(--label-2);margin-left:3px}
+.mtile-bar{height:5px;border-radius:3px;background:var(--surface-3);margin-top:8px;overflow:hidden}
+.mtile-bar>div{height:100%;border-radius:3px}
 
 /* --------------------------------------------------- desktop (≥1000px) --- */
 .cols{display:block}

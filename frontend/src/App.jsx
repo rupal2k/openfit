@@ -33,7 +33,7 @@ function applyPrefs(theme, accent) {
   de.dataset.theme = theme === 'light' ? 'light' : 'dark'
   de.dataset.accent = ACCENTS[accent] ? accent : 'openfit'
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.content = de.dataset.theme === 'light' ? '#F7FBFA' : '#1D2228'
+  if (meta) meta.content = de.dataset.theme === 'light' ? '#F7FBFA' : '#0D1210'
 }
 
 function Shell() {

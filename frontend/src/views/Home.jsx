@@ -31,9 +31,10 @@ export default function Home() {
     const d = new Date(monday); d.setDate(monday.getDate() + i)
     const iso = isoOf(d)
     const eff = effectiveRoutineId(S, iso), ovr = S.dayPlan[iso] !== undefined, done = doneDays.has(iso)
-    const dot = done ? ' done' : ovr && eff ? ' ovr' : eff ? ' plan' : ''
-    strip.push(<button type="button" key={i} className={'wday' + (iso === todayISO() ? ' today' : '')} onClick={() => dayOverrideSheet(iso)} aria-label={`${t(DAYS[d.getDay()])} ${d.getDate()}`}>
-      <div className="lbl">{t(DAYS[d.getDay()])}</div><div className="num">{d.getDate()}</div><div className={'dot' + dot} /></button>)
+    const ring = done ? ' done' : ovr && eff ? ' ovr' : eff ? ' plan' : ''
+    const state = done ? t('trained') : eff ? t('planned') : ''
+    strip.push(<button type="button" key={i} className={'wday' + ring + (iso === todayISO() ? ' today' : '')} onClick={() => dayOverrideSheet(iso)} aria-label={`${t(DAYS[d.getDay()])} ${d.getDate()}${state ? ', ' + state : ''}`}>
+      <div className="lbl">{t(DAYS[d.getDay()])}</div><div className="num">{d.getDate()}</div></button>)
   }
   const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6)
   const wkLabel = weekOffset === 0 ? t('This week') : `${monday.getDate()} ${monday.toLocaleDateString(dateLocale(), { month: 'short' })} – ${sunday.getDate()} ${sunday.toLocaleDateString(dateLocale(), { month: 'short' })}`
@@ -46,10 +47,34 @@ export default function Home() {
   const onToday = () => { if (S.active) nav('/workout'); else if (routine) startFlow(routine.id); else dayOverrideSheet(todayISO()) }
 
   return <div className="narrow">
-    <div className="hdr">
-      <div><h1 style={{ display: 'flex', alignItems: 'center', gap: 10, ...(user ? null : { fontWeight: 800, letterSpacing: '.02em' }) }}><img src={import.meta.env.BASE_URL + 'icon-512.png'} alt="" width="34" height="34" style={{ borderRadius: 9, flex: 'none' }} />{user ? t('Hi {0}', user.name) : 'OPENFIT'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
-      <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
+    <div className="hdr home-hdr">
+      <div className="row" style={{ gap: 12, minWidth: 0 }}>
+        {user
+          ? <span className="avatar" aria-hidden="true">{(user.name || '?').trim().charAt(0).toUpperCase()}</span>
+          : <img className="avatar" src={import.meta.env.BASE_URL + 'icon-512.png'} alt="" />}
+        <div style={{ minWidth: 0 }}>
+          <h1>{user ? t('Hi {0}', user.name) : t('Hi there')} <span aria-hidden="true">👋</span></h1>
+          <div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        </div>
+      </div>
+      <div className="row" style={{ gap: 8 }}>
+        <button className="iconbtn streak-btn" onClick={() => calendarSheet()} aria-label={t('{0} week streak', streakWeeks(S))}>
+          <Icon name="flame" />{streakWeeks(S) > 0 && <b>{streakWeeks(S)}</b>}
+        </button>
+        <button className="iconbtn" onClick={() => nav('/settings')} aria-label={t('Settings')}><Icon name="gear" /></button>
+      </div>
     </div>
+
+    <button type="button" className={'hero' + (S.active ? ' rec' : !routine ? ' rest' : '')} onClick={onToday}
+      aria-label={S.active ? t('{0} — in progress', S.active.name) : routine ? routine.name : t('Rest day')}>
+      <span className="hero-i"><Icon name={S.active ? 'timer' : routine ? glyphOf(routine.emoji) : 'moon'} /></span>
+      <span className="hero-m">
+        <span className="hero-l">{S.active ? t('In progress') : t('Today')}{todayOvr && routine ? ' · ' + t('rescheduled') : ''}</span>
+        <span className="hero-t">{S.active ? S.active.name : routine ? routine.name : t('Rest day')}</span>
+        <span className="hero-s">{S.active ? t('Pick up where you left off') : routine ? t(routine.ex.length === 1 ? '{0} exercise' : '{0} exercises', routine.ex.length) : t('Recover — or add a session')}</span>
+      </span>
+      <span className="hero-cta">{S.active ? t('Resume') : routine ? t('Start') : <Icon name="plus" />}</span>
+    </button>
 
     <div className="card">
       <div className="row between" style={{ marginBottom: 8 }}>
@@ -58,20 +83,6 @@ export default function Home() {
         <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w + 1)} aria-label="Next week"><Icon name="chevronRight" /></button>
       </div>
       <div className="week">{strip}</div>
-      <button type="button" className="today-row" onClick={onToday} aria-label={S.active ? t('{0} — in progress', S.active.name) : routine ? routine.name : t('Rest day')}>
-        <div className="row" style={{ gap: 9, minWidth: 0 }}>
-          <span className="lrow-i" style={{ background: S.active ? 'var(--orange)' : routine ? 'var(--acc)' : 'var(--surface-3)' }}>
-            <Icon name={S.active ? 'timer' : routine ? glyphOf(routine.emoji) : 'moon'} />
-          </span>
-          <div style={{ minWidth: 0 }}>
-            <div className="lbl2">{t('Today')}</div>
-            <div className="ttl">{S.active ? t('{0} — in progress', S.active.name) : routine ? routine.name : t('Rest day')}{todayOvr && routine ? ' · ' + t('rescheduled') : ''}</div>
-          </div>
-        </div>
-        {S.active ? <span className="tag" style={{ color: 'var(--orange)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{t('Resume')}</span>
-          : routine ? <span className="tag acc">{t('Start')}</span>
-          : <Icon name="plus" className="chev" />}
-      </button>
     </div>
 
     {!S.routines.length && !S.active && (

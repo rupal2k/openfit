@@ -10,17 +10,20 @@ import { Button } from '../components/ui.jsx'
 
 const shift = (iso, days) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + days); return isoOf(d) }
 
-function Bar({ label, val, goal, unit }) {
+// One macro as a tile: icon, big number, "/ target" small, and a progress bar when a target is set.
+function Tile({ icon, tint, label, val, goal, unit }) {
   const pct = goal ? Math.min(100, (val / goal) * 100) : 0
   const over = goal && val > goal
-  return <div style={{ flex: 1, minWidth: 0 }}>
+  return <div className="mtile">
+    <span className="mtile-i" style={{ color: tint, background: `color-mix(in srgb, ${tint} 16%, transparent)` }}><Icon name={icon} /></span>
     <div className="small muted">{label}</div>
-    <div style={{ fontWeight: 600, whiteSpace: 'nowrap', fontSize: '0.9rem' }}>{fmtNum(val)}{goal ? <span className="dim"> / {goal}</span> : null} {unit}</div>
-    {goal ? (
-      <div style={{ height: 6, borderRadius: 3, background: 'var(--surface-3)', marginTop: 4, overflow: 'hidden' }}>
-        <div style={{ width: pct + '%', height: '100%', background: over ? 'var(--orange)' : 'var(--acc)' }} />
+    <div className="mtile-v">{fmtNum(val)}<span className="mtile-u">{unit}</span></div>
+    {goal ? <>
+      <div className="dim small">/ {fmtNum(goal)} {unit}</div>
+      <div className="mtile-bar" role="progressbar" aria-label={label} aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
+        <div style={{ width: pct + '%', background: over ? 'var(--orange)' : tint }} />
       </div>
-    ) : null}
+    </> : null}
   </div>
 }
 
@@ -56,11 +59,11 @@ export default function Nutrition() {
         <div className="small muted" style={{ fontWeight: 500 }}>{fmtDate(iso, true)}</div>
         <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setIso(shift(iso, 1))} disabled={isToday} aria-label={t('Next day')}><Icon name="chevronRight" /></button>
       </div>
-      <Bar label={t('Calories')} val={tot.kcal} goal={goal?.kcal} unit="kcal" />
-      <div className="row" style={{ gap: 12, marginTop: 10 }}>
-        <Bar label={t('Protein')} val={tot.p} goal={goal?.protein} unit="g" />
-        <Bar label={t('Carbs')} val={tot.c} goal={goal?.carbs} unit="g" />
-        <Bar label={t('Fat')} val={tot.f} goal={goal?.fat} unit="g" />
+      <div className="mtiles">
+        <Tile icon="flame" tint="var(--acc)" label={t('Calories')} val={tot.kcal} goal={goal?.kcal} unit="kcal" />
+        <Tile icon="arm" tint="var(--teal)" label={t('Protein')} val={tot.p} goal={goal?.protein} unit="g" />
+        <Tile icon="bolt" tint="var(--yellow)" label={t('Carbs')} val={tot.c} goal={goal?.carbs} unit="g" />
+        <Tile icon="dot" tint="var(--orange)" label={t('Fat')} val={tot.f} goal={goal?.fat} unit="g" />
       </div>
       {!goal && <Button size="sm" variant="tinted" icon="target" style={{ marginTop: 12 }} onClick={nutritionProfileSheet}>{t('Set your targets')}</Button>}
     </div>
