@@ -15,6 +15,8 @@ Plan routines, run guided workouts with automatic progressive overload, log meal
 ![React](https://img.shields.io/badge/React-19-38bdf8?style=flat-square&logo=react&logoColor=white)
 ![Telemetry](https://img.shields.io/badge/telemetry-none-a3e635?style=flat-square)
 
+[![Download APK](https://img.shields.io/badge/Download-Android%20APK-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/rupal2k/openfit/releases/latest/download/OPENFIT-android.apk)
+
 <img src="assets/banner.png" alt="OPENFIT" width="720">
 
 <table>
@@ -61,10 +63,19 @@ Fitness apps tend to put your own training history behind a subscription, or los
 | **Daily diary** | Breakfast, lunch, dinner and snacks, with live calorie and macro totals. |
 | **Food search** | Open Food Facts search through a cached server-side proxy. |
 | **Barcode scanner** | Native camera scanning with HD capture, tap-to-focus, zoom and torch. Manual code entry as a fallback. |
-| **Photo logging (on-device AI)** | Snap a dish and OPENFIT recognises it (101 common dishes) with a small Hugging Face model (~53–93 MB, downloaded once and verified) that runs on your device. Nutrition and the typical portion come from USDA data. Photos are never uploaded, and it works offline. |
+| **Photo logging (on-device AI)** | Snap a dish and OPENFIT recognises it (101 common dishes) with a small Hugging Face model (~120 MB incl. runtime, downloaded once and verified) that runs on your device. Nutrition and the typical portion come from USDA data. Photos are never uploaded, and it works offline. |
 | **Flexible portions** | Log by serving, grams, kilograms, ounces or millilitres. Product serving sizes are detected automatically. |
 | **Science-based targets** | IOM 2005 energy equations with a lifter-focused protein target of 1.6 g/kg. |
 | **History stays accurate** | Each entry snapshots the food's nutrition values, so later database edits never rewrite old logs. |
+
+<div align="center">
+<table>
+<tr>
+<td align="center"><img src="assets/screenshots/photo-capture.png" alt="Photo logging: take or choose a photo" width="200"><br><sub><b>Snap a dish</b><br>Recognised on your device</sub></td>
+<td align="center"><img src="assets/screenshots/photo-review.png" alt="Photo logging: review the recognised dish" width="200"><br><sub><b>Review and log</b><br>Top-3 guesses, USDA portion and macros</sub></td>
+</tr>
+</table>
+</div>
 
 ### Planning & data
 | | |
@@ -129,6 +140,8 @@ tar -czf openfit-backup.tar.gz data/
 ```
 
 ## Android app
+
+**[⬇ Download the latest APK](https://github.com/rupal2k/openfit/releases/latest/download/OPENFIT-android.apk)** (sideload: allow "Install unknown apps" for your browser or file manager). All releases: [Releases](https://github.com/rupal2k/openfit/releases).
 
 The Android build is a standalone Capacitor app. Data stays on the device, and food search calls Open Food Facts directly.
 
