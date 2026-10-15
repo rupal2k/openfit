@@ -1,0 +1,59 @@
+rice-white-cooked | Rice, white, long-grain, regular, enriched, cooked | rice, chawal, steamed rice
+rice-brown-cooked | Rice, brown, long-grain, cooked Food Distribution | brown rice
+roti | Bread, chapati or roti, whole wheat | roti, chapati, phulka
+naan | Bread, naan, plain | naan
+dal | Lentils, mature seeds, cooked, boiled, without salt | dal, daal, lentils, lentil curry
+chickpeas | Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt | chana, chole, chickpea curry
+kidney-beans | Beans, kidney, red, mature seeds, cooked, boiled, without salt | rajma
+paneer | Cheese, paneer | paneer, cottage cheese
+chicken-breast | Chicken, broilers or fryers, breast, meat only, cooked, roasted | chicken, chicken breast, grilled chicken
+chicken-curry | | chicken curry, butter chicken, chicken masala | 150 14 5 8
+fish-curry | | fish curry, macher jhol | 120 13 4 6
+biryani | | biryani, chicken biryani | 180 8 22 6.5
+mutton-curry | | mutton curry, goat curry, lamb curry | 165 15 4 10
+egg-boiled | Egg, whole, cooked, hard-boiled | egg, boiled egg
+egg-fried | Egg, whole, cooked, fried | fried egg, omelette
+bread-white | Bread, white, commercially prepared | bread, toast
+bread-wholewheat | Bread, whole-wheat, commercially prepared | brown bread, whole wheat bread
+oats | Cereals, oats, regular and quick, not fortified, dry | oats, oatmeal, porridge
+banana | Bananas, raw | banana
+apple | Apples, raw, with skin | apple
+orange | Oranges, raw, all commercial varieties | orange
+mango | Mangos, raw | mango
+grapes | Grapes, red or green (European type, such as Thompson seedless), raw | grapes
+tomato-raw | Tomatoes, red, ripe, raw, year round average | tomato
+cucumber | Cucumber, with peel, raw | cucumber
+onion | Onions, raw | onion
+potato-boiled | Potatoes, boiled, cooked without skin, flesh, without salt | potato, aloo, boiled potato
+potato-fries | Potatoes, french fried, all types, salt added in processing, frozen, oven-heated | fries, french fries, chips
+salad-greens | Lettuce, green leaf, raw | salad, lettuce, greens
+spinach-cooked | Spinach, cooked, boiled, drained, without salt | spinach, palak
+broccoli | Broccoli, cooked, boiled, drained, without salt | broccoli
+carrot | Carrots, raw | carrot
+pasta-cooked | Pasta, cooked, enriched, without added salt | pasta, spaghetti, noodles
+pizza | Pizza, cheese topping, regular crust, frozen, cooked | pizza
+burger | Fast foods, hamburger; single, regular patty; plain | burger, hamburger
+salmon | Fish, salmon, Atlantic, farmed, cooked, dry heat | salmon, fish
+tuna | Fish, tuna, light, canned in water, drained solids | tuna
+beef-steak | Beef, loin, top loin steak, boneless, lip off, separable lean only, trimmed to 0" fat, choice, cooked, grilled | steak, beef
+yogurt | Yogurt, plain, whole milk | yogurt, curd, dahi
+greek-yogurt | Yogurt, Greek, plain, nonfat | greek yogurt
+milk | Milk, whole, 3.25% milkfat, with added vitamin D | milk
+cheese-cheddar | Cheese, cheddar | cheese, cheddar
+butter | Butter, salted | butter
+peanut-butter | Peanut butter, smooth style, without salt | peanut butter
+almonds | Nuts, almonds | almonds, nuts
+avocado | Avocados, raw, all commercial varieties | avocado
+idli | | idli | 130 4 26 0.6
+dosa | | dosa, masala dosa | 165 4 26 5
+samosa | | samosa | 260 5 28 14
+poha | | poha | 130 2.6 23 3.5
+upma | | upma | 140 3.5 20 5
+gulab-jamun | | gulab jamun, sweet | 320 5 45 13
+chocolate | Candies, milk chocolate | chocolate
+cake | Cake, chocolate, commercially prepared with chocolate frosting, in-store bakery | cake
+ice-cream | Ice creams, vanilla | ice cream
+coffee-milk | | coffee, latte, cappuccino | 50 2.8 4.5 2.4
+tea-milk | | tea, chai, milk tea | 45 1.5 6 1.5
+cola | Beverages, carbonated, cola, contains caffeine | cola, soda, coke, soft drink
+orange-juice | Orange juice, chilled | orange juice, juice

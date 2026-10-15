@@ -1,0 +1,819 @@
+[
+ {
+  "id": "rice-white-cooked",
+  "name": "Rice, white",
+  "aka": [
+   "rice",
+   "chawal",
+   "steamed rice"
+  ],
+  "per100": {
+   "kcal": 130,
+   "p": 2.7,
+   "c": 28.2,
+   "f": 0.3
+  }
+ },
+ {
+  "id": "rice-brown-cooked",
+  "name": "Rice, brown",
+  "aka": [
+   "brown rice"
+  ],
+  "per100": {
+   "kcal": 123,
+   "p": 2.7,
+   "c": 25.6,
+   "f": 1
+  }
+ },
+ {
+  "id": "roti",
+  "name": "Bread, chapati or roti",
+  "aka": [
+   "roti",
+   "chapati",
+   "phulka"
+  ],
+  "per100": {
+   "kcal": 299,
+   "p": 7.9,
+   "c": 46.1,
+   "f": 9.2
+  }
+ },
+ {
+  "id": "naan",
+  "name": "Bread, naan",
+  "aka": [
+   "naan"
+  ],
+  "per100": {
+   "kcal": 291,
+   "p": 9.6,
+   "c": 50.4,
+   "f": 5.7
+  }
+ },
+ {
+  "id": "dal",
+  "name": "Lentils, mature seeds",
+  "aka": [
+   "dal",
+   "daal",
+   "lentils",
+   "lentil curry"
+  ],
+  "per100": {
+   "kcal": 116,
+   "p": 9,
+   "c": 20.1,
+   "f": 0.4
+  }
+ },
+ {
+  "id": "chickpeas",
+  "name": "Chickpeas (garbanzo beans, bengal gram)",
+  "aka": [
+   "chana",
+   "chole",
+   "chickpea curry"
+  ],
+  "per100": {
+   "kcal": 164,
+   "p": 8.9,
+   "c": 27.4,
+   "f": 2.6
+  }
+ },
+ {
+  "id": "kidney-beans",
+  "name": "Beans, kidney",
+  "aka": [
+   "rajma"
+  ],
+  "per100": {
+   "kcal": 127,
+   "p": 8.7,
+   "c": 22.8,
+   "f": 0.5
+  }
+ },
+ {
+  "id": "paneer",
+  "name": "Cheese, paneer",
+  "aka": [
+   "paneer",
+   "cottage cheese"
+  ],
+  "per100": {
+   "kcal": 295,
+   "p": 7.1,
+   "c": 3.5,
+   "f": 28.6
+  }
+ },
+ {
+  "id": "chicken-breast",
+  "name": "Chicken, broilers or fryers",
+  "aka": [
+   "chicken",
+   "chicken breast",
+   "grilled chicken"
+  ],
+  "per100": {
+   "kcal": 165,
+   "p": 31,
+   "c": 0,
+   "f": 3.6
+  }
+ },
+ {
+  "id": "chicken-curry",
+  "name": "Chicken curry",
+  "aka": [
+   "chicken curry",
+   "butter chicken",
+   "chicken masala"
+  ],
+  "per100": {
+   "kcal": 150,
+   "p": 14,
+   "c": 5,
+   "f": 8
+  }
+ },
+ {
+  "id": "fish-curry",
+  "name": "Fish curry",
+  "aka": [
+   "fish curry",
+   "macher jhol"
+  ],
+  "per100": {
+   "kcal": 120,
+   "p": 13,
+   "c": 4,
+   "f": 6
+  }
+ },
+ {
+  "id": "biryani",
+  "name": "Biryani",
+  "aka": [
+   "biryani",
+   "chicken biryani"
+  ],
+  "per100": {
+   "kcal": 180,
+   "p": 8,
+   "c": 22,
+   "f": 6.5
+  }
+ },
+ {
+  "id": "mutton-curry",
+  "name": "Mutton curry",
+  "aka": [
+   "mutton curry",
+   "goat curry",
+   "lamb curry"
+  ],
+  "per100": {
+   "kcal": 165,
+   "p": 15,
+   "c": 4,
+   "f": 10
+  }
+ },
+ {
+  "id": "egg-boiled",
+  "name": "Egg, whole",
+  "aka": [
+   "egg",
+   "boiled egg"
+  ],
+  "per100": {
+   "kcal": 155,
+   "p": 12.6,
+   "c": 1.1,
+   "f": 10.6
+  }
+ },
+ {
+  "id": "egg-fried",
+  "name": "Egg, whole",
+  "aka": [
+   "fried egg",
+   "omelette"
+  ],
+  "per100": {
+   "kcal": 196,
+   "p": 13.6,
+   "c": 0.8,
+   "f": 14.8
+  }
+ },
+ {
+  "id": "bread-white",
+  "name": "Bread, white",
+  "aka": [
+   "bread",
+   "toast"
+  ],
+  "per100": {
+   "kcal": 290,
+   "p": 9,
+   "c": 54.5,
+   "f": 4
+  }
+ },
+ {
+  "id": "bread-wholewheat",
+  "name": "Bread, whole-wheat",
+  "aka": [
+   "brown bread",
+   "whole wheat bread"
+  ],
+  "per100": {
+   "kcal": 252,
+   "p": 12.4,
+   "c": 42.7,
+   "f": 3.5
+  }
+ },
+ {
+  "id": "oats",
+  "name": "Cereals, oats",
+  "aka": [
+   "oats",
+   "oatmeal",
+   "porridge"
+  ],
+  "per100": {
+   "kcal": 379,
+   "p": 13.2,
+   "c": 67.7,
+   "f": 6.5
+  }
+ },
+ {
+  "id": "banana",
+  "name": "Bananas, raw",
+  "aka": [
+   "banana"
+  ],
+  "per100": {
+   "kcal": 89,
+   "p": 1.1,
+   "c": 22.8,
+   "f": 0.3
+  }
+ },
+ {
+  "id": "apple",
+  "name": "Apples, raw",
+  "aka": [
+   "apple"
+  ],
+  "per100": {
+   "kcal": 65,
+   "p": 0.1,
+   "c": 15.7,
+   "f": 0.2
+  }
+ },
+ {
+  "id": "orange",
+  "name": "Oranges, raw",
+  "aka": [
+   "orange"
+  ],
+  "per100": {
+   "kcal": 47,
+   "p": 0.9,
+   "c": 11.8,
+   "f": 0.1
+  }
+ },
+ {
+  "id": "mango",
+  "name": "Mangos, raw",
+  "aka": [
+   "mango"
+  ],
+  "per100": {
+   "kcal": 60,
+   "p": 0.8,
+   "c": 15,
+   "f": 0.4
+  }
+ },
+ {
+  "id": "grapes",
+  "name": "Grapes, red or green (European type",
+  "aka": [
+   "grapes"
+  ],
+  "per100": {
+   "kcal": 69,
+   "p": 0.7,
+   "c": 18.1,
+   "f": 0.2
+  }
+ },
+ {
+  "id": "tomato-raw",
+  "name": "Tomatoes, red",
+  "aka": [
+   "tomato"
+  ],
+  "per100": {
+   "kcal": 18,
+   "p": 0.9,
+   "c": 3.9,
+   "f": 0.2
+  }
+ },
+ {
+  "id": "cucumber",
+  "name": "Cucumber, with peel",
+  "aka": [
+   "cucumber"
+  ],
+  "per100": {
+   "kcal": 16,
+   "p": 0.6,
+   "c": 3,
+   "f": 0.2
+  }
+ },
+ {
+  "id": "onion",
+  "name": "Onions, raw",
+  "aka": [
+   "onion"
+  ],
+  "per100": {
+   "kcal": 40,
+   "p": 1.1,
+   "c": 9.3,
+   "f": 0.1
+  }
+ },
+ {
+  "id": "potato-boiled",
+  "name": "Potatoes, boiled",
+  "aka": [
+   "potato",
+   "aloo",
+   "boiled potato"
+  ],
+  "per100": {
+   "kcal": 86,
+   "p": 1.7,
+   "c": 20,
+   "f": 0.1
+  }
+ },
+ {
+  "id": "potato-fries",
+  "name": "Potatoes, french fried",
+  "aka": [
+   "fries",
+   "french fries",
+   "chips"
+  ],
+  "per100": {
+   "kcal": 168,
+   "p": 2.7,
+   "c": 28.7,
+   "f": 5.2
+  }
+ },
+ {
+  "id": "salad-greens",
+  "name": "Lettuce, green leaf",
+  "aka": [
+   "salad",
+   "lettuce",
+   "greens"
+  ],
+  "per100": {
+   "kcal": 15,
+   "p": 1.4,
+   "c": 2.9,
+   "f": 0.2
+  }
+ },
+ {
+  "id": "spinach-cooked",
+  "name": "Spinach, cooked",
+  "aka": [
+   "spinach",
+   "palak"
+  ],
+  "per100": {
+   "kcal": 23,
+   "p": 3,
+   "c": 3.8,
+   "f": 0.3
+  }
+ },
+ {
+  "id": "broccoli",
+  "name": "Broccoli, cooked",
+  "aka": [
+   "broccoli"
+  ],
+  "per100": {
+   "kcal": 35,
+   "p": 2.4,
+   "c": 7.2,
+   "f": 0.4
+  }
+ },
+ {
+  "id": "carrot",
+  "name": "Carrots, raw",
+  "aka": [
+   "carrot"
+  ],
+  "per100": {
+   "kcal": 41,
+   "p": 0.9,
+   "c": 9.6,
+   "f": 0.2
+  }
+ },
+ {
+  "id": "pasta-cooked",
+  "name": "Pasta, cooked",
+  "aka": [
+   "pasta",
+   "spaghetti",
+   "noodles"
+  ],
+  "per100": {
+   "kcal": 158,
+   "p": 5.8,
+   "c": 30.9,
+   "f": 0.9
+  }
+ },
+ {
+  "id": "pizza",
+  "name": "Pizza, cheese topping",
+  "aka": [
+   "pizza"
+  ],
+  "per100": {
+   "kcal": 268,
+   "p": 10.4,
+   "c": 29,
+   "f": 12.3
+  }
+ },
+ {
+  "id": "burger",
+  "name": "Fast foods, hamburger; single",
+  "aka": [
+   "burger",
+   "hamburger"
+  ],
+  "per100": {
+   "kcal": 297,
+   "p": 16.5,
+   "c": 31.5,
+   "f": 12
+  }
+ },
+ {
+  "id": "salmon",
+  "name": "Fish, salmon",
+  "aka": [
+   "salmon",
+   "fish"
+  ],
+  "per100": {
+   "kcal": 206,
+   "p": 22.1,
+   "c": 0,
+   "f": 12.4
+  }
+ },
+ {
+  "id": "tuna",
+  "name": "Fish, tuna",
+  "aka": [
+   "tuna"
+  ],
+  "per100": {
+   "kcal": 90,
+   "p": 19,
+   "c": 0.1,
+   "f": 0.9
+  }
+ },
+ {
+  "id": "beef-steak",
+  "name": "Beef, loin",
+  "aka": [
+   "steak",
+   "beef"
+  ],
+  "per100": {
+   "kcal": 211,
+   "p": 29.2,
+   "c": 0,
+   "f": 9.5
+  }
+ },
+ {
+  "id": "yogurt",
+  "name": "Yogurt, plain",
+  "aka": [
+   "yogurt",
+   "curd",
+   "dahi"
+  ],
+  "per100": {
+   "kcal": 78,
+   "p": 3.8,
+   "c": 5.6,
+   "f": 4.5
+  }
+ },
+ {
+  "id": "greek-yogurt",
+  "name": "Yogurt, Greek",
+  "aka": [
+   "greek yogurt"
+  ],
+  "per100": {
+   "kcal": 61,
+   "p": 10.3,
+   "c": 3.6,
+   "f": 0.4
+  }
+ },
+ {
+  "id": "milk",
+  "name": "Milk, whole",
+  "aka": [
+   "milk"
+  ],
+  "per100": {
+   "kcal": 60,
+   "p": 3.3,
+   "c": 4.6,
+   "f": 3.2
+  }
+ },
+ {
+  "id": "cheese-cheddar",
+  "name": "Cheese, cheddar",
+  "aka": [
+   "cheese",
+   "cheddar"
+  ],
+  "per100": {
+   "kcal": 408,
+   "p": 23.3,
+   "c": 2.4,
+   "f": 34
+  }
+ },
+ {
+  "id": "butter",
+  "name": "Butter, salted",
+  "aka": [
+   "butter"
+  ],
+  "per100": {
+   "kcal": 717,
+   "p": 0.9,
+   "c": 0.1,
+   "f": 81.1
+  }
+ },
+ {
+  "id": "peanut-butter",
+  "name": "Peanut butter, smooth style",
+  "aka": [
+   "peanut butter"
+  ],
+  "per100": {
+   "kcal": 598,
+   "p": 22.2,
+   "c": 22.3,
+   "f": 51.4
+  }
+ },
+ {
+  "id": "almonds",
+  "name": "Nuts, almonds",
+  "aka": [
+   "almonds",
+   "nuts"
+  ],
+  "per100": {
+   "kcal": 579,
+   "p": 21.2,
+   "c": 21.6,
+   "f": 49.9
+  }
+ },
+ {
+  "id": "avocado",
+  "name": "Avocados, raw",
+  "aka": [
+   "avocado"
+  ],
+  "per100": {
+   "kcal": 160,
+   "p": 2,
+   "c": 8.5,
+   "f": 14.7
+  }
+ },
+ {
+  "id": "idli",
+  "name": "Idli",
+  "aka": [
+   "idli"
+  ],
+  "per100": {
+   "kcal": 130,
+   "p": 4,
+   "c": 26,
+   "f": 0.6
+  }
+ },
+ {
+  "id": "dosa",
+  "name": "Dosa",
+  "aka": [
+   "dosa",
+   "masala dosa"
+  ],
+  "per100": {
+   "kcal": 165,
+   "p": 4,
+   "c": 26,
+   "f": 5
+  }
+ },
+ {
+  "id": "samosa",
+  "name": "Samosa",
+  "aka": [
+   "samosa"
+  ],
+  "per100": {
+   "kcal": 260,
+   "p": 5,
+   "c": 28,
+   "f": 14
+  }
+ },
+ {
+  "id": "poha",
+  "name": "Poha",
+  "aka": [
+   "poha"
+  ],
+  "per100": {
+   "kcal": 130,
+   "p": 2.6,
+   "c": 23,
+   "f": 3.5
+  }
+ },
+ {
+  "id": "upma",
+  "name": "Upma",
+  "aka": [
+   "upma"
+  ],
+  "per100": {
+   "kcal": 140,
+   "p": 3.5,
+   "c": 20,
+   "f": 5
+  }
+ },
+ {
+  "id": "gulab-jamun",
+  "name": "Gulab jamun",
+  "aka": [
+   "gulab jamun",
+   "sweet"
+  ],
+  "per100": {
+   "kcal": 320,
+   "p": 5,
+   "c": 45,
+   "f": 13
+  }
+ },
+ {
+  "id": "chocolate",
+  "name": "Candies, milk chocolate",
+  "aka": [
+   "chocolate"
+  ],
+  "per100": {
+   "kcal": 535,
+   "p": 7.7,
+   "c": 59.4,
+   "f": 29.7
+  }
+ },
+ {
+  "id": "cake",
+  "name": "Cake, chocolate",
+  "aka": [
+   "cake"
+  ],
+  "per100": {
+   "kcal": 389,
+   "p": 3.5,
+   "c": 52.8,
+   "f": 20
+  }
+ },
+ {
+  "id": "ice-cream",
+  "name": "Ice creams, vanilla",
+  "aka": [
+   "ice cream"
+  ],
+  "per100": {
+   "kcal": 207,
+   "p": 3.5,
+   "c": 23.6,
+   "f": 11
+  }
+ },
+ {
+  "id": "coffee-milk",
+  "name": "Coffee",
+  "aka": [
+   "coffee",
+   "latte",
+   "cappuccino"
+  ],
+  "per100": {
+   "kcal": 50,
+   "p": 2.8,
+   "c": 4.5,
+   "f": 2.4
+  }
+ },
+ {
+  "id": "tea-milk",
+  "name": "Tea",
+  "aka": [
+   "tea",
+   "chai",
+   "milk tea"
+  ],
+  "per100": {
+   "kcal": 45,
+   "p": 1.5,
+   "c": 6,
+   "f": 1.5
+  }
+ },
+ {
+  "id": "cola",
+  "name": "Beverages, carbonated",
+  "aka": [
+   "cola",
+   "soda",
+   "coke",
+   "soft drink"
+  ],
+  "per100": {
+   "kcal": 20,
+   "p": 0,
+   "c": 5.2,
+   "f": 0
+  }
+ },
+ {
+  "id": "orange-juice",
+  "name": "Orange juice, chilled",
+  "aka": [
+   "orange juice",
+   "juice"
+  ],
+  "per100": {
+   "kcal": 49,
+   "p": 0.7,
+   "c": 11.5,
+   "f": 0.1
+  }
+ }
+]
