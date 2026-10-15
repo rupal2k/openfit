@@ -243,6 +243,8 @@ function FoodSearch({ iso, meal, close }) {
     )}
     <div className="row" style={{ gap: 8, margin: '10px 0' }}>
       <Button size="sm" variant="tinted" icon="barcode" onClick={() => { close(); barcodeSheet(iso, meal) }}>{t('Scan barcode')}</Button>
+      {/* dynamic: vision-sheets.jsx imports from this file */}
+      <Button size="sm" variant="tinted" icon="camera" onClick={() => { close(); import('./vision-sheets.jsx').then(m => m.photoSheet(iso, meal)) }}>{t('Photo')}</Button>
       <Button size="sm" variant="tinted" icon="plus" onClick={() => { close(); customFoodSheet(f => foodAmountSheet(iso, meal, f)) }}>{t('New food')}</Button>
     </div>
     {res.busy && <div className="small muted">{t('Searching…')}</div>}

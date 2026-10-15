@@ -4,6 +4,7 @@ import { targets, dayTotals, entryTotals, fmtAmount, MEALS } from '../lib/nutrit
 import { todayISO, isoOf, fmtNum, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { nutritionProfileSheet, foodSearchSheet, foodAmountSheet, barcodeSheet, MEAL_LABEL } from '../nutrition-sheets.jsx'
+import { photoSheet } from '../vision-sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 
@@ -43,6 +44,7 @@ export default function Nutrition() {
     <div className="hdr">
       <div><h1>{t('My Meals')}</h1><div className="sub">{isToday ? t('Today') : fmtDate(iso, true)}</div></div>
       <div className="row" style={{ gap: 6 }}>
+        <button className="iconbtn" onClick={() => photoSheet(iso, defaultMeal())} aria-label={t('Log from photo')}><Icon name="camera" /></button>
         <button className="iconbtn" onClick={() => barcodeSheet(iso, defaultMeal())} aria-label={t('Scan barcode')}><Icon name="barcode" /></button>
         <button className="iconbtn" onClick={nutritionProfileSheet} aria-label={t('Targets')}><Icon name="target" /></button>
       </div>

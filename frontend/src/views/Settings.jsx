@@ -11,6 +11,7 @@ import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
 import { MOBILE, shareExport, syncReminder } from '../lib/mobile.js'
 import { loadStarterPlan, confirmSheet, importFromApp, planCatalogSheet, planUploadSheet } from '../sheets.jsx'
+import { VisionSettings } from '../vision-sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '../components/ui.jsx'
 
@@ -114,6 +115,7 @@ export default function Settings() {
           value={S.unit} onChange={v => update(s => { s.unit = v })} />
       </Row>
     </Section>
+    <VisionSettings />
 
     {/* ---------- during a workout ---------- */}
     <Section title={t('During a workout')} footer={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : null}>
