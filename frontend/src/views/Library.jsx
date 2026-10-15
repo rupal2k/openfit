@@ -7,7 +7,9 @@ import { t } from '../lib/i18n.js'
 import { Thumb } from '../components/Media.jsx'
 import { exerciseDetailSheet, addToRoutineSheet, customExSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
-import { Button } from '../components/ui.jsx'
+import { Button, SelectChip } from '../components/ui.jsx'
+
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1)
 
 export default function Library() {
   const S = useStore(s => s.S)
@@ -26,14 +28,15 @@ export default function Library() {
     <div className="hdr"><div><h1>{t('Exercises')}</h1><div className="sub">{t('{0} exercises with animations', EXDB.length)}</div></div></div>
     <div className="search" style={{ marginBottom: 10 }}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} /></div>
-    <div className="chips" style={{ marginBottom: eqOpts.length > 1 ? 8 : 12 }}>
-      <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
-      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setEq(''); setShown(40) }}>{t(b)}</button>)}
+    {/* dropdowns instead of chip rows: two scrolling rows got cut off at the screen edge */}
+    <div className="filters">
+      <SelectChip label={t('Body part')} value={bp} none=""
+        options={[{ value: '', label: t('All') }, ...BODYPARTS.map(b => ({ value: b, label: cap(t(b)) }))]}
+        onChange={v => { setBp(v); setEq(''); setShown(40) }} />
+      {eqOpts.length > 1 && <SelectChip label={t('Equipment')} value={eqOn} none=""
+        options={[{ value: '', label: t('Any') }, ...eqOpts.map(x => ({ value: x, label: cap(t(x)) }))]}
+        onChange={v => { setEq(v); setShown(40) }} />}
     </div>
-    {eqOpts.length > 1 && <div className="chips" style={{ marginBottom: 12 }}>
-      <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</button>
-      {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(40) }}>{t(x)}</button>)}
-    </div>}
     <div className="list">
       <div className="item" onClick={() => customExSheet(null, ex => exerciseDetailSheet(ex), q.trim())}>
         <div className="thumb thumb-x"><Icon name="sparkles" /></div>

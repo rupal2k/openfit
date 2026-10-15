@@ -255,29 +255,46 @@ export function Row({ icon, iconTint, title, subtitle, value, accessory = 'none'
 // theme entirely — on dark mode it flashes a white sheet — and can't show more
 // than a bare label per option. This opens our own sheet with a checkmark on the
 // current value, which is also how iOS itself handles a long option list.
+// Opens the themed option sheet (checkmark on the current value) shared by SelectRow and SelectChip.
+function openPicker({ title, value, options, onChange }) {
+  const { openSheet } = require_ui()
+  return openSheet(close => (
+    <>
+      <h3>{title}</h3>
+      <div className="sect-b">
+        {options.map(o => (
+          <button key={o.value} className="lrow tap" onClick={() => { close(); onChange(o.value) }}>
+            <span className="lrow-m"><span className="lrow-t">{o.label}</span>
+              {o.subtitle && <span className="lrow-s">{o.subtitle}</span>}</span>
+            {o.value === value && <Icon name="check" className="lrow-k" />}
+          </button>
+        ))}
+      </div>
+      <div style={{ height: 8 }} />
+    </>
+  ))
+}
+
 export function SelectRow({ icon, iconTint, title, value, options, onChange, sheetTitle }) {
   const cur = options.find(o => o.value === value)
-  const open = () => {
-    const { openSheet } = require_ui()
-    const h = openSheet(close => (
-      <>
-        <h3>{sheetTitle || title}</h3>
-        <div className="sect-b">
-          {options.map(o => (
-            <button key={o.value} className="lrow tap" onClick={() => { close(); onChange(o.value) }}>
-              <span className="lrow-m"><span className="lrow-t">{o.label}</span>
-                {o.subtitle && <span className="lrow-s">{o.subtitle}</span>}</span>
-              {o.value === value && <Icon name="check" className="lrow-k" />}
-            </button>
-          ))}
-        </div>
-        <div style={{ height: 8 }} />
-      </>
-    ))
-    return h
-  }
+  const open = () => openPicker({ title: sheetTitle || title, value, options, onChange })
   return (
     <Row icon={icon} iconTint={iconTint} title={title} value={cur ? cur.label : value} accessory="chevron" onClick={open} />
+  )
+}
+
+// A filter as one pill: "Body part · Chest ▾". Highlighted while it filters anything
+// (value differs from `none`); tapping opens the same option sheet as SelectRow.
+export function SelectChip({ label, value, options, onChange, none = '' }) {
+  const cur = options.find(o => o.value === value)
+  return (
+    <button type="button" className={'chip select nocap' + (value !== none ? ' on' : '')}
+      aria-haspopup="dialog" aria-label={`${label}: ${cur ? cur.label : value}`}
+      onClick={() => openPicker({ title: label, value, options, onChange })}>
+      <span className="select-l">{label}</span>
+      <span className="select-v">{cur ? cur.label : value}</span>
+      <Icon name="chevronDown" />
+    </button>
   )
 }
 

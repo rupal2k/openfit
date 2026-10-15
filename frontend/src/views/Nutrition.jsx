@@ -10,20 +10,19 @@ import { Button } from '../components/ui.jsx'
 
 const shift = (iso, days) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + days); return isoOf(d) }
 
-// One macro as a tile: icon, big number, "/ target" small, and a progress bar when a target is set.
+// One macro as a tile: icon, big number, then "/ target unit" (or just the unit) and a bar.
+// Four sit side by side, so the number stands alone; kcal is rounded to keep it short.
 function Tile({ icon, tint, label, val, goal, unit }) {
   const pct = goal ? Math.min(100, (val / goal) * 100) : 0
   const over = goal && val > goal
   return <div className="mtile">
     <span className="mtile-i" style={{ color: tint, background: `color-mix(in srgb, ${tint} 16%, transparent)` }}><Icon name={icon} /></span>
-    <div className="small muted">{label}</div>
-    <div className="mtile-v">{fmtNum(val)}<span className="mtile-u">{unit}</span></div>
-    {goal ? <>
-      <div className="dim small">/ {fmtNum(goal)} {unit}</div>
-      <div className="mtile-bar" role="progressbar" aria-label={label} aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
-        <div style={{ width: pct + '%', background: over ? 'var(--orange)' : tint }} />
-      </div>
-    </> : null}
+    <div className="mtile-l">{label}</div>
+    <div className="mtile-v">{fmtNum(unit === 'kcal' ? Math.round(val) : val)}</div>
+    <div className="mtile-u">{goal ? `/ ${fmtNum(goal)} ${unit}` : unit}</div>
+    {goal ? <div className="mtile-bar" role="progressbar" aria-label={label} aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
+      <div style={{ width: pct + '%', background: over ? 'var(--orange)' : tint }} />
+    </div> : null}
   </div>
 }
 
