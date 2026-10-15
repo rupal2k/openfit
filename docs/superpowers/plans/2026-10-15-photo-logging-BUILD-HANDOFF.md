@@ -1,7 +1,7 @@
 # Build Handoff: On-Device Photo Food Logging
 
 **Date:** 2026-10-15
-**Status:** the plan is written but the build has **not started**. Wait for the owner (Rupal) to say "go" before starting Task 1.
+**Status (updated 2026-10-15 evening):** Tasks 1–8 and 10 are done on `feat/photo-logging` (Food-101 classifier path; see the Amendment at the top of the plan). **Open:** Task 9 phone QA, and the APK size question (ONNX Runtime WASM adds 27 MB).
 **Plan to execute:** [`2026-10-15-on-device-photo-food-logging.md`](2026-10-15-on-device-photo-food-logging.md). It contains 10 tasks with full code, tests and commit steps. Follow it task by task. Don't redesign it.
 
 ---

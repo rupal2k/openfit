@@ -14,6 +14,21 @@
 
 **Spec:** this document, sections "Background: fud-ai Android architecture" and "Design". (The request came from the user in chat on 2026-10-15; there is no separate spec file.)
 
+## ⚠️ Amendment after Task 1 (2026-10-15): read before continuing
+
+The spike (`docs/superpowers/notes/2026-10-15-photo-spike.md`) **failed both SmolVLM models**, so the owner chose **"classifier now, Gemma later"**. What was built instead of Tasks 6–8 as written:
+
+| Planned | Built |
+|---|---|
+| SmolVLM catalogue entries | `catalog.js` has one model: `food101` = `onnx-community/swin-finetuned-food101-ONNX` @ `e5e50bf…`. Files: `model_q4f16.onnx` (52.7 MB, WebGPU) and `model_int8.onnx` (93.3 MB, WASM). Each has its sha256 |
+| `generate(image, prompt)` → text → `parseDetections` → `matchFoods` | `classify(image)` → top-3 `{ label, score }` → `analyzeDish` → `dishFood(label)` |
+| Generic USDA table + fuzzy matcher | `frontend/src/data/food101-foods.json`: an exact label → USDA FNDDS entry for all 101 dishes, with a typical portion. Built keyless by `scripts/build-food101-foods.mjs` from `scripts/food101-map.txt`; 23 entries are approximate and flagged `~` |
+| Multi-item review | One dish per photo: the top-3 picker shows confidence, the grams stepper starts at the typical portion, plus a meal picker and a "Not right? Search instead" fallback |
+
+- `prompt.js`, `parse.js`, `match.js` and `generic-foods.json` stay on the branch for **Phase 2** (native Gemma 4 E2B), which outputs text lines.
+- Tasks 1–8 and 10 are **done** (commits `6b48a06`…`62f9fa3`).
+- Task 9 (device QA) still needs the phone.
+
 ## Global Constraints
 
 - **Privacy:** photos never leave the device. No network request may carry image bytes. The only network traffic this feature creates is the one-time model download from `huggingface.co`.
