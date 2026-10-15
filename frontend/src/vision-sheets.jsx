@@ -76,7 +76,8 @@ function Photo({ iso, meal, close }) {
   const [img, setImg] = useState(null)            // { blob, url }
   useEffect(() => { refreshVision() }, [])
   useEffect(() => () => { if (img) URL.revokeObjectURL(img.url) }, [img])
-  useEffect(() => () => cancelClassify(), [])
+  // stop only a running analysis; keep the loaded worker so the next photo is instant
+  useEffect(() => () => { if (useVision.getState().state === 'busy') cancelClassify() }, [])
 
   const pickFile = async e => {
     const f = e.target.files?.[0]

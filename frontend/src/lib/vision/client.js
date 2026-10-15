@@ -7,7 +7,6 @@ import { MODELS, DEFAULT_MODEL, pickDevice, deviceFiles, downloadBytes, fileUrl,
 import { VisionError } from './errors.js'
 
 const CACHE = 'transformers-cache'
-const DEVICE_KEY = 'openfit.vision.device'
 const IDLE_MS = 90_000
 const ls = {
   get: k => { try { return localStorage.getItem(k) } catch { return null } },
@@ -43,6 +42,7 @@ function call(msg, onProgress) {
       if (!p) return
       if (data.type === 'progress') { p.onProgress?.(data); return }
       pending.delete(data.rid)
+      if (data.type !== 'ok') console.warn('vision:', data.kind, data.message)   // raw cause; the UI shows the friendly message
       data.type === 'ok' ? p.resolve(data) : p.reject(new VisionError(data.kind, data.message))
     }
   }
@@ -55,10 +55,12 @@ function call(msg, onProgress) {
 const scheduleRelease = () => { clearTimeout(idle); idle = setTimeout(release, IDLE_MS) }
 
 /* ---------- detection ---------- */
+// CPU (WASM int8) everywhere. On the S21 FE the WebView exposes WebGPU, but the q4f16 model
+// returns near-uniform scores there (samosa → "carbonara 3%") while int8 on CPU is right
+// (samosa 98%) at ~4 s per photo. ponytail: re-enable GPU per device once a self-test
+// (known image → expected label) can gate it.
 async function detectDevice() {
-  const saved = ls.get(DEVICE_KEY)
-  if (saved === 'wasm' || saved === 'webgpu') return saved
-  try { return pickDevice(!!(navigator.gpu && (await navigator.gpu.requestAdapter()))) } catch { return 'wasm' }
+  return pickDevice(false)
 }
 async function cachedAll(m, device) {
   if (!('caches' in self)) return false
@@ -103,7 +105,6 @@ export async function installModel() {
     const err = e instanceof VisionError ? e : new VisionError('DOWNLOAD', String(e?.message || e))
     release()
     if (err.kind === 'CANCELLED') { await purge(m); set({ state: 'absent', loaded: 0 }); return }
-    if (err.kind === 'GPU_INIT') { ls.set(DEVICE_KEY, 'wasm'); await purge(m); set({ device: 'wasm', total: downloadBytes(m, 'wasm') }) }
     if (err.kind === 'VERIFY') await purge(m)
     set({ state: 'failed', error: err.message })
     throw err
@@ -134,7 +135,6 @@ export async function classify(image) {
     return top || []
   } catch (e) {
     set({ state: 'ready' })
-    if (e.kind === 'GPU_INIT') { ls.set(DEVICE_KEY, 'wasm'); ls.set(markerKey(modelId, device), null); await refreshVision() }
     throw e
   }
 }
