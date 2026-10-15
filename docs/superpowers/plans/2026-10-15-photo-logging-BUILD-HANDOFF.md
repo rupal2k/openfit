@@ -1,7 +1,7 @@
 # Build Handoff: On-Device Photo Food Logging
 
 **Date:** 2026-10-15
-**Status (updated 2026-10-15 evening):** Tasks 1–8 and 10 are done on `feat/photo-logging` (Food-101 classifier path; see the Amendment at the top of the plan). **Open:** Task 9 phone QA, and the APK size question (ONNX Runtime WASM adds 27 MB).
+**Status (2026-10-15, late):** all 10 tasks are done on `feat/photo-logging`; QA record: `docs/superpowers/notes/2026-10-15-photo-qa.md`. Phone fixes: CPU int8 everywhere, the worker stays alive between photos, and offline loading goes direct at the pinned commit. Not pushed. Next: owner review, then merge/push on request, then Phase 2 (native Gemma).
 **Plan to execute:** [`2026-10-15-on-device-photo-food-logging.md`](2026-10-15-on-device-photo-food-logging.md). It contains 10 tasks with full code, tests and commit steps. Follow it task by task. Don't redesign it.
 
 ---
