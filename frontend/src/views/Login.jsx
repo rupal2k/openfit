@@ -48,11 +48,11 @@ export default function Login() {
     catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(e.message || t('Sign-in failed')) }
   }
   const head = <>
-    <img src={import.meta.env.BASE_URL + 'favicon.svg'} alt="openfit" width="72" height="72" style={{
+    <img src={import.meta.env.BASE_URL + 'favicon.svg'} alt="OPENFIT" width="72" height="72" style={{
       display: 'block', margin: '0 auto 12px', borderRadius: 22,
       boxShadow: '0 8px 24px -4px color-mix(in srgb, var(--acc) 50%, transparent)'
     }} />
-    <h1 style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-.025em', margin: '4px 0 4px' }}>openfit</h1>
+    <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '.02em', margin: '4px 0 4px' }}>OPENFIT</h1>
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, margin: '0 auto 12px', padding: '3px 12px', borderRadius: 999, background: 'var(--acc-soft)', color: 'var(--acc)', fontSize: 11, fontWeight: 600, letterSpacing: '.05em' }}>
       FITNESS & NUTRITION
     </div>
@@ -66,7 +66,7 @@ export default function Login() {
       <div className="muted" style={{ marginBottom: 30 }}>{t('Live demo — everything stays in this browser.')}</div>
       <Button variant="primary" icon="sparkles" onClick={() => setGuest(true)}>{t('Start the demo')}</Button>
       <div className="card small muted" style={{ textAlign: 'left', marginTop: 16 }}>
-        {t('This demo runs entirely in your browser on example data — nothing is sent anywhere. Passkey sign-in and sync across your devices come with the openfit server, which you get by self-hosting it.')}
+        {t('This demo runs entirely in your browser on example data — nothing is sent anywhere. Passkey sign-in and sync across your devices come with the OPENFIT server, which you get by self-hosting it.')}
       </div>
       <div className="dim small" style={{ marginTop: 22, lineHeight: 1.6 }}>
         <a href={REPO} target="_blank" rel="noopener">{t('Self-host it in a minute →')}</a>
@@ -83,7 +83,7 @@ export default function Login() {
         <div style={{ height: 10 }} />
         <Button icon="sparkles" onClick={() => useUI.getState().openSheet(close => <RegisterSheet close={close} />)}>{t('Create new profile')}</Button>
         <div style={{ height: 10 }} />
-      </> : <div className="card small muted" style={{ textAlign: 'left' }}>{t("This browser doesn't support passkeys — you can still use openfit locally on this device.")}</div>}
+      </> : <div className="card small muted" style={{ textAlign: 'left' }}>{t("This browser doesn't support passkeys — you can still use OPENFIT locally on this device.")}</div>}
       <Button variant="ghost" className="dim" onClick={() => setGuest(true)}>{t('Continue without account')}</Button>
       <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>{t('Passkeys use {0} — no passwords.', BIO)}<br />{t('Each profile keeps its own plan, workouts & body weight.')}</div>
     </div>

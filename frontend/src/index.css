@@ -197,7 +197,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 
 /* ---------------------------------------------------------------- layout -- */
 #app{
-  padding:calc(var(--sat) + 8px) var(--pad) calc(128px + var(--sab));
+  padding:calc(var(--sat) + 8px) var(--pad) calc(156px + var(--sab));
   max-width:560px;margin:0 auto;
 }
 /* while the rest timer floats above the tab bar, keep its height scrollable-past
@@ -354,26 +354,25 @@ h4.sec,.sect-t{
 #tabbar button .icn{font-size:25px;--icon-stroke:1.65;color:var(--label)}
 #tabbar button.on{color:var(--acc)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
-#tabbar button.start{margin-top:-24px}
-#tabbar button.start .cir{
-  width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg, var(--acc), var(--acc-2));
-  color:var(--on-acc);
-  display:flex;align-items:center;justify-content:center;position:relative;
+#tabbar button.on span{background:linear-gradient(135deg,var(--acc),var(--acc-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#tabbar button.on .icn *{stroke:url(#tabGrad)}
+#tabbar .dock-logo{display:none}
+
+/* Start / Resume: floating bubble bottom-right, above the tab bar, on every signed-in screen */
+#startfab{
+  position:fixed;z-index:55;right:var(--pad);bottom:calc(84px + var(--sab));
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,var(--acc),var(--acc-2));color:var(--on-acc);
+  display:flex;align-items:center;justify-content:center;
   box-shadow:0 6px 20px -2px color-mix(in srgb,var(--acc) 50%,transparent);
   transition:transform var(--fast) var(--ease);
 }
-#tabbar button.start:active .cir{transform:scale(.93)}
-#tabbar button.start .cir .icn{font-size:26px;--icon-stroke:2;color:inherit;opacity:1}
-#tabbar button.start span{color:var(--acc);font-weight:600}
-/* `.cir` is itself a <span>, so the label rules above and below reach it too and
-   outrank the `.cir` block — which is how the running state ended up painting an
-   orange play glyph onto an orange disc. Both states restate their own colour.
-   The disc is orange in either theme, so its glyph is black, not `--on-acc`. */
-#tabbar button.start .cir{color:var(--on-acc)}
-#tabbar button.start.rec .cir{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
-#tabbar button.start.rec span{color:var(--orange)}
-#tabbar button.start.rec .cir::after{
+#startfab:active{transform:scale(.93)}
+#startfab .icn{font-size:26px;--icon-stroke:2}
+/* the rest timer floats in the same strip — sit above it */
+body.resting #startfab{bottom:calc(240px + var(--sab))}
+#startfab.rec{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
+#startfab.rec::after{
   content:'';position:absolute;inset:0;border-radius:50%;
   border:2px solid var(--orange);animation:ping 1.9s var(--ease) infinite;
 }
@@ -433,9 +432,14 @@ h4.sec,.sect-t{
 
 /* ---------------------------------------------------------------- chips -- */
 .chips{
-  display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;
+  display:flex;gap:7px;overflow-x:auto;
   scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  /* run to the screen edges so a chip scrolls off the glass, not off a hard cut at the
+     content gutter; the vertical padding leaves room for the selected chip's glow */
+  margin-left:calc(-1 * var(--pad));margin-right:calc(-1 * var(--pad));
+  padding:6px var(--pad) 10px;scroll-padding-inline:var(--pad);
 }
+#modal-root .chips,.sheet .chips{margin-left:0;margin-right:0;padding-left:0;padding-right:0}
 .chips::-webkit-scrollbar{display:none}
 .chip{
   flex:none;padding:7px 15px;border-radius:var(--r-pill);background:var(--surface);
@@ -987,7 +991,9 @@ h4.sec,.sect-t{
     border:var(--hair) solid var(--sep-op);border-radius:var(--r-xl);
     padding:7px 10px 9px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5);
   }
-  #tabbar button.start{margin-top:-26px}
+  #tabbar .dock-logo{display:block;width:40px;height:40px;border-radius:11px;align-self:center;margin:0 4px 0 2px}
+  #startfab{bottom:24px;right:max(24px, calc(50% - 540px + var(--pad)))}
+  body.resting #startfab{bottom:24px}
   .sheet{left:50%;right:auto;margin-left:-320px;width:640px;border-radius:var(--r-xl) var(--r-xl) 0 0}
   .center{width:340px}
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}

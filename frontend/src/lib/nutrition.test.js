@@ -107,3 +107,27 @@ describe('diary mutators', () => {
     expect(recentFoods(sPartial)).toEqual([])
   })
 })
+
+describe('portion units', () => {
+  it('round-trips through grams and formats the typed unit', async () => {
+    const { toGrams, fromGrams, fmtAmount } = await import('./nutrition.js')
+    expect(toGrams(1.5, 'kg')).toBe(1500)
+    expect(toGrams(2, 'L')).toBe(2000)
+    expect(toGrams(1, 'oz')).toBe(28.3)
+    expect(fromGrams(toGrams(12, 'fl oz'), 'fl oz')).toBe(12)
+    expect(fmtAmount({ g: 250 })).toBe('250 g')
+    expect(fmtAmount({ g: 1500, u: 'kg' })).toBe('1.5 kg')
+  })
+  it('converts and formats serving units when food serving is detected', async () => {
+    const { toGrams, fromGrams, fmtAmount } = await import('./nutrition.js')
+    expect(toGrams(2, 'serving', 170)).toBe(340)
+    expect(toGrams(0.5, 'serving', 170)).toBe(85)
+    expect(fromGrams(340, 'serving', 170)).toBe(2)
+    expect(fromGrams(85, 'serving', 170)).toBe(0.5)
+    expect(fmtAmount({ g: 170, u: 'serving', food: YOG })).toBe('1 serving (170 g)')
+    expect(fmtAmount({ g: 340, u: 'serving', food: YOG })).toBe('2 servings (340 g)')
+    const drink = { serving: 100, servingUnit: 'ml' }
+    expect(fmtAmount({ g: 100, u: 'serving', food: drink })).toBe('1 serving (100 ml)')
+    expect(fmtAmount({ g: 250, u: 'serving', food: drink })).toBe('2.5 servings (250 ml)')
+  })
+})

@@ -255,7 +255,7 @@ setInterval(() => { for (const [k, v] of presence) if (Date.now() - v.updatedAt 
 // search.openfoodfacts.org sends no CORS headers, so the browser can't query it itself.
 // Signed-in users only — never an open proxy. Cached briefly: search-as-you-type repeats a lot.
 const OFF_UA = 'openfit/1 (self-hosted; github.com/rupal2k/openfit)';
-const OFF_FIELDS = 'code,product_name,product_name_en,brands,nutriments,serving_quantity';
+const OFF_FIELDS = 'code,product_name,product_name_en,brands,nutriments,serving_quantity,serving_size,serving_quantity_unit';
 const foodCache = new Map();               // query -> { at, hits }; insertion-ordered = FIFO
 const FOOD_TTL = 10 * 60000, FOOD_CACHE_MAX = 500;
 

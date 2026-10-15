@@ -11,8 +11,9 @@ export default function TabBar({ onStart }) {
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
   const isGuest = useStore(s => s.isGuest())
-  if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
+  const fab = (user || isGuest) && cur !== 'workout'
+  if (!user && !isGuest) return null
   const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'settings' && k === 'home')
 
   const startWorkout = () => {
@@ -28,17 +29,23 @@ export default function TabBar({ onStart }) {
     </button>
   )
 
-  return (
+  return (<>
+    {/* ponytail: one shared gradient for every active tab icon; userSpaceOnUse so flat strokes (a bbox with no height) still paint */}
+    <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
+      <linearGradient id="tabGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="24" y2="24">
+        <stop offset="0" style={{ stopColor: 'var(--acc)' }} /><stop offset="1" style={{ stopColor: 'var(--acc-2)' }} />
+      </linearGradient>
+    </svg>
+    {fab && <button id="startfab" className={S.active ? 'rec' : ''} onClick={startWorkout} aria-label={S.active ? t('Resume') : t('Start')}>
+      <Icon name={S.active ? 'play' : 'dumbbell'} />
+    </button>}
     <nav id="tabbar">
+      <img className="dock-logo" src={import.meta.env.BASE_URL + 'favicon.svg'} alt="" />
       <Tab k="home" icon="house" to="/home" label={t('Home')} />
-      <Tab k="plan" icon="calendar" to="/plan" label={t('Plan')} />
-      <button className={'start' + (S.active ? ' rec' : '')} onClick={startWorkout}>
-        <span className="cir"><Icon name={S.active ? 'play' : 'dumbbell'} /></span>
-        <span>{S.active ? t('Resume') : t('Start')}</span>
-      </button>
-      <Tab k="stats" icon="chart" to="/stats" label={t('Stats')} />
-      <Tab k="nutrition" icon="apple" to="/nutrition" label={t('Food')} />
+      <Tab k="plan" icon="calendar" to="/plan" label={t('My Plan')} />
+      <Tab k="stats" icon="chart" to="/stats" label={t('My Stats')} />
+      <Tab k="nutrition" icon="apple" to="/nutrition" label={t('My Meals')} />
       <Tab k="library" icon="list" to="/library" label={t('Exercises')} />
     </nav>
-  )
+  </>)
 }

@@ -72,8 +72,34 @@ export function dayTotals(entries) {
 }
 
 // Mutators take the draft S handed out by useStore().update(mut).
-export function addEntry(S, iso, { meal, g, food }) {
+// Portion units. Entries always store grams (`g`) so totals stay per-100 g math; `u` only
+// remembers what the user typed in. ponytail: volume assumes 1 ml ≈ 1 g (right for drinks,
+// ~10% off for oil) — add per-food density if OFF ever gives us one.
+export const UNITS = {
+  g: { f: 1, step: 10, dec: false }, kg: { f: 1000, step: 0.1, dec: true }, oz: { f: 28.3495, step: 1, dec: true },
+  ml: { f: 1, step: 10, dec: false }, L: { f: 1000, step: 0.1, dec: true }, 'fl oz': { f: 29.5735, step: 1, dec: true },
+}
+export const toGrams = (qty, u = 'g', serving = null) => {
+  if (u === 'serving' || u === 'portion') return Math.round((+qty || 0) * (serving || 100) * 10) / 10
+  return Math.round((+qty || 0) * (UNITS[u] || UNITS.g).f * 10) / 10
+}
+export const fromGrams = (g, u = 'g', serving = null) => {
+  if (u === 'serving' || u === 'portion') return Math.round(((+g || 0) / (serving || 100)) * 100) / 100
+  return Math.round((+g || 0) / (UNITS[u] || UNITS.g).f * 100) / 100
+}
+export const fmtAmount = e => {
+  if ((e.u === 'serving' || e.u === 'portion') && e.food?.serving) {
+    const s = Math.round((e.g / e.food.serving) * 100) / 100
+    const uLabel = e.food.servingUnit || 'g'
+    const word = s === 1 ? 'serving' : 'servings'
+    return `${s} ${word} (${e.g} ${uLabel})`
+  }
+  return e.u && e.u !== 'g' && UNITS[e.u] ? `${fromGrams(e.g, e.u)} ${e.u}` : `${e.g} g`
+}
+
+export function addEntry(S, iso, { meal, g, u, food }) {
   const e = { id: uid(), meal, g, t: Date.now(), food: structuredClone(food) }
+  if (u && u !== 'g') e.u = u
   S.nutrition ||= { profile: null, days: {}, foods: [] }
   S.nutrition.days ||= {}
   ;(S.nutrition.days[iso] ||= []).push(e)

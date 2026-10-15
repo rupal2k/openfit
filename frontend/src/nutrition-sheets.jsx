@@ -5,12 +5,12 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { t } from './lib/i18n.js'
 import { fmtNum, uid } from './lib/format.js'
-import { targets, bodyKg, entryTotals, addEntry, updateEntry, removeEntry, recentFoods, MEALS } from './lib/nutrition.js'
+import { targets, bodyKg, entryTotals, addEntry, updateEntry, removeEntry, recentFoods, MEALS, UNITS, toGrams, fromGrams } from './lib/nutrition.js'
 import { searchFoods, lookupBarcode, SEARCH_OK } from './lib/food.js'
 import { bwSheet } from './sheets.jsx'
 import { MOBILE } from './lib/mobile.js'
 import Icon from './components/Icon.jsx'
-import { Button, Segmented, SelectRow, NumberField, Row, Stepper, SearchField, TextField } from './components/ui.jsx'
+import { Button, Segmented, SelectRow, NumberField, Row, Stepper, SearchField, TextField, Slider } from './components/ui.jsx'
 
 const update = (...a) => useStore.getState().update(...a)
 const ui = () => useUI.getState()
@@ -79,20 +79,71 @@ export const foodAmountSheet = (iso, meal, food, entry) =>
   ui().openSheet(close => <FoodAmount iso={iso} meal={meal} food={food} entry={entry} close={close} />)
 
 function FoodAmount({ iso, meal: meal0, food, entry, close }) {
-  const [g, setG] = useState(entry ? entry.g : food.serving || 100)
+  const hasServing = Boolean(food.serving && food.serving > 0)
+  const sUnit = food.servingUnit || 'g'
+  const defUnit = entry
+    ? (entry.u || (hasServing && entry.g === food.serving ? 'serving' : 'g'))
+    : (hasServing ? 'serving' : 'g')
+
+  const [u, setU] = useState(defUnit)
+  const [qty, setQty] = useState(() => {
+    if (entry) return fromGrams(entry.g, defUnit, food.serving)
+    if (hasServing && defUnit === 'serving') return 1
+    return fromGrams(food.serving || 100, defUnit, food.serving)
+  })
+  const g = toGrams(qty, u, food.serving)
+
+  const pickUnit = nu => {
+    const curG = toGrams(qty, u, food.serving)
+    setQty(fromGrams(curG, nu, food.serving))
+    setU(nu)
+  }
+
   const [meal, setMeal] = useState(entry ? entry.meal : meal0)
   const tot = entryTotals({ g: g || 0, food })
+
   const save = () => {
     if (!(g > 0)) return toast(t('Enter an amount'))
-    update(s => entry ? updateEntry(s, iso, entry.id, { g, meal }) : addEntry(s, iso, { meal, g, food }))
+    update(s => entry ? updateEntry(s, iso, entry.id, { g, u: u === 'g' ? undefined : u, meal }) : addEntry(s, iso, { meal, g, u, food }))
     close()
     toast(entry ? t('Entry updated') : t('Added to {0}', t(MEAL_LABEL[meal])))
   }
+
+  const unitOptions = hasServing ? [
+    { value: 'serving', label: t('Serving ({0}{1})', food.serving, sUnit) },
+    { value: sUnit, label: sUnit },
+    { value: sUnit === 'ml' ? 'g' : 'oz', label: sUnit === 'ml' ? 'g' : 'oz' }
+  ] : [
+    { value: 'g', label: 'g' },
+    { value: 'ml', label: 'ml' },
+    { value: 'oz', label: 'oz' },
+    { value: 'kg', label: 'kg' }
+  ]
+
+  const isServing = u === 'serving'
+  const step = isServing ? 0.5 : (UNITS[u]?.step || 10)
+  const dec = isServing ? true : Boolean(UNITS[u]?.dec)
+  const stepperUnit = isServing ? (qty === 1 ? t('serving') : t('servings')) : u
+
   return <>
     <h3>{food.name}</h3>
-    {food.brand && <div className="small muted" style={{ marginTop: -6, marginBottom: 10 }}>{food.brand}</div>}
-    <Stepper label={t('Amount')} unit="g" value={g} step={10} decimal={false} onChange={setG} />
-    {food.serving && <Button size="sm" variant="ghost" onClick={() => setG(food.serving)}>{t('1 serving ({0} g)', food.serving)}</Button>}
+    {(food.brand || food.servingSize) && (
+      <div className="small muted" style={{ marginTop: -6, marginBottom: 10 }}>
+        {[food.brand, food.servingSize].filter(Boolean).join(' · ')}
+      </div>
+    )}
+    <Stepper label={t('Amount')} unit={stepperUnit} value={qty} step={step} decimal={dec} onChange={setQty} />
+    {isServing && (
+      <div className="small muted" style={{ textAlign: 'center', marginTop: 4, marginBottom: 4 }}>
+        {t('{0} {1} = {2} {3}', qty, qty === 1 ? t('serving') : t('servings'), g, sUnit)}
+      </div>
+    )}
+    <div style={{ margin: '8px 0' }}><Segmented value={u} onChange={pickUnit} options={unitOptions} /></div>
+    {hasServing && (u !== 'serving' || qty !== 1) && (
+      <Button size="sm" variant="ghost" onClick={() => { setU('serving'); setQty(1) }}>
+        {t('1 serving ({0} {1})', food.serving, sUnit)}
+      </Button>
+    )}
     <div style={{ margin: '12px 0' }}><Segmented value={meal} onChange={setMeal} options={MEALS.map(m => ({ value: m, label: t(MEAL_LABEL[m]) }))} /></div>
     <div className="card row between" style={{ marginBottom: 12 }}>
       <b className="accent">{fmtNum(tot.kcal)} kcal</b>
@@ -116,12 +167,18 @@ export const customFoodSheet = onDone => ui().openSheet(close => <CustomFood onD
 
 function CustomFood({ onDone, close }) {
   const [name, setName] = useState('')
+  const [serving, setServing] = useState(null)
   const [n, setN] = useState({ kcal: null, p: null, c: null, f: null })
   const setK = k => v => setN(o => ({ ...o, [k]: v }))
   const save = () => {
     if (!name.trim() || n.kcal === null) return toast(t('Name and calories are required'))
-    const food = { src: 'custom', id: uid(), code: '', name: name.trim(), brand: '', serving: null,
-      per100: { kcal: n.kcal, p: n.p ?? 0, c: n.c ?? 0, f: n.f ?? 0 } }
+    const food = {
+      src: 'custom', id: uid(), code: '', name: name.trim(), brand: '',
+      serving: serving ? +serving : null,
+      servingUnit: 'g',
+      servingSize: serving ? `${serving} g` : null,
+      per100: { kcal: n.kcal, p: n.p ?? 0, c: n.c ?? 0, f: n.f ?? 0 }
+    }
     update(s => {
       s.nutrition ||= { profile: null, days: {}, foods: [] }
       ;(s.nutrition.foods ||= []).push(food)
@@ -132,6 +189,9 @@ function CustomFood({ onDone, close }) {
   return <>
     <h3>{t('New food')}</h3>
     <TextField placeholder={t('Name')} value={name} onChange={e => setName(e.target.value)} autoFocus aria-label={t('Name')} />
+    <Row title={t('Serving size (g)')} subtitle={t('Optional')}>
+      <NumberField nullable decimal={false} value={serving} onChange={setServing} placeholder="100" aria-label={t('Serving size (g)')} />
+    </Row>
     <h4 className="sec">{t('Per 100 g')}</h4>
     <Row title={t('Calories (kcal)')}><NumberField nullable value={n.kcal} onChange={setK('kcal')} placeholder="0" aria-label={t('Calories (kcal)')} /></Row>
     <Row title={t('Protein (g)')}><NumberField nullable value={n.p} onChange={setK('p')} placeholder="0" aria-label={t('Protein (g)')} /></Row>
@@ -202,6 +262,24 @@ function Barcode({ iso, meal, close }) {
   const [code, setCode] = useState('')
   const [msg, setMsg] = useState('')
   const busy = useRef(false)
+  // camera controls the device actually offers (Chrome / Android WebView expose these; others hide them)
+  const track = useRef(null)
+  const [caps, setCaps] = useState({})
+  const [zoom, setZoom] = useState(1)
+  const [torch, setTorch] = useState(false)
+  const [ring, setRing] = useState(null)
+  const apply = c => track.current?.applyConstraints({ advanced: [c] }).catch(() => {})
+  const setZ = z => { setZoom(z); apply({ zoom: z }) }
+  const flip = () => { apply({ torch: !torch }); setTorch(!torch) }
+  const tapFocus = e => {
+    if (!caps.focusMode) return
+    const r = e.currentTarget.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height
+    setRing({ x, y })
+    const back = () => setTimeout(() => { setRing(null); caps.focusMode.includes('continuous') && apply({ focusMode: 'continuous' }) }, 1200)
+    const mode = caps.focusMode.includes('single-shot') ? 'single-shot' : caps.focusMode[0]
+    track.current.applyConstraints({ advanced: [{ focusMode: mode, pointsOfInterest: [{ x, y }] }] })
+      .catch(() => apply({ focusMode: mode })).finally(back)
+  }
 
   const find = async c => {
     if (busy.current) return
@@ -218,9 +296,13 @@ function Barcode({ iso, meal, close }) {
     if (!('BarcodeDetector' in window)) return
     let stream, raf, stop = false
     const det = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] })
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(s => {
+    // HD + continuous focus: at the default 640×480 a small EAN is a few pixels per bar and never decodes
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: 'continuous' }] } }).then(s => {
       if (stop) { s.getTracks().forEach(tr => tr.stop()); return }
       stream = s; video.current.srcObject = s; video.current.play()
+      track.current = s.getVideoTracks()[0]
+      const c = track.current.getCapabilities?.() || {}
+      setCaps(c); if (c.zoom) setZoom(track.current.getSettings().zoom || c.zoom.min)
       const tick = async () => {
         if (stop) return
         try { const [hit] = await det.detect(video.current); if (hit) find(hit.rawValue) } catch { /* frame not ready */ }
@@ -234,7 +316,19 @@ function Barcode({ iso, meal, close }) {
   return <>
     <h3>{t('Scan barcode')}</h3>
     {'BarcodeDetector' in window
-      ? <video ref={video} playsInline muted style={{ width: '100%', borderRadius: 12, background: '#000', aspectRatio: '4/3', objectFit: 'cover' }} />
+      ? <>
+        <div onClick={tapFocus} style={{ position: 'relative' }}>
+          <video ref={video} playsInline muted style={{ width: '100%', borderRadius: 12, background: '#000', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} />
+          {ring && <span style={{ position: 'absolute', left: `calc(${ring.x * 100}% - 28px)`, top: `calc(${ring.y * 100}% - 28px)`, width: 56, height: 56, border: '2px solid var(--acc)', borderRadius: 12, pointerEvents: 'none' }} />}
+          {caps.torch && <button type="button" className="iconbtn" onClick={e => { e.stopPropagation(); flip() }} aria-label={t('Flashlight')} aria-pressed={torch}
+            style={{ position: 'absolute', top: 10, right: 10, background: torch ? 'var(--acc)' : 'rgba(0,0,0,.55)', color: torch ? 'var(--on-acc)' : '#fff' }}><Icon name="bolt" /></button>}
+        </div>
+        {caps.focusMode && <div className="small dim" style={{ marginTop: 6 }}>{t('Tap the preview to focus. For tiny barcodes, zoom in rather than moving closer.')}</div>}
+        {caps.zoom && caps.zoom.max > caps.zoom.min && <div style={{ marginTop: 8 }}>
+          <div className="small muted" style={{ marginBottom: 4 }}>{t('Zoom {0}×', Math.round(zoom * 10) / 10)}</div>
+          <Slider aria-label={t('Zoom')} value={zoom} min={caps.zoom.min} max={Math.min(caps.zoom.max, 8)} step={caps.zoom.step || 0.1} onChange={setZ} />
+        </div>}
+      </>
       : <div className="small muted" style={{ marginBottom: 12 }}>{t('Automatic scanning isn’t supported here — type the number under the barcode.')}</div>}
     <div className="row" style={{ gap: 8, marginTop: 10 }}>
       <TextField inputMode="numeric" placeholder={t('Enter barcode (e.g. 3017624010701)')} value={code} onChange={e => setCode(e.target.value)} style={{ flex: 1 }} autoFocus={!('BarcodeDetector' in window)} />

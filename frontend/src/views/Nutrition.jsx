@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
-import { targets, dayTotals, entryTotals, MEALS } from '../lib/nutrition.js'
+import { targets, dayTotals, entryTotals, fmtAmount, MEALS } from '../lib/nutrition.js'
 import { todayISO, isoOf, fmtNum, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { nutritionProfileSheet, foodSearchSheet, foodAmountSheet, barcodeSheet, MEAL_LABEL } from '../nutrition-sheets.jsx'
@@ -41,7 +41,7 @@ export default function Nutrition() {
 
   return <div className="narrow">
     <div className="hdr">
-      <div><h1>{t('Food')}</h1><div className="sub">{isToday ? t('Today') : fmtDate(iso, true)}</div></div>
+      <div><h1>{t('My Meals')}</h1><div className="sub">{isToday ? t('Today') : fmtDate(iso, true)}</div></div>
       <div className="row" style={{ gap: 6 }}>
         <button className="iconbtn" onClick={() => barcodeSheet(iso, defaultMeal())} aria-label={t('Scan barcode')}><Icon name="barcode" /></button>
         <button className="iconbtn" onClick={nutritionProfileSheet} aria-label={t('Targets')}><Icon name="target" /></button>
@@ -70,7 +70,7 @@ export default function Nutrition() {
         <h2 className="sect-t" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><span>{t(MEAL_LABEL[m])}</span>{kcal > 0 && <span className="dim">{fmtNum(kcal)} kcal</span>}</h2>
         <div className="sect-b">
           {list.map(e => <button key={e.id} className="lrow tap" onClick={() => foodAmountSheet(iso, m, e.food, e)}>
-            <span className="lrow-m"><span className="lrow-t">{e.food.name}</span><span className="lrow-s">{e.g} g</span></span>
+            <span className="lrow-m"><span className="lrow-t">{e.food.name}</span><span className="lrow-s">{fmtAmount(e)}</span></span>
             <span className="lrow-v">{fmtNum(entryTotals(e).kcal)} kcal</span>
           </button>)}
           <button className="lrow tap" onClick={() => foodSearchSheet(iso, m)}>
