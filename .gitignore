@@ -1,5 +1,7 @@
 # runtime data — users, passkeys, session secret, push keys. NEVER commit.
 data/
+# …but bundled app reference data (nutrition tables) is source, not runtime data
+!frontend/src/data/
 .env
 node_modules/
 dist/
