@@ -17,6 +17,23 @@ let workInt = null
 let workTick = null
 let workDone = null
 
+let poppingDueToClose = false
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', () => {
+    if (poppingDueToClose) {
+      poppingDueToClose = false
+      return
+    }
+    const sheets = useUI.getState().sheets
+    if (!sheets.length) return
+    const top = sheets[sheets.length - 1]
+    if (top && !top.locked) {
+      useUI.setState(s => ({ sheets: s.sheets.slice(0, -1) }))
+    }
+  })
+}
+
 export const useUI = create((set, get) => ({
   sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked }
   toastMsg: '',
@@ -30,12 +47,36 @@ export const useUI = create((set, get) => ({
     set({ toastMsg: '', toastUndo: null })
 
     const id = uid()
-    set(s => ({ sheets: [...s.sheets, { id, render, kind, locked }] }))
+    let pushed = false
+    if (typeof window !== 'undefined' && window.history) {
+      try {
+        window.history.pushState({ openfitSheet: id }, '', window.location.href)
+        pushed = true
+      } catch {}
+    }
+    set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, pushedHistory: pushed }] }))
     const close = () => get().closeSheet(id)
     return { id, close, lock: v => set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, locked: v } : x) })) }
   },
-  closeSheet(id) { set(s => ({ sheets: s.sheets.filter(x => x.id !== id) })) },
-  closeAll() { set({ sheets: [] }) },
+  closeSheet(id) {
+    const list = get().sheets
+    const sheet = list.find(x => x.id === id)
+    if (sheet && sheet.pushedHistory && typeof window !== 'undefined' && window.history?.state?.openfitSheet === id) {
+      poppingDueToClose = true
+      window.history.back()
+    }
+    set(s => ({ sheets: s.sheets.filter(x => x.id !== id) }))
+  },
+  closeAll() {
+    const list = get().sheets
+    list.forEach(s => {
+      if (s.pushedHistory && typeof window !== 'undefined' && window.history?.state?.openfitSheet === s.id) {
+        poppingDueToClose = true
+        window.history.back()
+      }
+    })
+    set({ sheets: [] })
+  },
 
   toast(msg, opts = {}) {
     const undo = typeof opts === 'function' ? opts : opts.undo || null
