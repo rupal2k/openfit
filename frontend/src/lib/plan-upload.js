@@ -154,7 +154,7 @@ export function parseCSVPlan(csvText, filename = '') {
 }
 
 /**
- * Parse structured JSON plan (either openGym native or user-friendly simplified format).
+ * Parse structured JSON plan (either OPENFIT native or user-friendly simplified format).
  */
 export function parseJSONPlan(jsonText, filename = '') {
   const data = typeof jsonText === 'string' ? JSON.parse(jsonText) : jsonText
@@ -162,7 +162,7 @@ export function parseJSONPlan(jsonText, filename = '') {
     throw new Error(t('Invalid JSON file format'))
   }
 
-  // 1. Native openGym plan format
+  // 1. Native plan format (key kept as opengym_plan for compatibility)
   if (data.opengym_plan && Array.isArray(data.routines)) {
     return parsePlan(data)
   }
@@ -226,7 +226,7 @@ export function parseJSONPlan(jsonText, filename = '') {
 }
 
 /**
- * Universal plan loader: automatically detects JSON vs CSV and parses into an openGym bundle.
+ * Universal plan loader: automatically detects JSON vs CSV and parses into an OPENFIT bundle.
  */
 export function parseAnyPlan(raw, filename = '') {
   const isJson = (filename && filename.toLowerCase().endsWith('.json')) ||

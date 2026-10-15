@@ -1,4 +1,4 @@
-/* openGym service worker — runtime caching (works with Vite's hashed asset names).
+/* OPENFIT service worker — runtime caching (works with Vite's hashed asset names).
    Media (img/gif) cache-first; everything else network-first with offline fallback. */
 const CACHE = 'opengym-rt-v1'
 
