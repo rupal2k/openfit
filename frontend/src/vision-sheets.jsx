@@ -7,7 +7,7 @@ import { useUI } from './store/useUI.js'
 import { t } from './lib/i18n.js'
 import { fmtNum } from './lib/format.js'
 import { addEntry, entryTotals, MEALS } from './lib/nutrition.js'
-import { MODELS, downloadBytes } from './lib/vision/catalog.js'
+import { MODELS, downloadBytes, RUNTIME_BYTES } from './lib/vision/catalog.js'
 import { MESSAGES } from './lib/vision/errors.js'
 import { prepImage } from './lib/vision/image.js'
 import { analyzeDish } from './lib/vision/analyzer.js'
@@ -37,7 +37,7 @@ function statusLine(v) {
     case 'verifying': return t('Verifying download…')
     case 'ineligible': return t(MESSAGES[v.reason])
     case 'failed': return v.error ? t(v.error) : t('Download failed')
-    case 'absent': return t('{0} MB download · {1}', mb(downloadBytes(m, v.device || 'wasm')), m.license)
+    case 'absent': return t('{0} MB download · {1}', mb(downloadBytes(m, v.device || 'wasm') + RUNTIME_BYTES), m.license)
     default: return t('Checking…')
   }
 }

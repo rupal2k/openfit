@@ -3,6 +3,9 @@
 // The Task 1 spike (docs/superpowers/notes/2026-10-15-photo-spike.md) rejected SmolVLM 256M/500M
 // (3–5/10 dishes, no usable grams, 20–40 s); the Food-101 classifier won (6–7/10, ~2.5 s, 53–93 MB).
 const RESERVE_MIN = 256e6            // fud-ai: max(256 MB, 10%) headroom over the download
+// ONNX Runtime's wasm (ort-wasm-simd-threaded.asyncify.wasm), fetched once from jsDelivr by
+// transformers.js and cached alongside the model — shown in the download size, not bundled.
+export const RUNTIME_BYTES = 26_861_777
 
 export const MODELS = {
   food101: {
