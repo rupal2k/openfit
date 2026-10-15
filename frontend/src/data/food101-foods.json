@@ -1,0 +1,1214 @@
+{
+ "apple_pie": {
+  "name": "Apple pie",
+  "usda": "Pie, apple",
+  "approx": false,
+  "per100": {
+   "kcal": 296,
+   "p": 2.7,
+   "c": 37.6,
+   "f": 15.3
+  },
+  "portion": 150
+ },
+ "baby_back_ribs": {
+  "name": "Baby back ribs",
+  "usda": "Pork, ribs",
+  "approx": false,
+  "per100": {
+   "kcal": 254,
+   "p": 16.2,
+   "c": 12.1,
+   "f": 15.1
+  },
+  "portion": 105
+ },
+ "baklava": {
+  "name": "Baklava",
+  "usda": "Baklava",
+  "approx": false,
+  "per100": {
+   "kcal": 440,
+   "p": 6.6,
+   "c": 37.6,
+   "f": 29.3
+  },
+  "portion": 80
+ },
+ "beef_carpaccio": {
+  "name": "Beef carpaccio",
+  "usda": "Beef, ground, raw",
+  "approx": true,
+  "per100": {
+   "kcal": 213,
+   "p": 18.4,
+   "c": 0,
+   "f": 14.9
+  },
+  "portion": 85
+ },
+ "beef_tartare": {
+  "name": "Beef tartare",
+  "usda": "Beef, ground, raw",
+  "approx": true,
+  "per100": {
+   "kcal": 213,
+   "p": 18.4,
+   "c": 0,
+   "f": 14.9
+  },
+  "portion": 85
+ },
+ "beet_salad": {
+  "name": "Beet salad",
+  "usda": "Beets, raw",
+  "approx": true,
+  "per100": {
+   "kcal": 43,
+   "p": 1.6,
+   "c": 9.6,
+   "f": 0.2
+  },
+  "portion": 68
+ },
+ "beignets": {
+  "name": "Beignets",
+  "usda": "Doughnut, NFS",
+  "approx": true,
+  "per100": {
+   "kcal": 426,
+   "p": 5.5,
+   "c": 49.5,
+   "f": 22.9
+  },
+  "portion": 75
+ },
+ "bibimbap": {
+  "name": "Bibimbap",
+  "usda": "Bibimbap, Korean",
+  "approx": false,
+  "per100": {
+   "kcal": 76,
+   "p": 5.5,
+   "c": 8.1,
+   "f": 2.4
+  },
+  "portion": 121
+ },
+ "bread_pudding": {
+  "name": "Bread pudding",
+  "usda": "Pudding, bread",
+  "approx": false,
+  "per100": {
+   "kcal": 156,
+   "p": 5.6,
+   "c": 23.5,
+   "f": 4.9
+  },
+  "portion": 100
+ },
+ "breakfast_burrito": {
+  "name": "Breakfast burrito",
+  "usda": "Egg burrito",
+  "approx": false,
+  "per100": {
+   "kcal": 249,
+   "p": 10.9,
+   "c": 20.1,
+   "f": 13.7
+  },
+  "portion": 180
+ },
+ "bruschetta": {
+  "name": "Bruschetta",
+  "usda": "Bruschetta",
+  "approx": false,
+  "per100": {
+   "kcal": 171,
+   "p": 4.3,
+   "c": 21.3,
+   "f": 7.6
+  },
+  "portion": 43
+ },
+ "caesar_salad": {
+  "name": "Caesar salad",
+  "usda": "Caesar salad, with romaine, no dressing",
+  "approx": false,
+  "per100": {
+   "kcal": 77,
+   "p": 4,
+   "c": 7.5,
+   "f": 3.4
+  },
+  "portion": 79
+ },
+ "cannoli": {
+  "name": "Cannoli",
+  "usda": "Cream puff, eclair, custard or cream filled, not iced",
+  "approx": true,
+  "per100": {
+   "kcal": 264,
+   "p": 4.8,
+   "c": 12.9,
+   "f": 21.5
+  },
+  "portion": 70
+ },
+ "caprese_salad": {
+  "name": "Caprese salad",
+  "usda": "Mozzarella cheese, tomato, and basil, with oil and vinegar dressing",
+  "approx": false,
+  "per100": {
+   "kcal": 139,
+   "p": 7.2,
+   "c": 3.9,
+   "f": 10.9
+  },
+  "portion": 80
+ },
+ "carrot_cake": {
+  "name": "Carrot cake",
+  "usda": "Cake or cupcake, carrot",
+  "approx": false,
+  "per100": {
+   "kcal": 374,
+   "p": 2.5,
+   "c": 51.8,
+   "f": 17.5
+  },
+  "portion": 200
+ },
+ "ceviche": {
+  "name": "Ceviche",
+  "usda": "Ceviche",
+  "approx": false,
+  "per100": {
+   "kcal": 63,
+   "p": 10.5,
+   "c": 3.6,
+   "f": 0.8
+  },
+  "portion": 125
+ },
+ "cheesecake": {
+  "name": "Cheesecake",
+  "usda": "Cheesecake, plain",
+  "approx": false,
+  "per100": {
+   "kcal": 399,
+   "p": 5.3,
+   "c": 34.8,
+   "f": 26.5
+  },
+  "portion": 175
+ },
+ "cheese_plate": {
+  "name": "Cheese plate",
+  "usda": "Cheese, NFS",
+  "approx": true,
+  "per100": {
+   "kcal": 381,
+   "p": 20.7,
+   "c": 4.3,
+   "f": 31.3
+  },
+  "portion": 21
+ },
+ "chicken_curry": {
+  "name": "Chicken curry",
+  "usda": "Chicken curry",
+  "approx": false,
+  "per100": {
+   "kcal": 107,
+   "p": 6.5,
+   "c": 6.5,
+   "f": 6.5
+  },
+  "portion": 240
+ },
+ "chicken_quesadilla": {
+  "name": "Chicken quesadilla",
+  "usda": "Quesadilla, chicken",
+  "approx": false,
+  "per100": {
+   "kcal": 287,
+   "p": 14.5,
+   "c": 27.3,
+   "f": 13
+  },
+  "portion": 70
+ },
+ "chicken_wings": {
+  "name": "Chicken wings",
+  "usda": "Chicken wing, fried, coated, from restaurant",
+  "approx": false,
+  "per100": {
+   "kcal": 323,
+   "p": 17.8,
+   "c": 15,
+   "f": 21.3
+  },
+  "portion": 110
+ },
+ "chocolate_cake": {
+  "name": "Chocolate cake",
+  "usda": "Cake or cupcake, chocolate with chocolate icing, bakery",
+  "approx": false,
+  "per100": {
+   "kcal": 345,
+   "p": 3.3,
+   "c": 52.3,
+   "f": 15.2
+  },
+  "portion": 175
+ },
+ "chocolate_mousse": {
+  "name": "Chocolate mousse",
+  "usda": "Mousse",
+  "approx": false,
+  "per100": {
+   "kcal": 212,
+   "p": 4.2,
+   "c": 16.2,
+   "f": 15.1
+  },
+  "portion": 85
+ },
+ "churros": {
+  "name": "Churros",
+  "usda": "Churros",
+  "approx": false,
+  "per100": {
+   "kcal": 419,
+   "p": 6.1,
+   "c": 48.9,
+   "f": 22.2
+  },
+  "portion": 45
+ },
+ "clam_chowder": {
+  "name": "Clam chowder",
+  "usda": "Soup, New England clam chowder",
+  "approx": false,
+  "per100": {
+   "kcal": 93,
+   "p": 3.1,
+   "c": 9.3,
+   "f": 4.8
+  },
+  "portion": 255
+ },
+ "club_sandwich": {
+  "name": "Club sandwich",
+  "usda": "Club sandwich on white",
+  "approx": false,
+  "per100": {
+   "kcal": 222,
+   "p": 15.1,
+   "c": 23.1,
+   "f": 7.5
+  },
+  "portion": 130
+ },
+ "crab_cakes": {
+  "name": "Crab cakes",
+  "usda": "Crab, cake",
+  "approx": false,
+  "per100": {
+   "kcal": 214,
+   "p": 14.4,
+   "c": 4.5,
+   "f": 15
+  },
+  "portion": 85
+ },
+ "creme_brulee": {
+  "name": "Creme brulee",
+  "usda": "Custard",
+  "approx": true,
+  "per100": {
+   "kcal": 97,
+   "p": 5.1,
+   "c": 11,
+   "f": 3.6
+  },
+  "portion": 130
+ },
+ "croque_madame": {
+  "name": "Croque madame",
+  "usda": "Ham sandwich on white, with cheese",
+  "approx": true,
+  "per100": {
+   "kcal": 213,
+   "p": 14.1,
+   "c": 22.4,
+   "f": 7.5
+  },
+  "portion": 135
+ },
+ "cup_cakes": {
+  "name": "Cup cakes",
+  "usda": "Cake or cupcake, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 352,
+   "p": 2.8,
+   "c": 53.6,
+   "f": 14.8
+  },
+  "portion": 175
+ },
+ "deviled_eggs": {
+  "name": "Deviled eggs",
+  "usda": "Egg, deviled",
+  "approx": false,
+  "per100": {
+   "kcal": 198,
+   "p": 11.5,
+   "c": 1.1,
+   "f": 15.9
+  },
+  "portion": 30
+ },
+ "donuts": {
+  "name": "Donuts",
+  "usda": "Doughnut, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 426,
+   "p": 5.5,
+   "c": 49.5,
+   "f": 22.9
+  },
+  "portion": 75
+ },
+ "dumplings": {
+  "name": "Dumplings",
+  "usda": "Wonton, dumpling or pot sticker, steamed",
+  "approx": false,
+  "per100": {
+   "kcal": 113,
+   "p": 6.9,
+   "c": 11.1,
+   "f": 4.6
+  },
+  "portion": 75
+ },
+ "edamame": {
+  "name": "Edamame",
+  "usda": "Edamame, cooked",
+  "approx": false,
+  "per100": {
+   "kcal": 140,
+   "p": 11.5,
+   "c": 8.6,
+   "f": 7.6
+  },
+  "portion": 80
+ },
+ "eggs_benedict": {
+  "name": "Eggs benedict",
+  "usda": "Egg, Benedict",
+  "approx": false,
+  "per100": {
+   "kcal": 288,
+   "p": 13.8,
+   "c": 8.5,
+   "f": 22.1
+  },
+  "portion": 155
+ },
+ "escargots": {
+  "name": "Escargots",
+  "usda": "Escargot",
+  "approx": false,
+  "per100": {
+   "kcal": 158,
+   "p": 20,
+   "c": 2.5,
+   "f": 6.9
+  },
+  "portion": 85
+ },
+ "falafel": {
+  "name": "Falafel",
+  "usda": "Falafel",
+  "approx": false,
+  "per100": {
+   "kcal": 514,
+   "p": 8.3,
+   "c": 29,
+   "f": 41.2
+  },
+  "portion": 28
+ },
+ "filet_mignon": {
+  "name": "Filet mignon",
+  "usda": "Beef, steak, tenderloin",
+  "approx": false,
+  "per100": {
+   "kcal": 196,
+   "p": 30.5,
+   "c": 0,
+   "f": 8.3
+  },
+  "portion": 160
+ },
+ "fish_and_chips": {
+  "name": "Fish and chips",
+  "usda": "Fish, cod, fried",
+  "approx": true,
+  "per100": {
+   "kcal": 217,
+   "p": 13.5,
+   "c": 11.7,
+   "f": 12.5
+  },
+  "portion": 140
+ },
+ "foie_gras": {
+  "name": "Foie gras",
+  "usda": "Liver, paste or pate",
+  "approx": true,
+  "per100": {
+   "kcal": 201,
+   "p": 13.5,
+   "c": 6.6,
+   "f": 13.1
+  },
+  "portion": 85
+ },
+ "french_fries": {
+  "name": "French fries",
+  "usda": "Potato, french fries, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 225,
+   "p": 2.5,
+   "c": 23.2,
+   "f": 14.1
+  },
+  "portion": 110
+ },
+ "french_onion_soup": {
+  "name": "French onion soup",
+  "usda": "Soup, French onion",
+  "approx": false,
+  "per100": {
+   "kcal": 108,
+   "p": 5.5,
+   "c": 11.8,
+   "f": 4.5
+  },
+  "portion": 245
+ },
+ "french_toast": {
+  "name": "French toast",
+  "usda": "French toast, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 273,
+   "p": 10.4,
+   "c": 32.3,
+   "f": 11.4
+  },
+  "portion": 60
+ },
+ "fried_calamari": {
+  "name": "Fried calamari",
+  "usda": "Calamari, fried",
+  "approx": false,
+  "per100": {
+   "kcal": 234,
+   "p": 13.8,
+   "c": 14.1,
+   "f": 13.2
+  },
+  "portion": 85
+ },
+ "fried_rice": {
+  "name": "Fried rice",
+  "usda": "Rice, fried, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 174,
+   "p": 3.8,
+   "c": 32.5,
+   "f": 3.2
+  },
+  "portion": 198
+ },
+ "frozen_yogurt": {
+  "name": "Frozen yogurt",
+  "usda": "Frozen yogurt, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 127,
+   "p": 3,
+   "c": 21.6,
+   "f": 3.6
+  },
+  "portion": 175
+ },
+ "garlic_bread": {
+  "name": "Garlic bread",
+  "usda": "Garlic bread, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 349,
+   "p": 8.3,
+   "c": 41.6,
+   "f": 16.6
+  },
+  "portion": 79
+ },
+ "gnocchi": {
+  "name": "Gnocchi",
+  "usda": "Gnocchi, potato",
+  "approx": false,
+  "per100": {
+   "kcal": 135,
+   "p": 2.4,
+   "c": 17.2,
+   "f": 6.3
+  },
+  "portion": 188
+ },
+ "greek_salad": {
+  "name": "Greek salad",
+  "usda": "Greek Salad, no dressing",
+  "approx": false,
+  "per100": {
+   "kcal": 48,
+   "p": 2.8,
+   "c": 4.4,
+   "f": 2.3
+  },
+  "portion": 105
+ },
+ "grilled_cheese_sandwich": {
+  "name": "Grilled cheese sandwich",
+  "usda": "Grilled cheese sandwich, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 343,
+   "p": 11,
+   "c": 28.1,
+   "f": 20.8
+  },
+  "portion": 116
+ },
+ "grilled_salmon": {
+  "name": "Grilled salmon",
+  "usda": "Fish, salmon, grilled",
+  "approx": false,
+  "per100": {
+   "kcal": 259,
+   "p": 25.9,
+   "c": 0,
+   "f": 16.5
+  },
+  "portion": 140
+ },
+ "guacamole": {
+  "name": "Guacamole",
+  "usda": "Guacamole, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 155,
+   "p": 2,
+   "c": 8.5,
+   "f": 14.2
+  },
+  "portion": 60
+ },
+ "gyoza": {
+  "name": "Gyoza",
+  "usda": "Wonton, dumpling or pot sticker, fried",
+  "approx": false,
+  "per100": {
+   "kcal": 192,
+   "p": 8.8,
+   "c": 14.1,
+   "f": 11.1
+  },
+  "portion": 75
+ },
+ "hamburger": {
+  "name": "Hamburger",
+  "usda": "Hamburger, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 288,
+   "p": 17.5,
+   "c": 20.7,
+   "f": 14.4
+  },
+  "portion": 145
+ },
+ "hot_and_sour_soup": {
+  "name": "Hot and sour soup",
+  "usda": "Soup, hot and sour",
+  "approx": false,
+  "per100": {
+   "kcal": 39,
+   "p": 2.6,
+   "c": 4.4,
+   "f": 1.2
+  },
+  "portion": 245
+ },
+ "hot_dog": {
+  "name": "Hot dog",
+  "usda": "Hot dog, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 310,
+   "p": 11.7,
+   "c": 2.9,
+   "f": 28
+  },
+  "portion": 57
+ },
+ "huevos_rancheros": {
+  "name": "Huevos rancheros",
+  "usda": "Huevos rancheros",
+  "approx": false,
+  "per100": {
+   "kcal": 121,
+   "p": 6.7,
+   "c": 8.9,
+   "f": 6.7
+  },
+  "portion": 236
+ },
+ "hummus": {
+  "name": "Hummus",
+  "usda": "Hummus, plain",
+  "approx": false,
+  "per100": {
+   "kcal": 243,
+   "p": 7.4,
+   "c": 14.9,
+   "f": 17.1
+  },
+  "portion": 60
+ },
+ "ice_cream": {
+  "name": "Ice cream",
+  "usda": "Ice cream, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 221,
+   "p": 3.6,
+   "c": 26.4,
+   "f": 11.3
+  },
+  "portion": 135
+ },
+ "lasagna": {
+  "name": "Lasagna",
+  "usda": "Lasagna with meat",
+  "approx": false,
+  "per100": {
+   "kcal": 139,
+   "p": 7.5,
+   "c": 16.2,
+   "f": 5
+  },
+  "portion": 250
+ },
+ "lobster_bisque": {
+  "name": "Lobster bisque",
+  "usda": "Soup, bisque",
+  "approx": true,
+  "per100": {
+   "kcal": 75,
+   "p": 2.3,
+   "c": 5.9,
+   "f": 4.8
+  },
+  "portion": 255
+ },
+ "lobster_roll_sandwich": {
+  "name": "Lobster roll sandwich",
+  "usda": "Lobster salad",
+  "approx": true,
+  "per100": {
+   "kcal": 187,
+   "p": 10.3,
+   "c": 1.2,
+   "f": 15.4
+  },
+  "portion": 91
+ },
+ "macaroni_and_cheese": {
+  "name": "Macaroni and cheese",
+  "usda": "Macaroni or noodles with cheese",
+  "approx": false,
+  "per100": {
+   "kcal": 223,
+   "p": 8.7,
+   "c": 23.1,
+   "f": 10.5
+  },
+  "portion": 230
+ },
+ "macarons": {
+  "name": "Macarons",
+  "usda": "Cookie, macaroon",
+  "approx": true,
+  "per100": {
+   "kcal": 460,
+   "p": 3,
+   "c": 61.2,
+   "f": 22.6
+  },
+  "portion": 48
+ },
+ "miso_soup": {
+  "name": "Miso soup",
+  "usda": "Soup, miso or tofu",
+  "approx": false,
+  "per100": {
+   "kcal": 24,
+   "p": 2.2,
+   "c": 2.3,
+   "f": 0.9
+  },
+  "portion": 245
+ },
+ "mussels": {
+  "name": "Mussels",
+  "usda": "Mussels",
+  "approx": false,
+  "per100": {
+   "kcal": 109,
+   "p": 15.1,
+   "c": 4.7,
+   "f": 2.8
+  },
+  "portion": 85
+ },
+ "nachos": {
+  "name": "Nachos",
+  "usda": "Nachos, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 265,
+   "p": 7.6,
+   "c": 23.9,
+   "f": 15.9
+  },
+  "portion": 125
+ },
+ "omelette": {
+  "name": "Omelette",
+  "usda": "Egg omelet or scrambled egg, NS as to fat",
+  "approx": false,
+  "per100": {
+   "kcal": 185,
+   "p": 11.6,
+   "c": 0.9,
+   "f": 15
+  },
+  "portion": 110
+ },
+ "onion_rings": {
+  "name": "Onion rings",
+  "usda": "Fried onion rings",
+  "approx": false,
+  "per100": {
+   "kcal": 352,
+   "p": 4.2,
+   "c": 39.9,
+   "f": 19.8
+  },
+  "portion": 120
+ },
+ "oysters": {
+  "name": "Oysters",
+  "usda": "Oysters, raw",
+  "approx": false,
+  "per100": {
+   "kcal": 51,
+   "p": 5.7,
+   "c": 2.7,
+   "f": 1.7
+  },
+  "portion": 85
+ },
+ "pad_thai": {
+  "name": "Pad thai",
+  "usda": "Pad Thai, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 154,
+   "p": 8.1,
+   "c": 14.4,
+   "f": 7.5
+  },
+  "portion": 200
+ },
+ "paella": {
+  "name": "Paella",
+  "usda": "Paella, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 169,
+   "p": 9.5,
+   "c": 15.8,
+   "f": 7.2
+  },
+  "portion": 300
+ },
+ "pancakes": {
+  "name": "Pancakes",
+  "usda": "Pancakes, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 282,
+   "p": 7.4,
+   "c": 35.3,
+   "f": 12.1
+  },
+  "portion": 100
+ },
+ "panna_cotta": {
+  "name": "Panna cotta",
+  "usda": "Custard",
+  "approx": true,
+  "per100": {
+   "kcal": 97,
+   "p": 5.1,
+   "c": 11,
+   "f": 3.6
+  },
+  "portion": 130
+ },
+ "peking_duck": {
+  "name": "Peking duck",
+  "usda": "Duck, Peking",
+  "approx": false,
+  "per100": {
+   "kcal": 154,
+   "p": 5.3,
+   "c": 6.5,
+   "f": 11.8
+  },
+  "portion": 85
+ },
+ "pho": {
+  "name": "Pho",
+  "usda": "Soup, pho, with meat",
+  "approx": false,
+  "per100": {
+   "kcal": 77,
+   "p": 5.8,
+   "c": 5.6,
+   "f": 3.3
+  },
+  "portion": 245
+ },
+ "pizza": {
+  "name": "Pizza",
+  "usda": "Pizza, cheese, from restaurant or fast food, NS as to type of crust",
+  "approx": false,
+  "per100": {
+   "kcal": 266,
+   "p": 11.4,
+   "c": 33.3,
+   "f": 9.7
+  },
+  "portion": 238
+ },
+ "pork_chop": {
+  "name": "Pork chop",
+  "usda": "Pork, chop, NS as to fat eaten",
+  "approx": false,
+  "per100": {
+   "kcal": 183,
+   "p": 27.5,
+   "c": 0,
+   "f": 7.6
+  },
+  "portion": 120
+ },
+ "poutine": {
+  "name": "Poutine",
+  "usda": "Potato, french fries, with cheese",
+  "approx": true,
+  "per100": {
+   "kcal": 260,
+   "p": 3.3,
+   "c": 29.8,
+   "f": 14.2
+  },
+  "portion": 130
+ },
+ "prime_rib": {
+  "name": "Prime rib",
+  "usda": "Beef, steak, ribeye, lean and fat eaten",
+  "approx": true,
+  "per100": {
+   "kcal": 289,
+   "p": 23.5,
+   "c": 0,
+   "f": 21.6
+  },
+  "portion": 240
+ },
+ "pulled_pork_sandwich": {
+  "name": "Pulled pork sandwich",
+  "usda": "Barbecue pork sandwich, on white bun",
+  "approx": false,
+  "per100": {
+   "kcal": 243,
+   "p": 15,
+   "c": 24.9,
+   "f": 8.8
+  },
+  "portion": 180
+ },
+ "ramen": {
+  "name": "Ramen",
+  "usda": "Ramen bowl, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 127,
+   "p": 7.1,
+   "c": 14,
+   "f": 4.6
+  },
+  "portion": 245
+ },
+ "ravioli": {
+  "name": "Ravioli",
+  "usda": "Ravioli, cheese-filled, with tomato sauce",
+  "approx": false,
+  "per100": {
+   "kcal": 98,
+   "p": 4,
+   "c": 15.2,
+   "f": 2.3
+  },
+  "portion": 250
+ },
+ "red_velvet_cake": {
+  "name": "Red velvet cake",
+  "usda": "Cake or cupcake, red velvet",
+  "approx": false,
+  "per100": {
+   "kcal": 355,
+   "p": 2.8,
+   "c": 54.4,
+   "f": 14.6
+  },
+  "portion": 200
+ },
+ "risotto": {
+  "name": "Risotto",
+  "usda": "Flavored rice mixture with cheese",
+  "approx": true,
+  "per100": {
+   "kcal": 124,
+   "p": 3,
+   "c": 25.2,
+   "f": 1.2
+  },
+  "portion": 173
+ },
+ "samosa": {
+  "name": "Samosa",
+  "usda": "Samosa",
+  "approx": false,
+  "per100": {
+   "kcal": 310,
+   "p": 5.1,
+   "c": 33.2,
+   "f": 17.5
+  },
+  "portion": 75
+ },
+ "sashimi": {
+  "name": "Sashimi",
+  "usda": "Fish, raw",
+  "approx": false,
+  "per100": {
+   "kcal": 94,
+   "p": 17.2,
+   "c": 0,
+   "f": 2.3
+  },
+  "portion": 85
+ },
+ "scallops": {
+  "name": "Scallops",
+  "usda": "Scallops, grilled",
+  "approx": false,
+  "per100": {
+   "kcal": 108,
+   "p": 15.3,
+   "c": 4,
+   "f": 2.9
+  },
+  "portion": 85
+ },
+ "seaweed_salad": {
+  "name": "Seaweed salad",
+  "usda": "Seaweed, pickled",
+  "approx": true,
+  "per100": {
+   "kcal": 54,
+   "p": 2.9,
+   "c": 11.4,
+   "f": 0.4
+  },
+  "portion": 30
+ },
+ "shrimp_and_grits": {
+  "name": "Shrimp and grits",
+  "usda": "Grits, with cheese, fat added",
+  "approx": true,
+  "per100": {
+   "kcal": 108,
+   "p": 3.6,
+   "c": 11.4,
+   "f": 5.3
+  },
+  "portion": 240
+ },
+ "spaghetti_bolognese": {
+  "name": "Spaghetti bolognese",
+  "usda": "Spaghetti with meat sauce, diet frozen meal",
+  "approx": true,
+  "per100": {
+   "kcal": 113,
+   "p": 5.6,
+   "c": 15.1,
+   "f": 3.4
+  },
+  "portion": 298
+ },
+ "spaghetti_carbonara": {
+  "name": "Spaghetti carbonara",
+  "usda": "Pasta with cream sauce and meat, restaurant",
+  "approx": true,
+  "per100": {
+   "kcal": 213,
+   "p": 5.7,
+   "c": 15.4,
+   "f": 14.1
+  },
+  "portion": 250
+ },
+ "spring_rolls": {
+  "name": "Spring rolls",
+  "usda": "Egg roll, with beef and/or pork",
+  "approx": false,
+  "per100": {
+   "kcal": 272,
+   "p": 7.6,
+   "c": 27,
+   "f": 14.7
+  },
+  "portion": 100
+ },
+ "steak": {
+  "name": "Steak",
+  "usda": "Beef, steak, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 229,
+   "p": 27,
+   "c": 0,
+   "f": 12.9
+  },
+  "portion": 160
+ },
+ "strawberry_shortcake": {
+  "name": "Strawberry shortcake",
+  "usda": "Cake, strawberry shortcake",
+  "approx": false,
+  "per100": {
+   "kcal": 214,
+   "p": 3.3,
+   "c": 40.1,
+   "f": 4.7
+  },
+  "portion": 175
+ },
+ "sushi": {
+  "name": "Sushi",
+  "usda": "Sushi, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 94,
+   "p": 2.9,
+   "c": 18.4,
+   "f": 0.7
+  },
+  "portion": 180
+ },
+ "tacos": {
+  "name": "Tacos",
+  "usda": "Taco, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 246,
+   "p": 15.3,
+   "c": 15.6,
+   "f": 13.6
+  },
+  "portion": 105
+ },
+ "takoyaki": {
+  "name": "Takoyaki",
+  "usda": "Octopus",
+  "approx": true,
+  "per100": {
+   "kcal": 226,
+   "p": 13.3,
+   "c": 13.4,
+   "f": 13
+  },
+  "portion": 85
+ },
+ "tiramisu": {
+  "name": "Tiramisu",
+  "usda": "Tiramisu",
+  "approx": false,
+  "per100": {
+   "kcal": 353,
+   "p": 5.7,
+   "c": 29.4,
+   "f": 23.9
+  },
+  "portion": 175
+ },
+ "tuna_tartare": {
+  "name": "Tuna tartare",
+  "usda": "Fish, tuna, raw",
+  "approx": true,
+  "per100": {
+   "kcal": 109,
+   "p": 24.4,
+   "c": 0,
+   "f": 0.5
+  },
+  "portion": 85
+ },
+ "waffles": {
+  "name": "Waffles",
+  "usda": "Waffle, NFS",
+  "approx": false,
+  "per100": {
+   "kcal": 309,
+   "p": 7.4,
+   "c": 48.4,
+   "f": 9.5
+  },
+  "portion": 75
+ }
+}

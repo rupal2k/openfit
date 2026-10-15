@@ -1,0 +1,104 @@
+# Food-101 classifier label → USDA FNDDS survey food (exact description).
+# Format: label | FNDDS description | ~ when the dish has no direct FNDDS entry and the nearest food is used
+# Build: node scripts/build-food101-foods.mjs <path to unzipped FoodData_Central_survey_food_csv_2024-10-31>
+apple_pie | Pie, apple |
+baby_back_ribs | Pork, ribs |
+baklava | Baklava |
+beef_carpaccio | Beef, ground, raw | ~
+beef_tartare | Beef, ground, raw | ~
+beet_salad | Beets, raw | ~
+beignets | Doughnut, NFS | ~
+bibimbap | Bibimbap, Korean |
+bread_pudding | Pudding, bread |
+breakfast_burrito | Egg burrito |
+bruschetta | Bruschetta |
+caesar_salad | Caesar salad, with romaine, no dressing |
+cannoli | Cream puff, eclair, custard or cream filled, not iced | ~
+caprese_salad | Mozzarella cheese, tomato, and basil, with oil and vinegar dressing |
+carrot_cake | Cake or cupcake, carrot |
+ceviche | Ceviche |
+cheesecake | Cheesecake, plain |
+cheese_plate | Cheese, NFS | ~
+chicken_curry | Chicken curry |
+chicken_quesadilla | Quesadilla, chicken |
+chicken_wings | Chicken wing, fried, coated, from restaurant |
+chocolate_cake | Cake or cupcake, chocolate with chocolate icing, bakery |
+chocolate_mousse | Mousse |
+churros | Churros |
+clam_chowder | Soup, New England clam chowder |
+club_sandwich | Club sandwich on white |
+crab_cakes | Crab, cake |
+creme_brulee | Custard | ~
+croque_madame | Ham sandwich on white, with cheese | ~
+cup_cakes | Cake or cupcake, NFS |
+deviled_eggs | Egg, deviled |
+donuts | Doughnut, NFS |
+dumplings | Wonton, dumpling or pot sticker, steamed |
+edamame | Edamame, cooked |
+eggs_benedict | Egg, Benedict |
+escargots | Escargot |
+falafel | Falafel |
+filet_mignon | Beef, steak, tenderloin |
+fish_and_chips | Fish, cod, fried | ~
+foie_gras | Liver, paste or pate | ~
+french_fries | Potato, french fries, NFS |
+french_onion_soup | Soup, French onion |
+french_toast | French toast, NFS |
+fried_calamari | Calamari, fried |
+fried_rice | Rice, fried, NFS |
+frozen_yogurt | Frozen yogurt, NFS |
+garlic_bread | Garlic bread, NFS |
+gnocchi | Gnocchi, potato |
+greek_salad | Greek Salad, no dressing |
+grilled_cheese_sandwich | Grilled cheese sandwich, NFS |
+grilled_salmon | Fish, salmon, grilled |
+guacamole | Guacamole, NFS |
+gyoza | Wonton, dumpling or pot sticker, fried |
+hamburger | Hamburger, NFS |
+hot_and_sour_soup | Soup, hot and sour |
+hot_dog | Hot dog, NFS |
+huevos_rancheros | Huevos rancheros |
+hummus | Hummus, plain |
+ice_cream | Ice cream, NFS |
+lasagna | Lasagna with meat |
+lobster_bisque | Soup, bisque | ~
+lobster_roll_sandwich | Lobster salad | ~
+macaroni_and_cheese | Macaroni or noodles with cheese |
+macarons | Cookie, macaroon | ~
+miso_soup | Soup, miso or tofu |
+mussels | Mussels |
+nachos | Nachos, NFS |
+omelette | Egg omelet or scrambled egg, NS as to fat |
+onion_rings | Fried onion rings |
+oysters | Oysters, raw |
+pad_thai | Pad Thai, NFS |
+paella | Paella, NFS |
+pancakes | Pancakes, NFS |
+panna_cotta | Custard | ~
+peking_duck | Duck, Peking |
+pho | Soup, pho, with meat |
+pizza | Pizza, cheese, from restaurant or fast food, NS as to type of crust |
+pork_chop | Pork, chop, NS as to fat eaten |
+poutine | Potato, french fries, with cheese | ~
+prime_rib | Beef, steak, ribeye, lean and fat eaten | ~
+pulled_pork_sandwich | Barbecue pork sandwich, on white bun |
+ramen | Ramen bowl, NFS |
+ravioli | Ravioli, cheese-filled, with tomato sauce |
+red_velvet_cake | Cake or cupcake, red velvet |
+risotto | Flavored rice mixture with cheese | ~
+samosa | Samosa |
+sashimi | Fish, raw |
+scallops | Scallops, grilled |
+seaweed_salad | Seaweed, pickled | ~
+shrimp_and_grits | Grits, with cheese, fat added | ~
+spaghetti_bolognese | Spaghetti with meat sauce, diet frozen meal | ~
+spaghetti_carbonara | Pasta with cream sauce and meat, restaurant | ~
+spring_rolls | Egg roll, with beef and/or pork |
+steak | Beef, steak, NFS |
+strawberry_shortcake | Cake, strawberry shortcake |
+sushi | Sushi, NFS |
+tacos | Taco, NFS |
+takoyaki | Octopus | ~
+tiramisu | Tiramisu |
+tuna_tartare | Fish, tuna, raw | ~
+waffles | Waffle, NFS |
