@@ -10,3 +10,4 @@ dist/
 
 # subagent-driven-development scratch
 .superpowers/
+graphify-out/
