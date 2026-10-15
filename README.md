@@ -61,6 +61,7 @@ Fitness apps tend to put your own training history behind a subscription, or los
 | **Daily diary** | Breakfast, lunch, dinner and snacks, with live calorie and macro totals. |
 | **Food search** | Open Food Facts search through a cached server-side proxy. |
 | **Barcode scanner** | Native camera scanning with HD capture, tap-to-focus, zoom and torch. Manual code entry as a fallback. |
+| **Photo logging (on-device AI)** | Snap a dish and OPENFIT recognises it (101 common dishes) with a small Hugging Face model (~53–93 MB, downloaded once and verified) that runs on your device. Nutrition and the typical portion come from USDA data. Photos are never uploaded, and it works offline. |
 | **Flexible portions** | Log by serving, grams, kilograms, ounces or millilitres. Product serving sizes are detected automatically. |
 | **Science-based targets** | IOM 2005 energy equations with a lifter-focused protein target of 1.6 g/kg. |
 | **History stays accurate** | Each entry snapshots the food's nutrition values, so later database edits never rewrite old logs. |

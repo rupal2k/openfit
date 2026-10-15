@@ -63,3 +63,15 @@ The calorie target (IOM 2005 equations, activity categories, goal adjustment) is
 contributors, GPL-3.0 — `lib/core/utils/calc/`. Food data comes from
 [**Open Food Facts**](https://world.openfoodfacts.org), © Open Food Facts contributors,
 available under the Open Database License (ODbL).
+
+## On-device food recognition
+
+- Dish recognition model: [swin-finetuned-food101-ONNX](https://huggingface.co/onnx-community/swin-finetuned-food101-ONNX)
+  (Apache-2.0), downloaded at runtime from huggingface.co at pinned commit
+  `e5e50bfc6425aa546f3b4421ca8bd79d0dd610b8` and verified by SHA-256.
+- [transformers.js](https://github.com/huggingface/transformers.js) by Hugging Face (Apache-2.0), with
+  ONNX Runtime Web by Microsoft (MIT).
+- Dish nutrition and typical portions: USDA FoodData Central, FNDDS survey foods (public domain).
+- Architecture (model catalogue, verified download with a marker, GPU→CPU fallback, one analysis
+  pipeline, review before logging) adapted from [fud-ai](https://github.com/apoorvdarshan/fud-ai)
+  by Apoorv Darshan (MIT).
