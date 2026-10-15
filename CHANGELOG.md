@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.2 — 2026-10-16
+
+- 🏋️ **Fix: discarded workouts no longer change your starting weights.** Confirming a top weight mid-workout used to save it as your working weight straight away, so discarding the workout (or a typo you then corrected) still changed what the next session pre-filled. The weight now only counts once you finish the workout.
+- 🧪 Finishing a workout (records, PRs, working weights) moved out of the UI into `lib/workout.js`, with tests. See [ADR-0001](docs/adr/0001-use-cases.md).
+
 ## v1.3.1 — 2026-10-16
 
 A visual refresh, plus fixes for two screens that overflowed on phones.

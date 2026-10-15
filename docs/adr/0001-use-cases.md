@@ -74,7 +74,7 @@ Everything else stays inline in the component.
 
 ## Action items
 
-1. [ ] `lib/workout.js` → `finishSession(state, active)`: move PR detection, the workout record and best-weight updates out of `doFinishWorkout`, with tests. The UI keeps the sounds and the summary sheet.
+1. [x] `lib/workout.js` → `finishSession(state, active)`: move PR detection, the workout record and best-weight updates out of `doFinishWorkout`, with tests. The UI keeps the sounds and the summary sheet.
 2. [ ] Same treatment for `startFlow`.
 3. [ ] Same treatment for the history and plan import merges.
 4. [ ] One shared `logFood` validation for food search and photo logging.
