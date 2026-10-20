@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { validateSet, invalidDoneSets, doubtfulDoneSets } from './workout.js'
+import { validateSet, invalidDoneSets, doubtfulDoneSets, cleanConfig } from './workout.js'
+import { mergePlan } from './plan-share.js'
 
 // Real catalogue ids, so modeOf / isBw / isCardio resolve the way they do in the app.
 const BENCH = '0025'        // barbell bench press — barbell
@@ -441,5 +442,45 @@ describe('invalidDoneSets', () => {
     const before = JSON.stringify(a)
     invalidDoneSets(a, S())
     expect(JSON.stringify(a)).toBe(before)
+  })
+})
+
+describe('cleanConfig — routine targets from the editor and every plan import', () => {
+  it('caps a hand-edited million sets (the session builder would freeze)', () => {
+    expect(cleanConfig({ id: BENCH, sets: 1000000, reps: 8 }).sets).toBe(30)
+  })
+  it('floors zero / negative targets and parses numeric strings', () => {
+    expect(cleanConfig({ id: BENCH, sets: 0, reps: '8', weight: -50 })).toMatchObject({ sets: 1, reps: 8, weight: 0 })
+  })
+  it('caps weight in the profile unit', () => {
+    expect(cleanConfig({ id: BENCH, weight: 9999 }).weight).toBe(1000)
+    expect(cleanConfig({ id: BENCH, weight: 9999 }, 'lb').weight).toBe(2200)
+    expect(cleanConfig({ id: BENCH, weight: 61.25 }).weight).toBe(61.25)
+  })
+  it('drops a non-numeric value so the default applies', () => {
+    const c = cleanConfig({ id: BENCH, sets: 'lots', reps: NaN })
+    expect('sets' in c).toBe(false)
+    expect('reps' in c).toBe(false)
+  })
+  it('bounds timed and cardio targets', () => {
+    expect(cleanConfig({ id: PLANK, mode: 'time', sec: 0 }).sec).toBe(1)
+    expect(cleanConfig({ id: PLANK, mode: 'time', sec: 99999 }).sec).toBe(3600)
+    expect(cleanConfig({ id: BIKE, min: 5000, speed: 300 })).toMatchObject({ min: 600, speed: 60 })
+    expect(cleanConfig({ id: BIKE, speed: 7.5 }).speed).toBe(7.5)
+  })
+  it('keeps the double-progression range around the working reps', () => {
+    expect(cleanConfig({ id: BENCH, reps: 8, repsMin: 12, repsMax: 4 })).toMatchObject({ reps: 8, repsMin: 8, repsMax: 8 })
+  })
+  it('leaves unrelated keys and absent keys alone', () => {
+    const c = cleanConfig({ id: BENCH, sets: 3, sg: 'a', prog: 'double', side: true })
+    expect(c).toEqual({ id: BENCH, sets: 3, sg: 'a', prog: 'double', side: true })
+  })
+})
+
+describe('mergePlan applies the bounds to every imported entry', () => {
+  it('caps a malicious plan file before it reaches the routines', () => {
+    const s = { unit: 'kg', routines: [], week: {}, customEx: [] }
+    mergePlan(s, { customEx: [], week: {}, routines: [{ id: 'r', name: 'X', ex: [{ id: BENCH, sets: 1000000, reps: 0, weight: 9999 }] }] })
+    expect(s.routines[0].ex[0]).toMatchObject({ id: BENCH, sets: 30, reps: 1, weight: 1000 })
   })
 })

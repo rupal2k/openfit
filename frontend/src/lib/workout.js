@@ -45,6 +45,26 @@ export function validateSet(cfg, s, { unit = 'kg', best = 0 } = {}) {
   return { errors, warns }
 }
 
+// Bounds for a routine entry's targets — the plan editor and every plan import pass through
+// here, so a hand-edited file can't plan a million sets (the session builder makes one row
+// each and freezes) or prefill a weight no set could ever be ticked at. Present keys only;
+// one that isn't a number is dropped so the usual default applies.
+const BOUNDS = { sets: [1, 30, 1], reps: [1, 100, 1], repsMin: [1, 100, 1], repsMax: [1, 100, 1], sec: [1, 3600, 1], min: [1, 600, 1], speed: [0, 60, 0.1] }
+export function cleanConfig(cfg, unit = 'kg') {
+  const out = { ...cfg }
+  const lim = { ...BOUNDS, weight: [0, W_MAX[unit] || W_MAX.kg, 0.01] }
+  for (const [k, [lo, hi, q]] of Object.entries(lim)) {
+    if (!(k in out)) continue
+    const v = typeof out[k] === 'string' ? parseFloat(out[k]) : out[k]
+    if (!num(v)) { delete out[k]; continue }
+    out[k] = Math.min(hi, Math.max(lo, Math.round(v / q) * q))
+    if (q < 1) out[k] = Math.round(out[k] * 100) / 100
+  }
+  if (out.repsMin > out.reps) out.repsMin = out.reps
+  if (out.repsMax < out.reps) out.repsMax = out.reps
+  return out
+}
+
 // Every checked-off set, re-checked — the last guard before a workout is filed. A set edited
 // after its tick is only looked at here, not per keystroke (typing "10" passes through "1").
 function checkDone(A, S) {
