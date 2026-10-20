@@ -105,7 +105,7 @@ export function finishSession(S, A, end = Date.now()) {
     // `target` (what the session prescribed) is kept alongside the sets: without it a
     // finished workout cannot say whether it hit its reps, and a timed session reads back
     // as "0 reps". It is what the progression engine works from.
-    entries: A.entries.map(e => ({ id: e.id, sets: e.sets, topW: e.topW || null, target: e.target || null })).filter(e => e.sets.some(s => s.done)),
+    entries: A.entries.map(e => ({ id: e.id, sets: e.sets, topW: e.topW || null, target: e.target || null, ...(e.resetW ? { resetW: true } : {}) })).filter(e => e.sets.some(s => s.done)),
     prs
   }
   w.vol = workoutVolume(w)
@@ -114,8 +114,11 @@ export function finishSession(S, A, end = Date.now()) {
 
 // Store reducer: file the workout, raise each lift's working weight, close the session.
 // This is the only in-app writer of exWeights, so a discarded session never changes them.
+// It only rises — unless the user explicitly confirmed a lower top weight (resetW), the one
+// way to undo a filed typo.
 export function recordSession(s, w) {
   w.entries.forEach(e => {
+    if (e.resetW && e.topW > 0) { s.exWeights[e.id] = { w: e.topW, d: w.d }; return }
     const mx = topWeightOf(e)
     if (mx > 0) { const cur = s.exWeights[e.id]; if (!cur || mx > cur.w) s.exWeights[e.id] = { w: mx, d: w.d } }
   })

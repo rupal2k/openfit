@@ -1129,6 +1129,10 @@ function TopWeight({ entryIdx, close }) {
   // Today's heaviest set, not the all-time best: what is confirmed here is charted as this
   // session's top weight (Stats), so pre-filling the best would log a lift that didn't happen.
   const [v, setV] = useState(entry ? (maxSet || prevBest || entry.target.weight || 0) : 0)
+  // The working weight only ever rises on its own. Confirming a lower one can replace it —
+  // the way back from a typo that got filed, or a real reset after time off. Opt-in.
+  const curW = entry ? (st.exWeights[entry.id] || {}).w || 0 : 0
+  const [resetW, setResetW] = useState(false)
   useEffect(() => { if (!entry) close() }, [!entry])
 
   const units = supersetUnits(A ? A.entries : [])
@@ -1148,7 +1152,8 @@ function TopWeight({ entryIdx, close }) {
     }
     // Only the session remembers it; recordSession() raises exWeights when the workout is
     // finished, so discarding the session — or correcting a typo here — leaves them alone.
-    update(s => { s.active.entries[entryIdx].topW = n })
+    const lower = resetW && n < curW
+    update(s => { const e = s.active.entries[entryIdx]; e.topW = n; if (lower) e.resetW = true; else delete e.resetW })
     close()
     if (advance && unitDone) {
       if (isLastUnit) workoutCompleteSheet()               // whole workout done → finish/continue prompt
@@ -1160,6 +1165,12 @@ function TopWeight({ entryIdx, close }) {
     <div className="muted small">{t('Confirm the weight you worked with — your highest becomes the default next time.')}{!unitDone && unit.length > 1 ? ' ' + t('Then finish the superset partner.') : ''}</div>
     <WeightInput value={v} setValue={setV} unit={st.unit} hi={st.unit === 'lb' ? 1100 : 500} />
     <div style={{ height: 10 }} />
+    {curW > 0 && v < curW && <div className="sect-b" style={{ marginBottom: 10 }}>
+      <Row icon="arrowDown" iconTint="var(--yellow)" title={t('Make {0} {1} my working weight', fmtNum(v), st.unit)}
+        subtitle={t('Replaces {0} {1} when you finish — for a typo or a fresh start.', fmtNum(curW), st.unit)}>
+        <Switch checked={resetW} onChange={setResetW} aria-label={t('Make this my working weight')} />
+      </Row>
+    </div>}
     {prevBest > 0 ? <div className="small dim" style={{ textAlign: 'center', marginBottom: 12 }}>{t('Previous best:')} {fmtNum(prevBest)} {st.unit}{maxSet > prevBest && <span style={{ color: 'var(--yellow)' }}> — {t('new record!')}</span>}</div> : <div style={{ height: 4 }} />}
     {unitDone ? <>
       <Button variant="primary" trailingIcon={isLastUnit ? null : 'chevronRight'} onClick={() => commit(true)}>{isLastUnit ? t('Save') : t('Save & next exercise')}</Button>
