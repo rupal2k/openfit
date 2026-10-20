@@ -18,6 +18,12 @@ Plan routines, run guided workouts with automatic progressive overload, log meal
 
 <img src="assets/banner.png" alt="OPENFIT" width="720">
 
+<br><br>
+
+<img src="assets/screenshots/openfit-carousel.gif" alt="OPENFIT App Walkthrough Carousel" width="360" style="max-width: 100%; height: auto; border-radius: 12px;">
+
+<br><br>
+
 <table>
 <tr>
 <td align="center"><img src="assets/screenshots/home.png" alt="Home" width="160"><br><sub><b>Home</b><br>Today's session & weight trend</sub></td>
