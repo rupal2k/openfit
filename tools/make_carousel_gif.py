@@ -3,6 +3,8 @@
 Renders an iPhone device frame with rounded screen corners, dynamic island,
 animated pagination dots, and the screen title and subtitle labels below.
 
+Includes all core app screens plus on-device AI vision photo logging (8 screens).
+
 Run with:
     uv run --with pillow python3 tools/make_carousel_gif.py
 """
@@ -51,6 +53,8 @@ SCREENS_INFO = [
     ("assets/screenshots/home.png", "Home", "Today's session & weight trend"),
     ("assets/screenshots/workout.png", "Workout", "Animated guidance & targets"),
     ("assets/screenshots/nutrition.png", "My Meals", "Food diary & macros"),
+    ("assets/screenshots/photo-capture.png", "Snap a dish", "Recognised on your device"),
+    ("assets/screenshots/photo-review.png", "Review and log", "Top-3 guesses, USDA portion and macros"),
     ("assets/screenshots/stats.png", "My Stats", "Activity heatmap & muscle balance"),
     ("assets/screenshots/plan.png", "My Plan", "Weekly schedule & routines"),
     ("assets/screenshots/library.png", "Exercises", "1,300+ animated exercises"),
@@ -58,14 +62,14 @@ SCREENS_INFO = [
 
 TOTAL_SCREENS = len(SCREENS_INFO)
 
-# Dot track geometry
+# Dot track geometry (8 dots)
 DOT_SIZE = 6
 DOT_RADIUS = DOT_SIZE // 2
-ACTIVE_W = 20
-DOT_SPACING = 18
+ACTIVE_W = 18
+DOT_SPACING = 16
 DOT_Y = 732
 
-# Centers for 6 dots
+# Centers for 8 dots
 DOT_CENTERS = [CANVAS_W // 2 + (i - (TOTAL_SCREENS - 1) / 2) * DOT_SPACING for i in range(TOTAL_SCREENS)]
 
 def draw_dots(draw, curr_idx, next_idx, progress):
@@ -203,7 +207,7 @@ def main():
     frames = []
     durations = []
     
-    HOLD_MS = 2200          # 2.2s per screen
+    HOLD_MS = 2100          # 2.1s per screen
     TRANS_STEPS = 6         # 6 transition frames
     TRANS_STEP_MS = 50      # 50ms per transition frame (snappy 300ms total slide)
     

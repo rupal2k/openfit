@@ -58,15 +58,6 @@ Fitness apps tend to put your own training history behind a subscription, or los
 | **Science-based targets** | IOM 2005 energy equations with a lifter-focused protein target of 1.6 g/kg. |
 | **History stays accurate** | Each entry snapshots the food's nutrition values, so later database edits never rewrite old logs. |
 
-<div align="center">
-<table>
-<tr>
-<td align="center"><img src="assets/screenshots/photo-capture.png" alt="Photo logging: take or choose a photo" width="200"><br><sub><b>Snap a dish</b><br>Recognised on your device</sub></td>
-<td align="center"><img src="assets/screenshots/photo-review.png" alt="Photo logging: review the recognised dish" width="200"><br><sub><b>Review and log</b><br>Top-3 guesses, USDA portion and macros</sub></td>
-</tr>
-</table>
-</div>
-
 ### Planning & data
 | | |
 |---|---|
