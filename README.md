@@ -22,21 +22,6 @@ Plan routines, run guided workouts with automatic progressive overload, log meal
 
 <img src="assets/screenshots/openfit-carousel.gif" alt="OPENFIT App Walkthrough Carousel" width="360" style="max-width: 100%; height: auto; border-radius: 12px;">
 
-<br><br>
-
-<table>
-<tr>
-<td align="center"><img src="assets/screenshots/home.png" alt="Home" width="160"><br><sub><b>Home</b><br>Today's session & weight trend</sub></td>
-<td align="center"><img src="assets/screenshots/workout.png" alt="Guided workout" width="160"><br><sub><b>Workout</b><br>Animated guidance & targets</sub></td>
-<td align="center"><img src="assets/screenshots/nutrition.png" alt="My Meals" width="160"><br><sub><b>My Meals</b><br>Food diary & macros</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="assets/screenshots/stats.png" alt="My Stats" width="160"><br><sub><b>My Stats</b><br>Activity heatmap & muscle balance</sub></td>
-<td align="center"><img src="assets/screenshots/plan.png" alt="My Plan" width="160"><br><sub><b>My Plan</b><br>Weekly schedule & routines</sub></td>
-<td align="center"><img src="assets/screenshots/library.png" alt="Exercises" width="160"><br><sub><b>Exercises</b><br>1,300+ animated exercises</sub></td>
-</tr>
-</table>
-
 </div>
 
 ---
