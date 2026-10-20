@@ -167,6 +167,15 @@ describe('validateSet — bodyweight', () => {
     // a custom "bodyweight" flag on a barbell id: no weight needed
     expect(ok({ id: BENCH, bodyweight: true }, { w: 0, r: 10 })).toBe(true)
   })
+
+  it('accepts 0 kg on unloaded equipment (stability ball, band, roller, rope, assisted)', () => {
+    // 0271: crunch (on stability ball), eq: 'stability ball'
+    expect(ok({ id: '0271' }, { w: 0, r: 15 })).toBe(true)
+    // 0011: assisted hanging knee raise, eq: 'assisted'
+    expect(ok({ id: '0011' }, { w: 0, r: 8 })).toBe(true)
+    // 0968: band alternating biceps curl, eq: 'band'
+    expect(ok({ id: '0968' }, { w: 0, r: 12 })).toBe(true)
+  })
 })
 
 describe('validateSet — per side', () => {
@@ -469,6 +478,10 @@ describe('cleanConfig — routine targets from the editor and every plan import'
     expect(cleanConfig({ id: BIKE, min: 5000, speed: 300 })).toMatchObject({ min: 600, speed: 60 })
     expect(cleanConfig({ id: BIKE, speed: 7.5 }).speed).toBe(7.5)
   })
+  it('bounds routine reps up to 300 (high rep sets) and caps beyond', () => {
+    expect(cleanConfig({ id: BENCH, reps: 150 }).reps).toBe(150)
+    expect(cleanConfig({ id: BENCH, reps: 500 }).reps).toBe(300)
+  })
   it('keeps the double-progression range around the working reps', () => {
     expect(cleanConfig({ id: BENCH, reps: 8, repsMin: 12, repsMax: 4 })).toMatchObject({ reps: 8, repsMin: 8, repsMax: 8 })
   })
@@ -522,5 +535,25 @@ describe('CSV history import drops sets the workout screen would refuse', () => 
       '2026-01-12 18:00:00,Push,Bench Press (Barbell),1,60,5,0,')
     expect(p.workouts.map(w => w.d)).toEqual(['2026-01-12'])
     expect(p.from).toBe('2026-01-12')
+  })
+
+  it('keeps valid sets with RPE < 6 by dropping the out-of-scale effort tag rather than the set', () => {
+    // Warm-up sets from external apps (e.g. Hevy) may have RPE 1-5; set should survive
+    const p = imp('2026-01-12 18:00:00,Push,Bench Press (Barbell),1,60,10,0,5')
+    expect(setsOf(p)).toHaveLength(1)
+    expect(p.invalid).toBe(0)
+    expect(setsOf(p)[0].w).toBe(60)
+    expect(setsOf(p)[0].r).toBe(10)
+    expect(setsOf(p)[0].rpe).toBeUndefined()
+  })
+
+  it('keeps distance-only cardio rows by deriving duration and speed', () => {
+    const HEVY = 'title,start_time,end_time,description,exercise_title,superset_id,exercise_notes,set_index,set_type,weight_kg,reps,distance_km,duration_seconds,rpe'
+    const csv = [HEVY, 'Run,2026-01-12 18:00:00,2026-01-12 18:30:00,,Running,,,1,normal,,,5,0,'].join('\n')
+    const p = parseWorkoutCSV(csv, { unit: 'kg' })
+    expect(setsOf(p)).toHaveLength(1)
+    expect(p.invalid).toBe(0)
+    expect(setsOf(p)[0].min).toBe(30)
+    expect(setsOf(p)[0].speed).toBe(10)
   })
 })

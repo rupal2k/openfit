@@ -49,7 +49,7 @@ export function validateSet(cfg, s, { unit = 'kg', best = 0 } = {}) {
 // here, so a hand-edited file can't plan a million sets (the session builder makes one row
 // each and freezes) or prefill a weight no set could ever be ticked at. Present keys only;
 // one that isn't a number is dropped so the usual default applies.
-const BOUNDS = { sets: [1, 30, 1], reps: [1, 100, 1], repsMin: [1, 100, 1], repsMax: [1, 100, 1], sec: [1, 3600, 1], min: [1, 600, 1], speed: [0, 60, 0.1] }
+const BOUNDS = { sets: [1, 30, 1], reps: [1, 300, 1], repsMin: [1, 300, 1], repsMax: [1, 300, 1], sec: [1, 3600, 1], min: [1, 600, 1], speed: [0, 60, 0.1] }
 export function cleanConfig(cfg, unit = 'kg') {
   const out = { ...cfg }
   const lim = { ...BOUNDS, weight: [0, W_MAX[unit] || W_MAX.kg, 0.01] }

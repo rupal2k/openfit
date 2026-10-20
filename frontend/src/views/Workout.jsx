@@ -169,9 +169,18 @@ function ActiveWorkout() {
   const done = setsDoneActive(A)
 
   const mutEntry = (idx, fn) => update(s => { fn(s.active.entries[idx]) }, true)
-  // The check a set passes before it can be ticked — same "best" the block shows.
-  const check = (st, e, set) => validateSet({ ...(e.target || {}), id: e.id }, set,
-    { unit: st.unit, best: Math.max(bestWeightFor(st, e.id), (st.exWeights[e.id] || {}).w || 0) })
+  // The check a set passes before it can be ticked — includes sets already confirmed today so
+  // "Log anyway" isn't asked again on every subsequent set.
+  const check = (st, e, set) => {
+    const doneW = e.sets.filter(s => s.done).map(s => s.w || 0)
+    const doneR = e.sets.filter(s => s.done).map(s => s.r || 0)
+    const best = Math.max(bestWeightFor(st, e.id), (st.exWeights[e.id] || {}).w || 0, ...doneW)
+    const res = validateSet({ ...(e.target || {}), id: e.id }, set, { unit: st.unit, best })
+    if (set.r > 100 && Math.max(0, ...doneR) >= set.r && res.warns.some(w => w[0].includes('reps in one set'))) {
+      res.warns = res.warns.filter(w => !w[0].includes('reps in one set'))
+    }
+    return res
+  }
   // Clearing an optional field drops the key rather than storing null, so a set only carries
   // what was actually logged — in the session, in history and in a backup. A ticked set edited
   // afterwards is re-checked at Finish, not per keystroke (typing "10" passes through "1").

@@ -1163,7 +1163,7 @@ function TopWeight({ entryIdx, close }) {
   return <>
     <h3 className="capitalize row" style={{ gap: 8 }}><Icon name="checkCircle" style={{ color: 'var(--acc)' }} />{t('{0} done', ex.n)}</h3>
     <div className="muted small">{t('Confirm the weight you worked with — your highest becomes the default next time.')}{!unitDone && unit.length > 1 ? ' ' + t('Then finish the superset partner.') : ''}</div>
-    <WeightInput value={v} setValue={setV} unit={st.unit} hi={st.unit === 'lb' ? 1100 : 500} />
+    <WeightInput value={v} setValue={setV} unit={st.unit} hi={st.unit === 'lb' ? Math.max(1100, Math.ceil(maxSet || 0)) : Math.max(500, Math.ceil(maxSet || 0))} />
     <div style={{ height: 10 }} />
     {curW > 0 && v < curW && <div className="sect-b" style={{ marginBottom: 10 }}>
       <Row icon="arrowDown" iconTint="var(--yellow)" title={t('Make {0} {1} my working weight', fmtNum(v), st.unit)}

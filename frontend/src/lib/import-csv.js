@@ -236,12 +236,17 @@ const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.')); retu
 // RIR 0 is a set taken to failure and worth keeping, while RPE has no 0 (the scale is 1–10),
 // so an app writing 0 for "nothing here" must not be read as an effort. Ratings above the
 // scale are capped rather than dropped — the set was still rated, just written oddly.
-const effortNum = (raw, zeroMeansRated) => {
+const effortNum = (raw, isRir) => {
   const s = String(raw ?? '').trim()
   if (!s) return null
   const n = parseFloat(s.replace(',', '.'))
-  if (!isFinite(n) || n < 0 || (n === 0 && !zeroMeansRated)) return null
-  return Math.min(10, Math.round(n * 100) / 100)
+  if (!isFinite(n) || n < 0 || (n === 0 && !isRir)) return null
+  const val = Math.round(n * 100) / 100
+  if (isRir) return Math.min(10, Math.max(0, val))
+  // OPENFIT RPE scale is 6–10. In external exports (e.g. Hevy), warm-up sets may be rated
+  // RPE 1–5. Discard the effort tag rather than rejecting the entire set in validateSet.
+  if (val < 6) return null
+  return Math.min(10, val)
 }
 const LB_TO_KG = 0.45359237
 const p2 = n => String(n).padStart(2, '0')
@@ -358,7 +363,7 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
     // it never reaches the stored set.
     const set = isCardio
-      ? { min: mins || 0, speed: mins > 0 ? Math.round(km / (mins / 60) * 10) / 10 : 0, done: true }
+      ? { min: mins || (km > 0 ? Math.max(1, Math.round(km * 6)) : 0), speed: mins > 0 ? Math.round(km / (mins / 60) * 10) / 10 : (km > 0 ? 10 : 0), done: true }
       : { w, r: reps || 0, done: true, u: rowUnit }
     // Effort rides along only where the app can show it again: a weighted rep set. A treadmill
     // row with an RPE would have nowhere to put it. A set is kept on one scale, so a file
@@ -407,6 +412,8 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
   // which custom lifts are loaded); typo warns aren't applied — there is no one to ask.
   let invalid = 0
   const keep = (id, s) => {
+    if (s.rpe != null && (s.rpe < 6 || s.rpe > 10)) delete s.rpe
+    if (s.rir != null && (s.rir < 0 || s.rir > 10)) delete s.rir
     const cfg = s.min !== undefined ? { id, mode: 'cardio' } : { id, mode: 'reps', bodyweight: true }
     if (validateSet(cfg, s, { unit }).errors.length) { invalid++; return false }
     return true
