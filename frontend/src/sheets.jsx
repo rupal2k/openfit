@@ -326,6 +326,9 @@ function ImportSummary({ parsed, close }) {
     {!isBW && !parsed.fileUnit && !parsed.mixedUnits && <div className="small dim" style={{ marginBottom: 10 }}>
       {t('The file does not say which unit it uses — numbers are imported as they are.')}
     </div>}
+    {!isBW && parsed.invalid > 0 && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
+      {t('{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.', parsed.invalid)}
+    </div>}
     {have > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
       {t('{0} days already have data here and will be left alone.', have)}
     </div>}

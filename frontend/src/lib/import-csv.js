@@ -20,6 +20,7 @@
 
 import { EXDB, EXIDX } from './exercises.js'
 import { uid } from './format.js'
+import { validateSet } from './workout.js'
 
 /* ----------------------------------------------------------------- CSV ---- */
 
@@ -400,14 +401,24 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
   }
   const converted = (!!fileUnit && fileUnit !== unit) || mixedUnits
 
+  // Another app's export goes through the same check a tick does, so it can't file what the
+  // workout screen would refuse: a 9999 kg typo, a 0-rep row, Strong's negative "assisted"
+  // weights. Weight is optional here (bodyweight rows read 0 and the importer can't know
+  // which custom lifts are loaded); typo warns aren't applied — there is no one to ask.
+  let invalid = 0
+  const keep = (id, s) => {
+    const cfg = s.min !== undefined ? { id, mode: 'cardio' } : { id, mode: 'reps', bodyweight: true }
+    if (validateSet(cfg, s, { unit }).errors.length) { invalid++; return false }
+    return true
+  }
   const dates = [...byDate.keys()].sort()
   const workouts = dates.map(d => {
     const day = byDate.get(d)
     const entries = [...day.ex.entries()].map(([id, ss]) => {
-      const conv2 = ss.map(({ u, ...s }) => (s.w !== undefined ? { ...s, w: convRow({ ...s, u }) } : s))
+      const conv2 = ss.map(({ u, ...s }) => (s.w !== undefined ? { ...s, w: convRow({ ...s, u }) } : s)).filter(s => keep(id, s))
       const mx = Math.max(0, ...conv2.map(s => s.w || 0))
       return { id, sets: conv2, topW: mx || null }
-    })
+    }).filter(e => e.sets.length)
     const base = new Date(d + 'T00:00:00').getTime()
     const start = base + (day.start ?? 18 * 3600000)
     const end = day.end != null ? base + day.end : start
@@ -417,7 +428,7 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     }
     w.vol = entries.reduce((a, e) => a + e.sets.reduce((b, s) => b + (s.w || 0) * (s.r || 0), 0), 0)
     return w
-  })
+  }).filter(w => w.entries.length)
 
   return {
     kind: 'workouts', source, workouts, customEx: [...created.values()],
@@ -426,8 +437,8 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
     matched: new Set([...resolved.values()].filter(Boolean)).size,
     matchedSets: matched,
     created: created.size, unmatchedNames: [...unmatched].sort(),
-    sets, skipped, warmups, fileUnit, mixedUnits, converted, rpeSets, rirSets,
-    from: dates[0] || null, to: dates[dates.length - 1] || null,
+    sets: sets - invalid, invalid, skipped, warmups, fileUnit, mixedUnits, converted, rpeSets, rirSets,
+    from: workouts[0]?.d || null, to: workouts[workouts.length - 1]?.d || null,
   }
 }
 

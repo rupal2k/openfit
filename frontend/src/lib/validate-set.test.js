@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { validateSet, invalidDoneSets, doubtfulDoneSets, cleanConfig } from './workout.js'
 import { mergePlan } from './plan-share.js'
+import { parseWorkoutCSV, mergeImport } from './import-csv.js'
 
 // Real catalogue ids, so modeOf / isBw / isCardio resolve the way they do in the app.
 const BENCH = '0025'        // barbell bench press — barbell
@@ -482,5 +483,44 @@ describe('mergePlan applies the bounds to every imported entry', () => {
     const s = { unit: 'kg', routines: [], week: {}, customEx: [] }
     mergePlan(s, { customEx: [], week: {}, routines: [{ id: 'r', name: 'X', ex: [{ id: BENCH, sets: 1000000, reps: 0, weight: 9999 }] }] })
     expect(s.routines[0].ex[0]).toMatchObject({ id: BENCH, sets: 30, reps: 1, weight: 1000 })
+  })
+})
+
+describe('CSV history import drops sets the workout screen would refuse', () => {
+  const STRONG = 'Date,Workout Name,Exercise Name,Set Order,Weight,Reps,Seconds,RPE'
+  const imp = (...lines) => parseWorkoutCSV([STRONG, ...lines].join('\n'), { unit: 'kg' })
+  const setsOf = p => p.workouts.flatMap(w => w.entries.flatMap(e => e.sets))
+
+  it('keeps real sets, bodyweight rows (0 kg) and partial sets', () => {
+    const p = imp('2026-01-12 18:00:00,Push,Bench Press (Barbell),1,60,10,0,',
+      '2026-01-12 18:00:00,Push,Bench Press (Barbell),2,60,3,0,',
+      '2026-01-12 18:00:00,Push,Push Up,1,0,15,0,')
+    expect(setsOf(p)).toHaveLength(3)
+    expect(p.invalid).toBe(0)
+  })
+
+  it('drops a 9999 kg typo, a 0-rep row and an assisted negative weight — and counts them', () => {
+    const p = imp('2026-01-12 18:00:00,Push,Bench Press (Barbell),1,60,10,0,',
+      '2026-01-12 18:00:00,Push,Bench Press (Barbell),2,9999,5,0,',
+      '2026-01-12 18:00:00,Push,Bench Press (Barbell),3,60,0,0,',
+      '2026-01-12 18:00:00,Push,Assisted Pull Up,1,-20,8,0,')
+    expect(setsOf(p).map(s => s.w)).toEqual([60])
+    expect(p.invalid).toBe(3)
+    expect(p.sets).toBe(1)
+  })
+
+  it('never lets a dropped typo seed the working weight', () => {
+    const p = imp('2026-01-12 18:00:00,Push,Bench Press (Barbell),1,9999,5,0,',
+      '2026-01-12 18:00:00,Push,Bench Press (Barbell),2,100,5,0,')
+    const S = { workouts: [], customEx: [], exWeights: {}, bodyweight: [] }
+    mergeImport(S, p)
+    expect(Object.values(S.exWeights).map(x => x.w)).toEqual([100])
+  })
+
+  it('drops a day whose every set was invalid, and the date range follows', () => {
+    const p = imp('2026-01-10 18:00:00,Push,Bench Press (Barbell),1,60,0,0,',
+      '2026-01-12 18:00:00,Push,Bench Press (Barbell),1,60,5,0,')
+    expect(p.workouts.map(w => w.d)).toEqual(['2026-01-12'])
+    expect(p.from).toBe('2026-01-12')
   })
 })
