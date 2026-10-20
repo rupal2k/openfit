@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Generates an animated showcase GIF carousel of the OPENFIT mobile app screenshots.
-Renders an iPhone device frame with rounded screen corners, dynamic island,
+Renders an elegant mobile device frame with rounded screen corners,
 animated pagination dots, and the screen title and subtitle labels below.
 
 Includes all core app screens plus on-device AI vision photo logging (8 screens).
@@ -47,7 +47,6 @@ LIME_ACCENT = (163, 230, 53)       # Brand lime green #a3e635
 WHITE_TEXT = (248, 250, 252)       # Slate-50 #f8fafc
 MUTED_TEXT = (148, 163, 184)       # Slate-400 #94a3b8
 DOT_INACTIVE = (51, 65, 85)        # Slate-700
-NOTCH_COLOR = (12, 14, 18)
 
 SCREENS_INFO = [
     ("assets/screenshots/home.png", "Home", "Today's session & weight trend"),
@@ -113,11 +112,6 @@ def main():
     mask_draw = ImageDraw.Draw(screen_mask)
     mask_draw.rounded_rectangle([0, 0, SCREEN_W, SCREEN_H], radius=22, fill=255)
     
-    # Dynamic Island notch
-    notch_w = 72
-    notch_h = 18
-    notch_x = (SCREEN_W - notch_w) // 2
-    
     def render_frame(curr_idx, next_idx, progress):
         im = Image.new("RGB", (CANVAS_W, CANVAS_H), BG_COLOR)
         draw = ImageDraw.Draw(im)
@@ -147,16 +141,6 @@ def main():
             screen_buf.paste(curr_screen, (-offset, 0))
             screen_buf.paste(next_screen, (SCREEN_W - offset, 0))
             
-        # Draw Dynamic Island over the screen
-        notch_draw = ImageDraw.Draw(screen_buf)
-        notch_draw.rounded_rectangle(
-            [notch_x, 8, notch_x + notch_w, 8 + notch_h],
-            radius=9,
-            fill=NOTCH_COLOR
-        )
-        # Subtle camera lens reflection
-        notch_draw.ellipse([notch_x + 52, 14, notch_x + 58, 20], fill=(25, 30, 40))
-        
         # Paste masked screen into phone frame
         im.paste(screen_buf, (PHONE_X, PHONE_Y), screen_mask)
         
