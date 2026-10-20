@@ -2,37 +2,52 @@
 
 One React codebase ships two ways: as a **self-hosted web app** with a small Node.js server, and as a **standalone Android app** that needs no server. The sections below go from the outside in: system context, the web request path, then the code layers inside the app.
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/architecture.png">
+    <source media="(prefers-color-scheme: light)" srcset="images/architecture-light.png">
+    <img alt="OPENFIT Full System Architecture" src="images/architecture.png" width="100%">
+  </picture>
+</p>
+
+> [!TIP]
+> **Interactive Architecture Diagram**: An interactive architecture canvas is available at [`architecture.html`](architecture.html) — open it in any browser to explore subsystem filters (Self-Hosted Web, Standalone Android, On-Device AI Vision, Food Search Proxy), inspect components, and trace data-flow paths.
+
 ## 1. System overview
 
 ```mermaid
 flowchart LR
-    subgraph CLIENTS["Clients"]
+    subgraph CLIENTS["Clients (Offline-First)"]
         direction TB
-        BROWSER["Browser / installed PWA"]
-        ANDROID["Android app<br/>Capacitor WebView shell"]
+        BROWSER["Browser / installed PWA<br/>React 19 + Service Worker"]
+        ANDROID["Android app<br/>Capacitor 7 WebView shell"]
+        STORE[("App local storage<br/>openfit-state.json")]
+        ONNX["On-device AI<br/>ONNX WASM (CPU)"]
+        ANDROID --> STORE
+        STORE --> ONNX
     end
 
     subgraph SERVER["Self-hosted server · Docker Compose"]
         direction TB
-        WEBC["web container<br/>nginx"]
-        APIC["api container<br/>Node.js 22"]
-        VOL[("volumes<br/>./data · ./media")]
+        WEBC["Nginx web edge<br/>static React & reverse proxy"]
+        APIC["Node.js 22 API<br/>pure stdlib HTTP server"]
+        VOL[("Volumes<br/>./data · ./media")]
+        WEBC -->|"/img"| VOL
+        WEBC -->|"/api/*"| APIC
+        APIC --> VOL
     end
 
-    subgraph EXT["External services"]
+    subgraph EXT["External & Model Hub"]
         direction TB
-        OFF["Open Food Facts"]
-        HF["Hugging Face<br/>model files"]
+        OFF["Open Food Facts<br/>global barcode & food API"]
+        HF["Hugging Face Hub<br/>~120MB food model"]
+        PUSH["Web Push Service<br/>VAPID notifications"]
     end
 
-    BROWSER -->|HTTPS| WEBC
-    WEBC -->|"/api/*"| APIC
-    APIC --> VOL
-    WEBC --> VOL
-    APIC -->|"food search, cached"| OFF
-    ANDROID -->|"food search, direct"| OFF
-    BROWSER -.->|"one-time model download"| HF
-    ANDROID -.->|"one-time model download"| HF
+    BROWSER -->|HTTPS :443| WEBC
+    APIC -->|"food search (10-min cache)"| OFF
+    APIC -.->|"push reminders"| PUSH
+    ONNX -.->|"one-time model fetch"| HF
 ```
 
 The Android app talks to no OPENFIT server. Its state lives in `openfit-state.json` in app-private storage.
