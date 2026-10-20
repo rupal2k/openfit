@@ -19,7 +19,7 @@ import { parseImport, mergeImport } from './lib/import-csv.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-share.js'
 import { parseAnyPlan, downloadSampleCSV, downloadSampleJSON } from './lib/plan-upload.js'
 import { estimate1RM, best1RM, REP_CAP } from './lib/onerm.js'
-import { finishSession, recordSession } from './lib/workout.js'
+import { finishSession, recordSession, invalidDoneSets, doubtfulDoneSets, cleanConfig } from './lib/workout.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
 import { MOBILE, shareExport } from './lib/mobile.js'
 
@@ -35,8 +35,9 @@ function ConfirmDialog({ title, message, confirmText, cancelText, danger, onConf
     {title && <h3 style={{ marginBottom: 8 }}>{title}</h3>}
     <div className="muted" style={{ marginBottom: 18, lineHeight: 1.5 }}>{message}</div>
     <button className={'btn ' + (danger ? 'danger' : 'primary')} onClick={() => { close(); onConfirm && onConfirm() }}>{confirmText || t('Confirm')}</button>
-    <div style={{ height: 8 }} />
-    <Button variant="ghost" className="dim" onClick={close}>{cancelText || t('Cancel')}</Button>
+    {/* cancelText: false makes it a one-button notice */}
+    {cancelText !== false && <><div style={{ height: 8 }} />
+    <Button variant="ghost" className="dim" onClick={close}>{cancelText || t('Cancel')}</Button></>}
   </div>
 }
 // Themed replacement for window.confirm — callback-based (no blocking).
@@ -198,8 +199,8 @@ export function loadStarterPlan() {
 // below an everyday squat.
 const W_LO = 1
 const wHi = unit => (unit === 'lb' ? 660 : 300)
-function WeightInput({ value, setValue, unit }) {
-  const W_HI = wHi(unit)
+function WeightInput({ value, setValue, unit, hi }) {
+  const W_HI = hi || wHi(unit)
   const clamp = x => Math.max(W_LO, Math.min(W_HI, Math.round((x || 0) * 10) / 10))
   const sv = Math.max(W_LO, Math.min(W_HI, value))
   const onSlide = v => setValue(clamp(v))
@@ -324,6 +325,9 @@ function ImportSummary({ parsed, close }) {
     </div> : null}
     {!isBW && !parsed.fileUnit && !parsed.mixedUnits && <div className="small dim" style={{ marginBottom: 10 }}>
       {t('The file does not say which unit it uses — numbers are imported as they are.')}
+    </div>}
+    {!isBW && parsed.invalid > 0 && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
+      {t('{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.', parsed.invalid)}
     </div>}
     {have > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
       {t('{0} days already have data here and will be left alone.', have)}
@@ -629,7 +633,7 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit }) {
   </>
 }
 
-function ExConfig({ ex, existing, onSave, onDelete, close, routine }) {
+function ExConfig({ ex, existing, onSave: save0, onDelete, close, routine }) {
   const st = useStore(s => s.S)
   const cardio = isCardio(ex.id)
   const [c, setC] = useState(existing || defaultConfig(ex.id))
@@ -641,6 +645,7 @@ function ExConfig({ ex, existing, onSave, onDelete, close, routine }) {
   const perSide = isPerSide(c)
   // Keep whatever the other mode already had (sets, weight) and fill only what is missing.
   const setMode = m => setC(x => ({ ...defaultConfig(ex.id, m), ...x, mode: m }))
+  const onSave = out => save0(cleanConfig(out, S().unit))
   const save = () => {
     close()
     const sets = Math.max(1, Math.round(c.sets) || (cardio ? 1 : 3))
@@ -1121,7 +1126,13 @@ function TopWeight({ entryIdx, close }) {
   const ex = entry && EXIDX[entry.id]
   const maxSet = entry ? Math.max(0, ...entry.sets.filter(s => s.done).map(s => s.w || 0)) : 0
   const prevBest = entry ? Math.max((st.exWeights[entry.id] || {}).w || 0, bestWeightFor(st, entry.id)) : 0
-  const [v, setV] = useState(entry ? (Math.max(maxSet, prevBest) || entry.target.weight || 0) : 0)
+  // Today's heaviest set, not the all-time best: what is confirmed here is charted as this
+  // session's top weight (Stats), so pre-filling the best would log a lift that didn't happen.
+  const [v, setV] = useState(entry ? (maxSet || prevBest || entry.target.weight || 0) : 0)
+  // The working weight only ever rises on its own. Confirming a lower one can replace it —
+  // the way back from a typo that got filed, or a real reset after time off. Opt-in.
+  const curW = entry ? (st.exWeights[entry.id] || {}).w || 0 : 0
+  const [resetW, setResetW] = useState(false)
   useEffect(() => { if (!entry) close() }, [!entry])
 
   const units = supersetUnits(A ? A.entries : [])
@@ -1131,12 +1142,18 @@ function TopWeight({ entryIdx, close }) {
   const isLastUnit = unitIdx === units.length - 1
   if (!entry || !ex) return null
 
-  const commit = advance => {
+  const commit = (advance, checked) => {
     const n = Math.round((v || 0) * 10) / 10
-    if (!isFinite(n) || n < 0) { toast(t('Enter a valid weight')); return }
+    if (!isFinite(n) || n <= 0) { toast(t('Enter a valid weight')); return }
+    // Same typo guard as a set: far above anything ticked today is more likely a slip.
+    if (!checked && maxSet > 0 && n > maxSet * 1.5 && n - maxSet > (st.unit === 'lb' ? 45 : 20)) {
+      confirmSheet({ title: t('Check the weight'), message: t('{0} {1} is far above your heaviest set today ({2} {1}). Typo?', fmtNum(n), st.unit, fmtNum(maxSet)), confirmText: t('Save anyway'), cancelText: t('Fix it'), onConfirm: () => commit(advance, true) })
+      return
+    }
     // Only the session remembers it; recordSession() raises exWeights when the workout is
     // finished, so discarding the session — or correcting a typo here — leaves them alone.
-    update(s => { s.active.entries[entryIdx].topW = n })
+    const lower = resetW && n < curW
+    update(s => { const e = s.active.entries[entryIdx]; e.topW = n; if (lower) e.resetW = true; else delete e.resetW })
     close()
     if (advance && unitDone) {
       if (isLastUnit) workoutCompleteSheet()               // whole workout done → finish/continue prompt
@@ -1146,8 +1163,14 @@ function TopWeight({ entryIdx, close }) {
   return <>
     <h3 className="capitalize row" style={{ gap: 8 }}><Icon name="checkCircle" style={{ color: 'var(--acc)' }} />{t('{0} done', ex.n)}</h3>
     <div className="muted small">{t('Confirm the weight you worked with — your highest becomes the default next time.')}{!unitDone && unit.length > 1 ? ' ' + t('Then finish the superset partner.') : ''}</div>
-    <WeightInput value={v} setValue={setV} unit={st.unit} />
+    <WeightInput value={v} setValue={setV} unit={st.unit} hi={st.unit === 'lb' ? Math.max(1100, Math.ceil(maxSet || 0)) : Math.max(500, Math.ceil(maxSet || 0))} />
     <div style={{ height: 10 }} />
+    {curW > 0 && v < curW && <div className="sect-b" style={{ marginBottom: 10 }}>
+      <Row icon="arrowDown" iconTint="var(--yellow)" title={t('Make {0} {1} my working weight', fmtNum(v), st.unit)}
+        subtitle={t('Replaces {0} {1} when you finish — for a typo or a fresh start.', fmtNum(curW), st.unit)}>
+        <Switch checked={resetW} onChange={setResetW} aria-label={t('Make this my working weight')} />
+      </Row>
+    </div>}
     {prevBest > 0 ? <div className="small dim" style={{ textAlign: 'center', marginBottom: 12 }}>{t('Previous best:')} {fmtNum(prevBest)} {st.unit}{maxSet > prevBest && <span style={{ color: 'var(--yellow)' }}> — {t('new record!')}</span>}</div> : <div style={{ height: 4 }} />}
     {unitDone ? <>
       <Button variant="primary" trailingIcon={isLastUnit ? null : 'chevronRight'} onClick={() => commit(true)}>{isLastUnit ? t('Save') : t('Save & next exercise')}</Button>
@@ -1191,9 +1214,26 @@ function FinishSummary({ w, prs, e1prs = [], close }) {
     <Button variant="primary" onClick={() => { close(); nav('/home') }}>{t('Nice!')}</Button>
   </div>
 }
-export function finishWorkout() {
+export function finishWorkout(sure) {
   const A = S().active
   if (!A) return
+  const exName = i => (EXIDX[A.entries[i].id] || {}).n || A.entries[i].id
+  // A ticked set edited to nothing afterwards (or restored from an older build) is not filed.
+  const bad = invalidDoneSets(A, S())
+  if (bad.length) {
+    const b = bad[0]
+    confirmSheet({ title: t('Fix this set first'), message: t('{0}, set {1}: {2}', exName(b.entryIdx), b.setIdx + 1, t(...b.errors[0])),
+      confirmText: t('Go to it'), cancelText: false, onConfirm: () => update(s => { s.active.cur = b.entryIdx }) })
+    return
+  }
+  // Edited to a likely typo after its tick — the tick-time question, asked once more.
+  const odd = sure ? [] : doubtfulDoneSets(A, S())
+  if (odd.length) {
+    const b = odd[0]
+    confirmSheet({ title: t('Check this set'), message: t('{0}, set {1}: {2}', exName(b.entryIdx), b.setIdx + 1, t(...b.warns[0])),
+      confirmText: t('Finish anyway'), cancelText: t('Fix it'), onConfirm: () => finishWorkout(true) })
+    return
+  }
   const done = setsDoneActive(A)
   const total = A.entries.reduce((n, e) => n + e.sets.length, 0)
   if (!done) { confirmSheet({ title: t('Nothing logged yet'), message: t('You haven’t checked off any sets. Finish the workout anyway?'), confirmText: t('Finish anyway'), onConfirm: doFinishWorkout }); return }

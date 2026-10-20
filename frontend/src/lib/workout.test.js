@@ -69,3 +69,24 @@ describe('recordSession', () => {
     expect(s.exWeights.bench.w).toBe(90)
   })
 })
+
+describe('lowering a working weight on purpose (resetW)', () => {
+  const st = () => ({ unit: 'kg', workouts: [], exWeights: { bench: { w: 900, d: '2026-10-01' } }, active: {} })
+  it('only rises without the opt-in, even when a lower top weight is confirmed', () => {
+    const s = st()
+    const { w } = finishSession(s, active([{ id: 'bench', sets: [set(100, 5)], topW: 100 }]))
+    recordSession(s, w)
+    expect(s.exWeights.bench.w).toBe(900)
+  })
+  it('replaces a filed typo with the confirmed weight when opted in', () => {
+    const s = st()
+    const { w } = finishSession(s, active([{ id: 'bench', sets: [set(100, 5)], topW: 100, resetW: true }]))
+    expect(w.entries[0].resetW).toBe(true)
+    recordSession(s, w)
+    expect(s.exWeights.bench).toEqual({ w: 100, d: '2026-10-16' })
+  })
+  it('does not store resetW on entries that did not ask for it', () => {
+    const { w } = finishSession(st(), active([{ id: 'bench', sets: [set(100, 5)], topW: 100 }]))
+    expect('resetW' in w.entries[0]).toBe(false)
+  })
+})

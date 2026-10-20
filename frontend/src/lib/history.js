@@ -171,7 +171,8 @@ export function effectiveRoutine(S, iso) {
 }
 export function buildSets(S, cfg) {
   const last = lastEntryFor(S, cfg.id)
-  const n = Math.max(1, cfg.sets || 1)
+  // Capped like cleanConfig: a plan saved before the bounds existed must not build a million rows.
+  const n = Math.min(30, Math.max(1, cfg.sets || 1))
   const mode = modeOf(cfg)
   const sets = []
   // Last time's set at the same position, falling back to its final set when the plan grew.

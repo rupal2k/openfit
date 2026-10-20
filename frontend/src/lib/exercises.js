@@ -41,8 +41,16 @@ export const isCardio = idOrEx => (typeof idOrEx === 'string' ? EXIDX[idOrEx] : 
 // catalogue. This seeds the `bw` flag on a fresh config so a push-up never asks for a weight
 // nobody was going to enter. It is only the default: the flag lives on the config, so a dip
 // done with a belt can turn it off and a custom exercise can turn it on.
-export const isBodyweightEq = idOrEx =>
-  (typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.eq === 'body weight'
+// Equipment that carries no external load. Exercises using body weight, bands, stability balls,
+// rollers, ropes, or assisted gear do not require external weight to be logged.
+const UNLOADED_EQ = new Set([
+  'body weight', 'band', 'resistance band', 'stability ball',
+  'roller', 'wheel roller', 'assisted', 'bosu ball', 'rope'
+])
+export const isBodyweightEq = idOrEx => {
+  const eq = (typeof idOrEx === 'string' ? EXIDX[idOrEx] : idOrEx)?.eq
+  return eq ? UNLOADED_EQ.has(eq) : false
+}
 
 // An id that resolves to nothing — a plan file built against a different exercise dataset,
 // a custom exercise deleted on another device before the sync arrived — still has to

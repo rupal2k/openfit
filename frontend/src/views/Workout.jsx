@@ -13,6 +13,7 @@ import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, topWeigh
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { nextPrescription, applyPrescription } from '../lib/progression.js'
+import { validateSet } from '../lib/workout.js'
 import { glyphOf } from '../lib/glyphs.js'
 
 /* ---------- start chooser (no active workout) ---------- */
@@ -168,8 +169,21 @@ function ActiveWorkout() {
   const done = setsDoneActive(A)
 
   const mutEntry = (idx, fn) => update(s => { fn(s.active.entries[idx]) }, true)
+  // The check a set passes before it can be ticked — includes sets already confirmed today so
+  // "Log anyway" isn't asked again on every subsequent set.
+  const check = (st, e, set) => {
+    const doneW = e.sets.filter(s => s.done).map(s => s.w || 0)
+    const doneR = e.sets.filter(s => s.done).map(s => s.r || 0)
+    const best = Math.max(bestWeightFor(st, e.id), (st.exWeights[e.id] || {}).w || 0, ...doneW)
+    const res = validateSet({ ...(e.target || {}), id: e.id }, set, { unit: st.unit, best })
+    if (set.r > 100 && Math.max(0, ...doneR) >= set.r && res.warns.some(w => w[0].includes('reps in one set'))) {
+      res.warns = res.warns.filter(w => !w[0].includes('reps in one set'))
+    }
+    return res
+  }
   // Clearing an optional field drops the key rather than storing null, so a set only carries
-  // what was actually logged — in the session, in history and in a backup.
+  // what was actually logged — in the session, in history and in a backup. A ticked set edited
+  // afterwards is re-checked at Finish, not per keystroke (typing "10" passes through "1").
   const setField = (idx, i, field, v) => mutEntry(idx, e => {
     if (v == null) delete e.sets[i][field]; else e.sets[i][field] = v
   })
@@ -195,7 +209,20 @@ function ActiveWorkout() {
     })
   }
 
-  const toggle = (idx, i) => {
+  // Ticking is where a set becomes a record, so it is checked here: an empty or impossible
+  // value is refused with the reason, a likely typo asks first. Unticking is always allowed,
+  // and a partial set (fewer reps than planned) is a valid set.
+  const toggle = (idx, i, sure) => {
+    const st = useStore.getState().S
+    const e = st.active.entries[idx]
+    if (!e.sets[i].done && !sure) {
+      const { errors, warns } = check(st, e, e.sets[i])
+      if (errors.length) return confirmSheet({ title: t('Set {0} not logged', i + 1), message: errors.map(a => t(...a)).join(' · '), confirmText: t('Fix it'), cancelText: false })
+      if (warns.length) return confirmSheet({ title: t('Check set {0}', i + 1), message: warns.map(a => t(...a)).join(' · '), confirmText: t('Log anyway'), cancelText: t('Fix it'), onConfirm: () => toggle(idx, i, true) })
+    }
+    tick(idx, i)
+  }
+  const tick = (idx, i) => {
     const m = modeAt(idx)
     const cardioEntry = m === 'cardio'
     const isLastUnit = unitIdx >= units.length - 1
@@ -255,7 +282,7 @@ function ActiveWorkout() {
     <div className="hdr">
       <button className="iconbtn" aria-label={t('Discard')} onClick={() => confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); nav('/home') } })}><Icon name="xmark" /></button>
       <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 600 }}>{A.name}</div><div className="sub"><Elapsed start={A.start} /> · {t('{0} sets', done + '/' + total)}</div></div>
-      <button className="iconbtn" style={{ color: 'var(--acc)' }} aria-label={t('Finish')} onClick={finishWorkout}><Icon name="check" /></button>
+      <button className="iconbtn" style={{ color: 'var(--acc)' }} aria-label={t('Finish')} onClick={() => finishWorkout()}><Icon name="check" /></button>
     </div>
     <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
 
@@ -291,7 +318,7 @@ function ActiveWorkout() {
     {(() => {
       const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
       const allDone = A.entries.length > 0 && exDone === A.entries.length
-      return <button className={allDone ? 'btn primary' : 'btn ghost dim'} onClick={finishWorkout}>
+      return <button className={allDone ? 'btn primary' : 'btn ghost dim'} onClick={() => finishWorkout()}>
         {allDone ? t('Finish workout') : t('Finish workout early · {0} exercises', exDone + '/' + A.entries.length)}
       </button>
     })()}
