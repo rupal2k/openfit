@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.3.3 — 2026-10-21
+
+Only real sets get logged.
+
+- ✅ **Sets are checked before they're ticked.** 0 reps, 0 kg on a loaded lift, a 0-second hold or 0 minutes of cardio can't be ticked any more; a popup says what's missing. Partial sets (3 of 8 reps) are logged as normal: a hard set is still real training.
+- 🤔 **Likely typos ask first.** A weight far above your best (1000 for 100) or over 100 reps in a set asks "Log anyway?" before it's saved.
+- 🏁 **Finish re-checks.** A ticked set you later edit to something invalid stops the workout from finishing until it's fixed ("Go to it").
+- ⬇️ **Undo a bad working weight.** Confirming a lower weight after an exercise now offers "Make it my working weight", the way back from a typo that got saved, or a fresh start after time off.
+- 🏋️ The "confirm working weight" sheet now starts at today's heaviest set, not your all-time best, so it no longer charts a lift that didn't happen. Its slider goes to 500 kg.
+- 📥 **Imports are checked too.** Plan files and the routine editor keep targets within sane bounds (a hand-edited "1,000,000 sets" used to freeze the app). History imports from other apps leave out impossible sets (9999 kg, 0 reps, negative weights) and say how many.
+- 🔏 The Android APK is now signed with a release key. **One-time:** export a backup (Settings), uninstall the old OPENFIT, install this one, restore.
+- 🧪 CI runs the tests and a production build on every push. 403 tests, including 128 edge cases from an independent audit.
+
 ## v1.3.2 — 2026-10-16
 
 - 🏋️ **Fix: discarded workouts no longer change your starting weights.** Confirming a top weight mid-workout used to save it as your working weight straight away, so discarding the workout (or a typo you then corrected) still changed what the next session pre-filled. The weight now only counts once you finish the workout.
