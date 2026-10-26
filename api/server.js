@@ -27,6 +27,25 @@ const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
 const MAX_BODY = 5 * 1024 * 1024;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
+// In-process rate limit for auth endpoints — fallback for instances deployed without a reverse
+// proxy. Window: 60s, configurable max via RATE_LIMIT_MAX (default 20). When behind nginx/Caddy,
+// the reverse proxy's rate limit applies first; this is a last-resort guard. Set TRUST_PROXY=1
+// only if nginx is configured to pass a trusted X-Forwarded-For header.
+const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
+const RATE_LIMIT_MAX = Math.max(1, +(process.env.RATE_LIMIT_MAX || 20) || 20);
+const _rl = new Map(); // ip -> { count, windowStart }
+function checkRateLimit(req) {
+  const ip = TRUST_PROXY
+    ? (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress
+    : req.socket.remoteAddress;
+  const now = Date.now();
+  const e = _rl.get(ip);
+  if (!e || now - e.windowStart > 60000) { _rl.set(ip, { count: 1, windowStart: now }); return false; }
+  if (e.count >= RATE_LIMIT_MAX) return true;
+  e.count++;
+  return false;
+}
+setInterval(() => { const t = Date.now(); for (const [k, v] of _rl) if (t - v.windowStart > 60000) _rl.delete(k); }, 60000).unref();
 
 fs.mkdirSync(DATA, { recursive: true });
 
@@ -273,6 +292,7 @@ const routes = {
   },
 
   'POST /api/register/options': async (req, res) => {
+    if (checkRateLimit(req)) return json(res, 429, { error: 'rate limit exceeded — try again later' });
     const body = await readBody(req);
     const name = String(body.name || '').trim().slice(0, 40);
     if (!name) return json(res, 400, { error: 'name required' });
@@ -328,6 +348,7 @@ const routes = {
   },
 
   'POST /api/login/options': async (req, res) => {
+    if (checkRateLimit(req)) return json(res, 429, { error: 'rate limit exceeded — try again later' });
     const options = await generateAuthenticationOptions({
       rpID: RP_ID, userVerification: 'preferred', allowCredentials: []
     });
