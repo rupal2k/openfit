@@ -270,6 +270,95 @@ describe('POST /api/push/rest-timer validation', () => {
   });
 });
 
+// ── INVITE_ONLY — dedicated server on port 19474 ─────────────────────────────
+
+let serverInv, dataDirInv;
+const PORT_INV = 19474;
+const BASE_INV = `http://localhost:${PORT_INV}`;
+async function apiInv(method, path2, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (opts.cookie) headers['Cookie'] = opts.cookie;
+  const res = await fetch(`${BASE_INV}${path2}`, {
+    method, headers,
+    body: (method !== 'GET' && method !== 'HEAD' && opts.body !== undefined) ? JSON.stringify(opts.body) : undefined,
+  });
+  const data = await res.json().catch(() => null);
+  return { status: res.status, headers: res.headers, data };
+}
+
+describe('INVITE_ONLY registration gate', { concurrency: false }, () => {
+  before(async () => {
+    dataDirInv = mkdtempSync(join(tmpdir(), 'openfit-inv-'));
+    serverInv = spawn(process.execPath, ['server.js'], {
+      cwd: fileURLToPath(new URL('.', import.meta.url)),
+      env: {
+        ...process.env,
+        PORT: String(PORT_INV),
+        DATA_DIR: dataDirInv,
+        RP_ID: 'localhost',
+        ORIGIN: `http://localhost:${PORT_INV}`,
+        INVITE_ONLY: '1',
+      },
+      stdio: 'pipe',
+    });
+    serverInv.stderr.on('data', d => process.stderr.write(d));
+    const deadline = Date.now() + 8000;
+    while (Date.now() < deadline) {
+      try { const r = await fetch(`${BASE_INV}/api/health`); if (r.ok) break; } catch {}
+      await new Promise(r => setTimeout(r, 100));
+    }
+  });
+
+  after(() => {
+    serverInv?.kill();
+    try { rmSync(dataDirInv, { recursive: true, force: true }); } catch {}
+  });
+
+  it('GET /api/config reports invite_only:true', async () => {
+    const { status, data } = await apiInv('GET', '/api/config');
+    assert.equal(status, 200);
+    assert.equal(data.invite_only, true);
+  });
+
+  it('POST /api/register/options returns 403 with invite message when no code supplied', async () => {
+    const { status, data } = await apiInv('POST', '/api/register/options', { body: { name: 'testuser' } });
+    assert.equal(status, 403);
+    assert.match(data.error, /invite/i);
+  });
+
+  it('POST /api/register/options returns 403 for a blank invite code', async () => {
+    const { status, data } = await apiInv('POST', '/api/register/options', { body: { name: 'testuser', code: '' } });
+    assert.equal(status, 403);
+    assert.match(data.error, /invite/i);
+  });
+});
+
+// ── Session version bump — auth boundary tests ───────────────────────────────
+
+describe('POST /api/logout/all — requires session', () => {
+  it('returns 401 without a session cookie', async () => {
+    const { status } = await api('POST', '/api/logout/all');
+    assert.equal(status, 401);
+  });
+});
+
+describe('admin routes — additional auth boundary checks', () => {
+  it('POST /api/admin/user/disable returns 401 without session', async () => {
+    const { status } = await api('POST', '/api/admin/user/disable', { body: { id: 'x' } });
+    assert.equal(status, 401);
+  });
+
+  it('POST /api/admin/invites/new returns 401 without session', async () => {
+    const { status } = await api('POST', '/api/admin/invites/new', { body: {} });
+    assert.equal(status, 401);
+  });
+
+  it('POST /api/admin/invites/revoke returns 401 without session', async () => {
+    const { status } = await api('POST', '/api/admin/invites/revoke', { body: { code: 'AABBCCDD' } });
+    assert.equal(status, 401);
+  });
+});
+
 // ── Rate limiting — dedicated server with RATE_LIMIT_MAX=3 ────────────────────
 
 let serverRL, dataDirRL;
