@@ -418,3 +418,70 @@ describe('rate limiting on auth endpoints', { concurrency: false }, () => {
     assert.match(r.data.error, /rate limit/i);
   });
 });
+
+// ── Auth event logging — dedicated server on port 19476, stderr captured ──────
+
+let serverLog, dataDirLog;
+const PORT_LOG = 19476;
+const BASE_LOG = `http://localhost:${PORT_LOG}`;
+let stderrLog = '';
+async function apiLog(method, path2, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (opts.cookie) headers['Cookie'] = opts.cookie;
+  const res = await fetch(`${BASE_LOG}${path2}`, {
+    method, headers,
+    body: (method !== 'GET' && method !== 'HEAD' && opts.body !== undefined) ? JSON.stringify(opts.body) : undefined,
+  });
+  const data = await res.json().catch(() => null);
+  return { status: res.status, headers: res.headers, data };
+}
+
+describe('auth event logging', { concurrency: false }, () => {
+  before(async () => {
+    dataDirLog = mkdtempSync(join(tmpdir(), 'openfit-log-'));
+    serverLog = spawn(process.execPath, ['server.js'], {
+      cwd: fileURLToPath(new URL('.', import.meta.url)),
+      env: {
+        ...process.env,
+        PORT: String(PORT_LOG),
+        DATA_DIR: dataDirLog,
+        RP_ID: 'localhost',
+        ORIGIN: `http://localhost:${PORT_LOG}`,
+      },
+      stdio: 'pipe',
+    });
+    serverLog.stderr.on('data', d => { stderrLog += d.toString(); });
+    const deadline = Date.now() + 8000;
+    while (Date.now() < deadline) {
+      try { const r = await fetch(`${BASE_LOG}/api/health`); if (r.ok) break; } catch {}
+      await new Promise(r => setTimeout(r, 100));
+    }
+  });
+
+  after(() => {
+    serverLog?.kill();
+    try { rmSync(dataDirLog, { recursive: true, force: true }); } catch {}
+  });
+
+  it('emits a structured REGISTER event on successful registration', async () => {
+    stderrLog = '';
+    await apiLog('POST', '/api/register/options', { body: { name: 'logtest' } });
+    await new Promise(r => setTimeout(r, 50));
+    const lines = stderrLog.split('\n').filter(l => l.trim().startsWith('{'));
+    const evt = lines.map(l => { try { return JSON.parse(l); } catch { return null; } }).find(e => e?.event === 'REGISTER_OPTIONS');
+    assert.ok(evt, 'expected a REGISTER_OPTIONS log line in stderr');
+    assert.ok(evt.ts, 'log entry must have ts field');
+  });
+
+  it('emits a structured LOGIN_FAIL event on unknown passkey', async () => {
+    stderrLog = '';
+    const optRes = await apiLog('POST', '/api/login/options', {});
+    // Attempt verify with a malformed/unknown credential
+    await apiLog('POST', '/api/login/verify', { body: { cid: optRes.data?.cid, credential: { id: 'unknown', type: 'public-key', response: {} } } });
+    await new Promise(r => setTimeout(r, 50));
+    const lines = stderrLog.split('\n').filter(l => l.trim().startsWith('{'));
+    const evt = lines.map(l => { try { return JSON.parse(l); } catch { return null; } }).find(e => e?.event === 'LOGIN_FAIL');
+    assert.ok(evt, 'expected a LOGIN_FAIL log line in stderr');
+    assert.ok(evt.reason, 'LOGIN_FAIL must have a reason field');
+  });
+});

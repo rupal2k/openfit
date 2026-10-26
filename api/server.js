@@ -63,8 +63,13 @@ const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(us
 function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2)); }
 function atomicWrite(file, content) {
   const tmp = file + '.tmp';
-  fs.writeFileSync(tmp, content);
-  fs.renameSync(tmp, file);
+  try {
+    fs.writeFileSync(tmp, content);
+    fs.renameSync(tmp, file);
+  } catch (err) {
+    try { fs.unlinkSync(tmp); } catch {}
+    throw err;
+  }
 }
 const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
 function readState(uid) {
@@ -291,6 +296,10 @@ const OFF_FIELDS = 'code,product_name,product_name_en,brands,nutriments,serving_
 const foodCache = new Map();               // query -> { at, hits }; insertion-ordered = FIFO
 const FOOD_TTL = 10 * 60000, FOOD_CACHE_MAX = 500;
 
+function authLog(event, data = {}) {
+  process.stderr.write(JSON.stringify({ event, ts: new Date().toISOString(), ...data }) + '\n');
+}
+
 /* ---------- routes ---------- */
 const routes = {
   'GET /api/health': async (req, res) => json(res, 200, { ok: true }),
@@ -306,6 +315,7 @@ const routes = {
 
   'POST /api/register/options': async (req, res) => {
     if (checkRateLimit(req)) return json(res, 429, { error: 'rate limit exceeded — try again later' });
+    authLog('REGISTER_OPTIONS');
     const body = await readBody(req);
     const name = String(body.name || '').trim().slice(0, 40);
     if (!name) return json(res, 400, { error: 'name required' });
@@ -357,6 +367,7 @@ const routes = {
       transports: body.credential?.response?.transports || []
     });
     saveDb();
+    authLog('REGISTER', { uid: user.id });
     json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
   },
 
@@ -374,7 +385,7 @@ const routes = {
     const c = takeChallenge(body.cid);
     if (!c) return json(res, 400, { error: 'challenge expired — try again' });
     const cred = db.creds.find(x => x.id === body.credential?.id);
-    if (!cred) return json(res, 404, { error: 'unknown passkey — create a profile first' });
+    if (!cred) { authLog('LOGIN_FAIL', { reason: 'unknown passkey' }); return json(res, 404, { error: 'unknown passkey — create a profile first' }); }
     let verification;
     try {
       verification = await verifyAuthenticationResponse({
@@ -396,7 +407,8 @@ const routes = {
     saveDb();
     const user = db.users.find(u => u.id === cred.userId);
     if (!user) return json(res, 500, { error: 'user missing' });
-    if (user.disabled) return json(res, 403, { error: 'this account has been disabled' });
+    if (user.disabled) { authLog('LOGIN_FAIL', { reason: 'account disabled', uid: user.id }); return json(res, 403, { error: 'this account has been disabled' }); }
+    authLog('LOGIN', { uid: user.id });
     json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
   },
 
@@ -411,6 +423,7 @@ const routes = {
     if (!user) return json(res, 401, { error: 'not signed in' });
     user.sv = sessionVersion(user) + 1;
     saveDb();
+    authLog('LOGOUT_ALL', { uid: user.id });
     json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
   },
 
