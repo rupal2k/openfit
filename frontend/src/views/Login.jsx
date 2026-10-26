@@ -12,30 +12,40 @@ function RegisterSheet({ close }) {
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
   const [inviteOnly, setInviteOnly] = useState(false)
+  const [error, setError] = useState('')
   const ref = useRef(null)
   useEffect(() => { setTimeout(() => ref.current?.focus(), 250) }, [])
   useEffect(() => { api('/api/config').then(c => setInviteOnly(!!c.invite_only)).catch(() => {}) }, [])
   const go = async () => {
     const n = name.trim()
-    if (!n) { useUI.getState().toast(t('Enter a name')); return }
-    if (inviteOnly && !code.trim()) { useUI.getState().toast(t('An invite code is required')); return }
+    if (!n) { setError(t('Enter a name')); return }
+    if (inviteOnly && !code.trim()) { setError(t('An invite code is required')); return }
+    setError('')
     try {
       const u = await passkeyRegister(n, code.trim())
       setUser(u); close()
       if (hasData(useStore.getState().S)) { await pushState(); useUI.getState().toast(t('Profile created — data from this device moved into it')) }
       else { await pullState(); useUI.getState().toast(t('Welcome, {0}', u.name)) }
-    } catch (e) { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') useUI.getState().toast(e.message || t('Registration failed')) }
+    } catch (e) {
+      if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
+        const msg = e.message || t('Registration failed')
+        setError(msg)
+        useUI.getState().toast(msg)
+      }
+    }
   }
   return <>
     <h3>{t('Create your profile')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>{t('Pick a name, then confirm with {0}. The passkey is saved in your device — no password needed.', BIO)}</div>
-    <input ref={ref} className="input" placeholder={t('Your name')} aria-label={t('Your name')} maxLength={40} value={name} onChange={e => setName(e.target.value)} />
+    <input ref={ref} className="input" placeholder={t('Your name')} aria-label={t('Your name')} maxLength={40} value={name}
+      onChange={e => { setName(e.target.value); setError('') }} />
     {inviteOnly && <>
       <div style={{ height: 10 }} />
       <input className="input" placeholder={t('Invite code')} aria-label={t('Invite code')} maxLength={40} value={code}
-        onChange={e => setCode(e.target.value.toUpperCase())} style={{ letterSpacing: '.14em', fontWeight: 600, textAlign: 'center' }} />
+        onChange={e => { setCode(e.target.value.toUpperCase()); setError('') }} style={{ letterSpacing: '.14em', fontWeight: 600, textAlign: 'center' }} />
       <div className="dim small" style={{ marginTop: 6 }}>{t('This app is invite-only — enter the code you were given.')}</div>
     </>}
+    {error && <p role="alert" className="small" style={{ color: 'var(--red, #ef4444)', margin: '8px 0 0' }}>{error}</p>}
     <div style={{ height: 12 }} />
     <Button variant="primary" onClick={go}>{t('Create passkey')}</Button>
   </>
