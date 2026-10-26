@@ -75,11 +75,11 @@ after(() => {
 // ── tests ─────────────────────────────────────────────────────────────────────
 
 describe('GET /api/health', () => {
-  it('returns 200 with ok:true', async () => {
+  it('returns 200 with ok:true and no user count', async () => {
     const { status, data } = await api('GET', '/api/health');
     assert.equal(status, 200);
     assert.equal(data.ok, true);
-    assert.equal(typeof data.users, 'number');
+    assert.equal(data.users, undefined, 'health should not expose user count to unauthenticated callers');
   });
 });
 
@@ -175,6 +175,8 @@ describe('POST /api/logout', () => {
     assert.equal(data.ok, true);
     const sc = headers.get('set-cookie') || '';
     assert.ok(sc.includes('Max-Age=0'), 'should expire the cookie');
+    assert.ok(sc.startsWith('gymsid='), 'HTTP test server must use plain gymsid= (no __Host- prefix on HTTP)');
+    assert.ok(!sc.startsWith('__Host-'), 'should not have __Host- prefix on HTTP');
   });
 });
 
