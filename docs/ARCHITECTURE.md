@@ -143,3 +143,13 @@ Where the code does not follow the layering strictly:
 ## Decisions
 
 - [ADR-0001: Use cases only where they protect data](adr/0001-use-cases.md): why OPENFIT doesn't add a general use-case layer, and which flows get extracted into tested functions.
+
+## Related Documents
+
+| Document | Purpose |
+|----------|---------|
+| [FLOWS.md](FLOWS.md) | Step-by-step auth journeys with authz checks and trust-boundary crossings |
+| [PERMISSIONS.md](PERMISSIONS.md) | Role × resource × operation matrix; code-enforced access control |
+| [VARIABLES.md](VARIABLES.md) | Config and secrets map with risk ratings and pre-go-live checklist |
+| [tests.md](tests.md) | Test coverage map: existing, proposed, and unverified rules |
+| [adr/0001-use-cases.md](adr/0001-use-cases.md) | Why OPENFIT has no general use-case layer |

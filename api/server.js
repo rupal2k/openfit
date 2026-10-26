@@ -27,6 +27,25 @@ const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
 const MAX_BODY = 5 * 1024 * 1024;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
+// In-process rate limit for auth endpoints — fallback for instances deployed without a reverse
+// proxy. Window: 60s, configurable max via RATE_LIMIT_MAX (default 20). When behind nginx/Caddy,
+// the reverse proxy's rate limit applies first; this is a last-resort guard. Set TRUST_PROXY=1
+// only if nginx is configured to pass a trusted X-Forwarded-For header.
+const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
+const RATE_LIMIT_MAX = Math.max(1, +(process.env.RATE_LIMIT_MAX || 20) || 20);
+const _rl = new Map(); // ip -> { count, windowStart }
+function checkRateLimit(req) {
+  const ip = TRUST_PROXY
+    ? (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress
+    : req.socket.remoteAddress;
+  const now = Date.now();
+  const e = _rl.get(ip);
+  if (!e || now - e.windowStart > 60000) { _rl.set(ip, { count: 1, windowStart: now }); return false; }
+  if (e.count >= RATE_LIMIT_MAX) return true;
+  e.count++;
+  return false;
+}
+setInterval(() => { const t = Date.now(); for (const [k, v] of _rl) if (t - v.windowStart > 60000) _rl.delete(k); }, 60000).unref();
 
 fs.mkdirSync(DATA, { recursive: true });
 
@@ -51,6 +70,11 @@ const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/
 function readState(uid) {
   try { return JSON.parse(fs.readFileSync(stateFile(uid), 'utf8')); } catch { return null; }
 }
+async function readStateAsync(uid) {
+  try { return JSON.parse(await fs.promises.readFile(stateFile(uid), 'utf8')); } catch { return null; }
+}
+const stateCache = new Map(); // uid -> { state, loadedAt }
+const STATE_CACHE_TTL = 30000; // reminder loop fires every 10s; cache is valid for 3 ticks
 
 /* ---------- push notifications (Web Push / VAPID) ---------- */
 const vapidFile = path.join(DATA, 'vapid.json');
@@ -122,7 +146,12 @@ function userNow(tz) {
 setInterval(() => {
   for (const user of db.users) {
     if (!db.subs.some(s => s.userId === user.id)) continue;
-    const S = readState(user.id);
+    let cached = stateCache.get(user.id);
+    if (!cached || Date.now() - cached.loadedAt > STATE_CACHE_TTL) {
+      const s = readState(user.id);
+      if (s) { cached = { state: s, loadedAt: Date.now() }; stateCache.set(user.id, cached); }
+    }
+    const S = cached?.state;
     if (!S?.reminder?.on) continue;
     const now = userNow(S.reminder.tz || 'UTC');
     if (!now || S.reminder.time !== now.hhmm) continue;
@@ -173,7 +202,7 @@ function readSession(req) {
   const cookies = Object.fromEntries((req.headers.cookie || '').split(';').map(c => {
     const i = c.indexOf('='); return i < 0 ? ['', ''] : [c.slice(0, i).trim(), c.slice(i + 1).trim()];
   }));
-  const tok = cookies.gymsid;
+  const tok = cookies[COOKIE_NAME];
   if (!tok) return null;
   const payload = verifySig(tok);
   if (!payload) return null;
@@ -195,10 +224,13 @@ function requireAdmin(req, res) {
   if (!isAdmin(user)) { json(res, 403, { error: 'forbidden' }); return null; }
   return user;
 }
+// __Host- prefix requires Secure + Path=/ + no Domain — only valid over HTTPS.
+// Use it when SECURE is set to bind the cookie to the exact origin (prevents subdomain attacks).
+const COOKIE_NAME = SECURE ? '__Host-gymsid' : 'gymsid';
 function sessionCookie(user) {
-  return `gymsid=${makeSession(user)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${SECURE} SameSite=Lax`;
+  return `${COOKIE_NAME}=${makeSession(user)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${SECURE} SameSite=Lax`;
 }
-const clearCookie = `gymsid=; Path=/; Max-Age=0; HttpOnly;${SECURE} SameSite=Lax`;
+const clearCookie = `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly;${SECURE} SameSite=Lax`;
 
 /* ---------- challenge store (in-memory, 5 min TTL) ---------- */
 const challenges = new Map(); // cid -> {challenge, name?, uid?, exp}
@@ -261,7 +293,7 @@ const FOOD_TTL = 10 * 60000, FOOD_CACHE_MAX = 500;
 
 /* ---------- routes ---------- */
 const routes = {
-  'GET /api/health': async (req, res) => json(res, 200, { ok: true, users: db.users.length }),
+  'GET /api/health': async (req, res) => json(res, 200, { ok: true }),
 
   // Public config the login screen needs before anyone is signed in.
   'GET /api/config': async (req, res) => json(res, 200, { invite_only: INVITE_ONLY }),
@@ -273,6 +305,7 @@ const routes = {
   },
 
   'POST /api/register/options': async (req, res) => {
+    if (checkRateLimit(req)) return json(res, 429, { error: 'rate limit exceeded — try again later' });
     const body = await readBody(req);
     const name = String(body.name || '').trim().slice(0, 40);
     if (!name) return json(res, 400, { error: 'name required' });
@@ -328,6 +361,7 @@ const routes = {
   },
 
   'POST /api/login/options': async (req, res) => {
+    if (checkRateLimit(req)) return json(res, 429, { error: 'rate limit exceeded — try again later' });
     const options = await generateAuthenticationOptions({
       rpID: RP_ID, userVerification: 'preferred', allowCredentials: []
     });
@@ -396,6 +430,7 @@ const routes = {
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
     delete body.state.active;              // in-progress workouts stay device-local
     atomicWrite(stateFile(user.id), JSON.stringify(body.state));
+    stateCache.delete(user.id);
     json(res, 200, { ok: true, ts: body.state._ts || null });
   },
 
@@ -485,11 +520,10 @@ const routes = {
   },
 
   /* ---------- admin dashboard ---------- */
-  // One row per user, cheap enough for a personal instance (reads each state file once).
   'GET /api/admin/users': async (req, res) => {
     if (!requireAdmin(req, res)) return;
-    const users = db.users.map(u => {
-      const S = readState(u.id) || {};
+    const users = await Promise.all(db.users.map(async u => {
+      const S = await readStateAsync(u.id) || {};
       const workouts = S.workouts || [];
       const last = workouts[workouts.length - 1];
       return {
@@ -501,7 +535,7 @@ const routes = {
         hasPush: db.subs.some(s => s.userId === u.id),
         live: livePresence(u.id)
       };
-    });
+    }));
     json(res, 200, { users, invite_only: INVITE_ONLY, now: Date.now() });
   },
 
@@ -518,7 +552,12 @@ const routes = {
       lastSync: S._ts || null,
       routines: (S.routines || []).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: (r.ex || []).length })),
       bodyweight: S.bodyweight || [],
-      workouts: (S.workouts || []).slice().reverse()   // newest first for display
+      workouts: (() => {
+        const sp = new URL(req.url, 'http://x').searchParams;
+        const limit = Math.min(500, Math.max(1, +(sp.get('limit') || 100)));
+        const offset = Math.max(0, +(sp.get('offset') || 0));
+        return (S.workouts || []).slice().reverse().slice(offset, offset + limit);
+      })()
     });
   },
 
