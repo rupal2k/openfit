@@ -168,7 +168,7 @@ export default function Settings() {
         <div className="swatches">
           {Object.entries(ACCENTS).map(([k, c]) => (
             <button key={k} className={'swatch' + ((S.accent || 'openfit') === k ? ' on' : '')}
-              style={{ background: c }} onClick={() => update(s => { s.accent = k })} aria-label={k} />
+              style={{ background: c }} onClick={() => update(s => { s.accent = k })} aria-label={t('Theme color: {0}', k)} aria-pressed={(S.accent || 'openfit') === k} />
           ))}
         </div>
       </div>
@@ -185,9 +185,9 @@ export default function Settings() {
       <Row icon="download" iconTint="var(--blue)" title={t('Export backup (JSON)')} accessory="chevron" onClick={doExport} />
       <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={() => confirmSheet({ title: t('Reset everything?'), message: t('Deletes your plan, workouts and body weight on this device. This cannot be undone.'), confirmText: t('Delete everything'), danger: true, onConfirm: () => { replaceState(JSON.parse(JSON.stringify(DEF)), true); nav('/home'); toast(t('All data reset')) } })} />
     </Section>
-    <input ref={fileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={doImport} />
+    <input ref={fileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} aria-label={t('Import backup file')} onChange={doImport} />
     {/* Reset after reading so picking the same file twice still fires onChange. */}
-    <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}
+    <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }} aria-label={t('Import from another app')}
       onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
 
     {/* "Add to Home screen" makes no sense inside the native app */}
@@ -321,7 +321,7 @@ function PushCard({ S, update, toast }) {
       )}
       {on && S.reminder?.on && (
         <Row icon="clock" iconTint="var(--purple)" title={t('Reminder time')}>
-          <input type="time" className="timef" value={S.reminder?.time || DEF.reminder.time}
+          <input type="time" className="timef" aria-label={t('Reminder time')} value={S.reminder?.time || DEF.reminder.time}
             onChange={e => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), time: e.target.value, tz: localTZ() } })} />
         </Row>
       )}
