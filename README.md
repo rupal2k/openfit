@@ -136,7 +136,27 @@ flowchart LR
 
 The web request path, the code layers (presentation / state / domain / adapters) and a mapping to Android Clean Architecture are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
-## Quick start
+## Deploy
+
+### Render.com (one click)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/rupal2k/openfit)
+
+1. Click the button — Render detects `render.yaml` and pre-fills both services.
+2. Set the two required variables before deploying:
+
+   | Variable | Value |
+   |---|---|
+   | `RP_ID` | Your Render domain, e.g. `openfit.onrender.com` |
+   | `ORIGIN` | `https://openfit.onrender.com` |
+
+3. Click **Deploy** — both services and a 1 GB persistent disk start automatically.
+
+> **Free-tier note:** Render free services sleep after 15 minutes of inactivity. Use Starter plan or self-host for always-on access.
+
+---
+
+### Self-hosted with Docker Compose (recommended)
 
 **Requirements:** [Docker](https://docs.docker.com/get-docker/) with Compose.
 
@@ -144,12 +164,34 @@ The web request path, the code layers (presentation / state / domain / adapters)
 git clone https://github.com/rupal2k/openfit.git
 cd openfit
 cp .env.example .env
+# edit .env — set SESSION_SECRET, RP_ID and ORIGIN at minimum
 docker compose up -d --build
 ```
 
 Open <http://localhost:8080>, choose **Create profile** and register a passkey. On first run the stack downloads and caches the exercise media (~140 MB).
 
-> **Note:** browsers only allow passkeys over HTTPS (except on `localhost`). For public access, put OPENFIT behind a TLS reverse proxy (Caddy, Traefik, Cloudflare Tunnel or similar) and set `RP_ID` and `ORIGIN`.
+**Minimum `.env` for a public instance:**
+```env
+SESSION_SECRET=<64-char hex — generate with: openssl rand -hex 32>
+RP_ID=yourdomain.com
+ORIGIN=https://yourdomain.com
+```
+
+> **TLS note:** browsers require HTTPS for passkeys (except on `localhost`). Put OPENFIT behind Caddy, Traefik, or Cloudflare Tunnel and set `RP_ID`/`ORIGIN` to your public domain.
+
+---
+
+### Fly.io
+
+```bash
+fly launch --name openfit --no-deploy
+fly secrets set SESSION_SECRET=$(openssl rand -hex 32)
+fly secrets set RP_ID=openfit.fly.dev ORIGIN=https://openfit.fly.dev
+fly volumes create openfit_data --size 1
+fly deploy
+```
+
+## Quick start (localhost)
 
 ### Configuration
 
@@ -176,6 +218,69 @@ All state lives in `./data`:
 ```bash
 tar -czf openfit-backup.tar.gz data/
 ```
+
+## One-click cloud deploy
+
+> **Self-hosting is the recommended path** (see Quick start above — two containers, one `docker compose up`). These cloud options are for users who want managed hosting without a VPS.
+
+### Render
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/rupal2k/openfit)
+
+Deploys two services (API + web) from the `render.yaml` in this repo:
+
+1. Click **Deploy to Render** above and connect your GitHub account.
+2. After the deploy finishes, open the **openfit-api** service → **Environment** and set:
+   - `RP_ID` → your Render web domain, e.g. `openfit-web.onrender.com`
+   - `ORIGIN` → `https://openfit-web.onrender.com`
+3. Redeploy the API service to apply the changes.
+
+> **Note on persistence:** The API service uses a 1 GB managed disk (`./data`). Render's free tier does not include persistent disks — you'll need the Starter plan ($7/month) or above. Without a disk, data resets on every deploy.
+
+---
+
+### Railway
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/openfit?referralCode=openfit)
+
+Railway can import the `docker-compose.yml` directly:
+
+```bash
+# One-time setup
+npm install -g @railway/cli
+railway login
+railway init            # creates a new project
+railway up              # deploys both services from docker-compose.yml
+```
+
+Set `RP_ID` and `ORIGIN` in the Railway dashboard to your project's domain, then redeploy.
+
+---
+
+### Fly.io
+
+```bash
+fly auth login
+fly launch --name openfit --region iad   # detects Dockerfile, prompts for config
+fly volumes create openfit_data --size 1  # persistent data volume
+fly deploy
+```
+
+Set `RP_ID` and `ORIGIN` as secrets:
+
+```bash
+fly secrets set RP_ID=openfit.fly.dev ORIGIN=https://openfit.fly.dev
+```
+
+---
+
+### Coolify / Portainer (home lab)
+
+Paste the repo URL into Coolify's **New Resource → Docker Compose** flow. Copy `.env.example` to `.env`, set `RP_ID` and `ORIGIN` to your domain, and deploy. Coolify handles TLS via Let's Encrypt automatically.
+
+---
+
+**After any cloud deploy**, complete the [`docs/VARIABLES.md`](docs/VARIABLES.md) pre-go-live checklist — especially setting `ADMIN_UIDS` and configuring rate limiting.
 
 ## Android app
 

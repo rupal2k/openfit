@@ -1,5 +1,5 @@
-# Every push and PR: the unit suite, a production build of the web app, and a syntax check
-# of the API — the same gates a release is cut from. Node 22 matches the Docker build image.
+# Every push and PR: unit suite, web build, API syntax check.
+# On main: also builds a debug Android APK and attaches it to a GitHub release.
 name: CI
 on:
   push:
@@ -37,3 +37,47 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: node --check ../api/server.js
+
+  build-apk:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [test-api, test-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Build web bundle and sync Capacitor
+        working-directory: frontend
+        run: npm ci && npm run build:mobile
+      - name: Build debug APK
+        working-directory: frontend/android
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Rename APK
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          mv frontend/android/app/build/outputs/apk/debug/app-debug.apk \
+             OPENFIT-android-${SHORT_SHA}.apk
+          echo "APK_NAME=OPENFIT-android-${SHORT_SHA}.apk" >> $GITHUB_ENV
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openfit-apk
+          path: ${{ env.APK_NAME }}
+          retention-days: 30
+      - name: Attach APK to latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
+          if [ -n "$LATEST" ]; then
+            gh release upload "$LATEST" "${{ env.APK_NAME }}" --clobber
+          fi
