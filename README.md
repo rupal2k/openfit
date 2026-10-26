@@ -136,7 +136,27 @@ flowchart LR
 
 The web request path, the code layers (presentation / state / domain / adapters) and a mapping to Android Clean Architecture are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
-## Quick start
+## Deploy
+
+### Render.com (one click)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/rupal2k/openfit)
+
+1. Click the button — Render detects `render.yaml` and pre-fills both services.
+2. Set the two required variables before deploying:
+
+   | Variable | Value |
+   |---|---|
+   | `RP_ID` | Your Render domain, e.g. `openfit.onrender.com` |
+   | `ORIGIN` | `https://openfit.onrender.com` |
+
+3. Click **Deploy** — both services and a 1 GB persistent disk start automatically.
+
+> **Free-tier note:** Render free services sleep after 15 minutes of inactivity. Use Starter plan or self-host for always-on access.
+
+---
+
+### Self-hosted with Docker Compose (recommended)
 
 **Requirements:** [Docker](https://docs.docker.com/get-docker/) with Compose.
 
@@ -144,12 +164,34 @@ The web request path, the code layers (presentation / state / domain / adapters)
 git clone https://github.com/rupal2k/openfit.git
 cd openfit
 cp .env.example .env
+# edit .env — set SESSION_SECRET, RP_ID and ORIGIN at minimum
 docker compose up -d --build
 ```
 
 Open <http://localhost:8080>, choose **Create profile** and register a passkey. On first run the stack downloads and caches the exercise media (~140 MB).
 
-> **Note:** browsers only allow passkeys over HTTPS (except on `localhost`). For public access, put OPENFIT behind a TLS reverse proxy (Caddy, Traefik, Cloudflare Tunnel or similar) and set `RP_ID` and `ORIGIN`.
+**Minimum `.env` for a public instance:**
+```env
+SESSION_SECRET=<64-char hex — generate with: openssl rand -hex 32>
+RP_ID=yourdomain.com
+ORIGIN=https://yourdomain.com
+```
+
+> **TLS note:** browsers require HTTPS for passkeys (except on `localhost`). Put OPENFIT behind Caddy, Traefik, or Cloudflare Tunnel and set `RP_ID`/`ORIGIN` to your public domain.
+
+---
+
+### Fly.io
+
+```bash
+fly launch --name openfit --no-deploy
+fly secrets set SESSION_SECRET=$(openssl rand -hex 32)
+fly secrets set RP_ID=openfit.fly.dev ORIGIN=https://openfit.fly.dev
+fly volumes create openfit_data --size 1
+fly deploy
+```
+
+## Quick start (localhost)
 
 ### Configuration
 

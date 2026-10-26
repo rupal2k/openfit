@@ -27,7 +27,7 @@ export default function Library() {
   return <>
     <div className="hdr"><div><h1>{t('Exercises')}</h1><div className="sub">{t('{0} exercises with animations', EXDB.length)}</div></div></div>
     <div className="search" style={{ marginBottom: 10 }}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-      <input className="input" placeholder={t('Search…')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} /></div>
+      <input className="input" placeholder={t('Search…')} aria-label={t('Search exercises')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} /></div>
     {/* dropdowns instead of chip rows: two scrolling rows got cut off at the screen edge */}
     <div className="filters">
       <SelectChip label={t('Body part')} value={bp} none=""
