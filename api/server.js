@@ -70,6 +70,11 @@ const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/
 function readState(uid) {
   try { return JSON.parse(fs.readFileSync(stateFile(uid), 'utf8')); } catch { return null; }
 }
+async function readStateAsync(uid) {
+  try { return JSON.parse(await fs.promises.readFile(stateFile(uid), 'utf8')); } catch { return null; }
+}
+const stateCache = new Map(); // uid -> { state, loadedAt }
+const STATE_CACHE_TTL = 30000; // reminder loop fires every 10s; cache is valid for 3 ticks
 
 /* ---------- push notifications (Web Push / VAPID) ---------- */
 const vapidFile = path.join(DATA, 'vapid.json');
@@ -141,7 +146,12 @@ function userNow(tz) {
 setInterval(() => {
   for (const user of db.users) {
     if (!db.subs.some(s => s.userId === user.id)) continue;
-    const S = readState(user.id);
+    let cached = stateCache.get(user.id);
+    if (!cached || Date.now() - cached.loadedAt > STATE_CACHE_TTL) {
+      const s = readState(user.id);
+      if (s) { cached = { state: s, loadedAt: Date.now() }; stateCache.set(user.id, cached); }
+    }
+    const S = cached?.state;
     if (!S?.reminder?.on) continue;
     const now = userNow(S.reminder.tz || 'UTC');
     if (!now || S.reminder.time !== now.hhmm) continue;
@@ -420,6 +430,7 @@ const routes = {
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
     delete body.state.active;              // in-progress workouts stay device-local
     atomicWrite(stateFile(user.id), JSON.stringify(body.state));
+    stateCache.delete(user.id);
     json(res, 200, { ok: true, ts: body.state._ts || null });
   },
 
@@ -509,11 +520,10 @@ const routes = {
   },
 
   /* ---------- admin dashboard ---------- */
-  // One row per user, cheap enough for a personal instance (reads each state file once).
   'GET /api/admin/users': async (req, res) => {
     if (!requireAdmin(req, res)) return;
-    const users = db.users.map(u => {
-      const S = readState(u.id) || {};
+    const users = await Promise.all(db.users.map(async u => {
+      const S = await readStateAsync(u.id) || {};
       const workouts = S.workouts || [];
       const last = workouts[workouts.length - 1];
       return {
@@ -525,7 +535,7 @@ const routes = {
         hasPush: db.subs.some(s => s.userId === u.id),
         live: livePresence(u.id)
       };
-    });
+    }));
     json(res, 200, { users, invite_only: INVITE_ONLY, now: Date.now() });
   },
 
@@ -542,7 +552,12 @@ const routes = {
       lastSync: S._ts || null,
       routines: (S.routines || []).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: (r.ex || []).length })),
       bodyweight: S.bodyweight || [],
-      workouts: (S.workouts || []).slice().reverse()   // newest first for display
+      workouts: (() => {
+        const sp = new URL(req.url, 'http://x').searchParams;
+        const limit = Math.min(500, Math.max(1, +(sp.get('limit') || 100)));
+        const offset = Math.max(0, +(sp.get('offset') || 0));
+        return (S.workouts || []).slice().reverse().slice(offset, offset + limit);
+      })()
     });
   },
 
