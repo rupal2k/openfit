@@ -177,6 +177,69 @@ All state lives in `./data`:
 tar -czf openfit-backup.tar.gz data/
 ```
 
+## One-click cloud deploy
+
+> **Self-hosting is the recommended path** (see Quick start above — two containers, one `docker compose up`). These cloud options are for users who want managed hosting without a VPS.
+
+### Render
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/rupal2k/openfit)
+
+Deploys two services (API + web) from the `render.yaml` in this repo:
+
+1. Click **Deploy to Render** above and connect your GitHub account.
+2. After the deploy finishes, open the **openfit-api** service → **Environment** and set:
+   - `RP_ID` → your Render web domain, e.g. `openfit-web.onrender.com`
+   - `ORIGIN` → `https://openfit-web.onrender.com`
+3. Redeploy the API service to apply the changes.
+
+> **Note on persistence:** The API service uses a 1 GB managed disk (`./data`). Render's free tier does not include persistent disks — you'll need the Starter plan ($7/month) or above. Without a disk, data resets on every deploy.
+
+---
+
+### Railway
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/openfit?referralCode=openfit)
+
+Railway can import the `docker-compose.yml` directly:
+
+```bash
+# One-time setup
+npm install -g @railway/cli
+railway login
+railway init            # creates a new project
+railway up              # deploys both services from docker-compose.yml
+```
+
+Set `RP_ID` and `ORIGIN` in the Railway dashboard to your project's domain, then redeploy.
+
+---
+
+### Fly.io
+
+```bash
+fly auth login
+fly launch --name openfit --region iad   # detects Dockerfile, prompts for config
+fly volumes create openfit_data --size 1  # persistent data volume
+fly deploy
+```
+
+Set `RP_ID` and `ORIGIN` as secrets:
+
+```bash
+fly secrets set RP_ID=openfit.fly.dev ORIGIN=https://openfit.fly.dev
+```
+
+---
+
+### Coolify / Portainer (home lab)
+
+Paste the repo URL into Coolify's **New Resource → Docker Compose** flow. Copy `.env.example` to `.env`, set `RP_ID` and `ORIGIN` to your domain, and deploy. Coolify handles TLS via Let's Encrypt automatically.
+
+---
+
+**After any cloud deploy**, complete the [`docs/VARIABLES.md`](docs/VARIABLES.md) pre-go-live checklist — especially setting `ADMIN_UIDS` and configuring rate limiting.
+
 ## Android app
 
 **[⬇ Download the latest APK](https://github.com/rupal2k/openfit/releases/latest/download/OPENFIT-android.apk)** (sideload: allow "Install unknown apps" for your browser or file manager). All releases: [Releases](https://github.com/rupal2k/openfit/releases).

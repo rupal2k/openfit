@@ -15,6 +15,11 @@ COPY frontend/ ./
 RUN npm run build
 
 FROM nginx:alpine
-COPY web/nginx.conf /etc/nginx/conf.d/default.conf
+# nginx.conf.template uses ${API_HOST} substituted at container start.
+# Default "api" matches the Docker Compose service name; override for cloud deploys.
+COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
+# nginx:alpine's default entrypoint runs envsubst on /etc/nginx/templates/*.template
+# before starting nginx, so API_HOST is resolved at runtime (not build time).
+ENV API_HOST=api
 # exercise media (img/gif) is mounted at runtime from the media volume
