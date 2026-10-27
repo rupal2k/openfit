@@ -9,10 +9,13 @@
 Plan routines, run guided workouts with automatic progressive overload, log meals by search or barcode, and track body weight, all in one app that runs on your own server.
 
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-a3e635?style=flat-square)](LICENSE)
+![Version](https://img.shields.io/badge/version-1.4.0-22d3ee?style=flat-square)
 ![Self-hosted](https://img.shields.io/badge/self--hosted-docker-22d3ee?style=flat-square&logo=docker&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-installable-06b6d4?style=flat-square&logo=pwa&logoColor=white)
 ![Android](https://img.shields.io/badge/Android-standalone-3ddc84?style=flat-square&logo=android&logoColor=white)
 ![Telemetry](https://img.shields.io/badge/telemetry-none-a3e635?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-447%20passing-a3e635?style=flat-square)
+![Security audit](https://img.shields.io/badge/security%20audit-passed-a3e635?style=flat-square)
 
 [![Download APK](https://img.shields.io/badge/Download-Android%20APK-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/rupal2k/openfit/releases/latest/download/OPENFIT-android.apk)
 
@@ -138,23 +141,7 @@ The web request path, the code layers (presentation / state / domain / adapters)
 
 ## Deploy
 
-### Render.com (one click)
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/rupal2k/openfit)
-
-1. Click the button — Render detects `render.yaml` and pre-fills both services.
-2. Set the two required variables before deploying:
-
-   | Variable | Value |
-   |---|---|
-   | `RP_ID` | Your Render domain, e.g. `openfit.onrender.com` |
-   | `ORIGIN` | `https://openfit.onrender.com` |
-
-3. Click **Deploy** — both services and a 1 GB persistent disk start automatically.
-
-> **Free-tier note:** Render free services sleep after 15 minutes of inactivity. Use Starter plan or self-host for always-on access.
-
----
+> **Self-hosting is the recommended path** — two containers, one command. For managed cloud hosting without a VPS, see [One-click cloud deploy](#one-click-cloud-deploy).
 
 ### Self-hosted with Docker Compose (recommended)
 
@@ -181,16 +168,6 @@ ORIGIN=https://yourdomain.com
 
 ---
 
-### Fly.io
-
-```bash
-fly launch --name openfit --no-deploy
-fly secrets set SESSION_SECRET=$(openssl rand -hex 32)
-fly secrets set RP_ID=openfit.fly.dev ORIGIN=https://openfit.fly.dev
-fly volumes create openfit_data --size 1
-fly deploy
-```
-
 ## Quick start (localhost)
 
 ### Configuration
@@ -216,7 +193,11 @@ All state lives in `./data`:
 | `vapid.json` | Web-push keys |
 
 ```bash
+# Manual backup
 tar -czf openfit-backup.tar.gz data/
+
+# Daily scheduled backup (add to crontab: crontab -e)
+0 3 * * * cd /path/to/openfit && tar -czf ~/backups/openfit-$(date +\%F).tar.gz data/
 ```
 
 ## One-click cloud deploy
