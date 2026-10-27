@@ -25,6 +25,10 @@ services:
         value: 0
       - key: ADMIN_UIDS
         sync: false          # optional: comma-separated user IDs
+      - key: TRUST_PROXY
+        value: 1             # Render fronts with a proxy; needed for per-IP rate limiting
+      - key: REQUIRE_UV
+        value: 0             # set to 1 to require PIN/biometric at passkey login (multi-user)
     disk:
       name: openfit-data
       mountPath: /data

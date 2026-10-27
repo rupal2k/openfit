@@ -27,6 +27,8 @@ const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
 const MAX_BODY = 5 * 1024 * 1024;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
+const REQUIRE_UV = process.env.REQUIRE_UV === '1';
+if (!REQUIRE_UV) console.warn('[security] REQUIRE_UV not set — passkey user-verification is preferred but not enforced; set REQUIRE_UV=1 for multi-user deployments');
 // In-process rate limit for auth endpoints — fallback for instances deployed without a reverse
 // proxy. Window: 60s, configurable max via RATE_LIMIT_MAX (default 20). When behind nginx/Caddy,
 // the reverse proxy's rate limit applies first; this is a last-resort guard. Set TRUST_PROXY=1
@@ -51,7 +53,7 @@ fs.mkdirSync(DATA, { recursive: true });
 
 /* ---------- secret + db ---------- */
 const secretFile = path.join(DATA, 'secret');
-if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, crypto.randomBytes(32).toString('hex'), { mode: 0o600 });
+if (!fs.existsSync(secretFile)) { atomicWrite(secretFile, crypto.randomBytes(32).toString('hex')); fs.chmodSync(secretFile, 0o600); }
 const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
 
 const dbFile = path.join(DATA, 'db.json');
@@ -59,6 +61,8 @@ let db = { users: [], creds: [], subs: [], invites: [] };
 try { db = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch {}
 db.subs = db.subs || [];
 db.invites = db.invites || [];
+const _legacyInvites = db.invites.filter(i => i.code && i.code.length < 16 && !i.usedBy && !i.revoked);
+if (_legacyInvites.length) console.warn(`[security] ${_legacyInvites.length} unused invite code(s) shorter than 16 chars — regenerate for stronger security`);
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
 function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2)); }
 function atomicWrite(file, content) {
@@ -85,7 +89,7 @@ const STATE_CACHE_TTL = 30000; // reminder loop fires every 10s; cache is valid 
 const vapidFile = path.join(DATA, 'vapid.json');
 let vapid;
 try { vapid = JSON.parse(fs.readFileSync(vapidFile, 'utf8')); }
-catch { vapid = webpush.generateVAPIDKeys(); fs.writeFileSync(vapidFile, JSON.stringify(vapid), { mode: 0o600 }); }
+catch { vapid = webpush.generateVAPIDKeys(); atomicWrite(vapidFile, JSON.stringify(vapid)); fs.chmodSync(vapidFile, 0o600); }
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || (SECURE ? ORIGIN : 'mailto:admin@localhost');
 webpush.setVapidDetails(VAPID_SUBJECT, vapid.publicKey, vapid.privateKey);
 
@@ -204,9 +208,12 @@ function makeSession(user) {
   return sign(user.id + ':' + exp + ':' + sessionVersion(user));
 }
 function readSession(req) {
-  const cookies = Object.fromEntries((req.headers.cookie || '').split(';').map(c => {
-    const i = c.indexOf('='); return i < 0 ? ['', ''] : [c.slice(0, i).trim(), c.slice(i + 1).trim()];
-  }));
+  // first-wins: prevents subdomain-injected duplicate cookie from overriding the real one
+  const cookies = {};
+  for (const c of (req.headers.cookie || '').split(';')) {
+    const i = c.indexOf('='); if (i < 0) continue;
+    const k = c.slice(0, i).trim(); if (k && !(k in cookies)) cookies[k] = c.slice(i + 1).trim();
+  }
   const tok = cookies[COOKIE_NAME];
   if (!tok) return null;
   const payload = verifySig(tok);
@@ -345,7 +352,7 @@ const routes = {
         expectedChallenge: c.challenge,
         expectedOrigin: ORIGIN,
         expectedRPID: RP_ID,
-        requireUserVerification: false
+        requireUserVerification: REQUIRE_UV
       });
     } catch (e) { return json(res, 400, { error: 'verification failed: ' + e.message }); }
     if (!verification.verified) return json(res, 400, { error: 'not verified' });
@@ -393,7 +400,7 @@ const routes = {
         expectedChallenge: c.challenge,
         expectedOrigin: ORIGIN,
         expectedRPID: RP_ID,
-        requireUserVerification: false,
+        requireUserVerification: REQUIRE_UV,
         credential: {
           id: cred.id,
           publicKey: b64uToBuf(cred.publicKey),
