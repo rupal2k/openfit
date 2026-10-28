@@ -17,7 +17,7 @@ Plan routines, run guided workouts with automatic progressive overload, log meal
 ![Tests](https://img.shields.io/badge/tests-447%20passing-a3e635?style=flat-square)
 ![Security audit](https://img.shields.io/badge/security%20audit-passed-a3e635?style=flat-square)
 
-[![Download APK](https://img.shields.io/badge/Download-Android%20APK-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/rupal2k/openfit/releases/latest/download/OPENFIT-android.apk)
+[![Download APK](https://img.shields.io/badge/Download-Android%20APK-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/rupal2k/openfit/releases/latest/download/app-release.apk)
 
 <img src="assets/banner.png" alt="OPENFIT" width="720">
 
@@ -265,7 +265,7 @@ Paste the repo URL into Coolify's **New Resource → Docker Compose** flow. Copy
 
 ## Android app
 
-**[⬇ Download the latest APK](https://github.com/rupal2k/openfit/releases/latest/download/OPENFIT-android.apk)** (sideload: allow "Install unknown apps" for your browser or file manager). All releases: [Releases](https://github.com/rupal2k/openfit/releases).
+**[⬇ Download the latest APK](https://github.com/rupal2k/openfit/releases/latest/download/app-release.apk)** (sideload: allow "Install unknown apps" for your browser or file manager). All releases: [Releases](https://github.com/rupal2k/openfit/releases).
 
 The Android build is a standalone Capacitor app. Data stays on the device, and food search calls Open Food Facts directly.
 
