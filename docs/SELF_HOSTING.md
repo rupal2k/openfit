@@ -73,6 +73,7 @@ RP_ID=gym.example.com
 ORIGIN=https://gym.example.com
 WEB_PORT=8080
 RP_NAME=openfit
+TRUST_PROXY=2   # your tunnel/Caddy + the bundled nginx — keeps rate limiting per real visitor
 ```
 
 ```bash
