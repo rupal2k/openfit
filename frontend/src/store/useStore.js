@@ -4,8 +4,10 @@ import { localTZ } from '../lib/format.js'
 import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
+import { mergeState } from '../lib/sync.js'
 
 const KEY = 'gym_state_v1'
+const BASE_KEY = 'gym_base'
 export const DEF = {
   unit: 'kg', restSec: 90, sound: true, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'openfit', body: 'male', targetW: null,
@@ -83,11 +85,27 @@ export const useStore = create((set, get) => {
     }
   })
 
+  // _ts of the server copy this device last synced with; sent with every save so the server can
+  // refuse to overwrite a copy another device saved in between (see PUT /api/data).
+  const getBase = () => { const b = localStorage.getItem(BASE_KEY); return b == null ? null : +b }
+  const setBase = ts => { if (ts != null) localStorage.setItem(BASE_KEY, String(ts)) }
+
+  // Take a server copy in: merged with local data, or as-is when `merge` is false (nothing local).
+  // The in-progress workout is device-local and never on the server, so it is carried over.
+  const adoptMerged = (remote, merge = true) => {
+    const S = get().S
+    const next = normalizeState(merge ? mergeState(S, remote) : remote)
+    if (S.active) next.active = S.active
+    setBase(remote._ts || 0)
+    persist(next, false)
+  }
+
   // Everything a sign-out leaves behind on this device, whichever way it was triggered.
   const clearLocalSession = () => {
     get().setUser(null)
     localStorage.removeItem('gym_guest')
     localStorage.removeItem('gym_dirty')
+    localStorage.removeItem(BASE_KEY)
     localStorage.removeItem(KEY)
     persist(clone(DEF), false)
   }
@@ -117,20 +135,34 @@ export const useStore = create((set, get) => {
     async pushState() {
       if (!get().user) return
       clearTimeout(pushTm)
-      try { await api('/api/data', { method: 'PUT', body: JSON.stringify({ state: get().S }) }); localStorage.removeItem('gym_dirty') }
-      catch (e) { localStorage.setItem('gym_dirty', '1') }
+      const put = async () => {
+        const r = await api('/api/data', { method: 'PUT', body: JSON.stringify({ state: get().S, base: getBase() }) })
+        setBase(r.ts)
+      }
+      try {
+        try { await put() }
+        catch (e) {
+          if (e.status !== 409) throw e
+          // Another device saved since our last sync: fold its copy in, then save on top of it.
+          adoptMerged(e.data.state)
+          await put()
+        }
+        localStorage.removeItem('gym_dirty')
+      } catch (e) { localStorage.setItem('gym_dirty', '1') }
     },
     async pullState() {
       try {
         const { state } = await api('/api/data')
         const S = get().S
-        const dirty = localStorage.getItem('gym_dirty') === '1'
-        if (state && (!hasData(S) || ((state._ts || 0) >= (S._ts || 0) && !dirty))) {
-          const active = S.active
-          const next = normalizeState(state)
-          if (active) next.active = active
-          persist(next, false)
-        } else if (hasData(S)) { await get().pushState() }
+        if (!state) { if (hasData(S)) await get().pushState(); return }
+        if ((state._ts || 0) === getBase()) {
+          // server unchanged since our last sync — only our own unsent edits can be newer
+          if (localStorage.getItem('gym_dirty') === '1') await get().pushState()
+          return
+        }
+        if (!hasData(S)) { adoptMerged(state, false); return }
+        adoptMerged(state)
+        await get().pushState()
       } catch (e) { /* offline — keep local */ }
     },
 

@@ -8,7 +8,8 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createHmac } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -493,5 +494,70 @@ describe('auth event logging', { concurrency: false }, () => {
     const evt = lines.map(l => { try { return JSON.parse(l); } catch { return null; } }).find(e => e?.event === 'LOGIN_FAIL');
     assert.ok(evt, 'expected a LOGIN_FAIL log line in stderr');
     assert.ok(evt.reason, 'LOGIN_FAIL must have a reason field');
+  });
+});
+
+// ── Sync conflict (OF-009) — dedicated server on port 19477, pre-seeded user + secret ──
+// Passkeys can't be scripted here, so the test seeds db.json and mints the session cookie itself.
+
+let serverSync, dataDirSync;
+const PORT_SYNC = 19477;
+const BASE_SYNC = `http://localhost:${PORT_SYNC}`;
+let syncCookie;
+async function apiSync(method, path2, body) {
+  const res = await fetch(`${BASE_SYNC}${path2}`, {
+    method, headers: { 'Content-Type': 'application/json', Cookie: syncCookie },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  return { status: res.status, data: await res.json().catch(() => null) };
+}
+
+describe('PUT /api/data — conflict detection', { concurrency: false }, () => {
+  before(async () => {
+    dataDirSync = mkdtempSync(join(tmpdir(), 'openfit-sync-'));
+    const secret = 'a'.repeat(64);
+    writeFileSync(join(dataDirSync, 'secret'), secret);
+    writeFileSync(join(dataDirSync, 'db.json'), JSON.stringify({ users: [{ id: 'syncuser', name: 'S' }], creds: [], subs: [], invites: [] }));
+    const payload = `syncuser:${Date.now() + 3600000}:0`;
+    syncCookie = `gymsid=${payload}.${createHmac('sha256', secret).update(payload).digest('base64url')}`;
+    serverSync = spawn(process.execPath, ['server.js'], {
+      cwd: fileURLToPath(new URL('.', import.meta.url)),
+      env: { ...process.env, PORT: String(PORT_SYNC), DATA_DIR: dataDirSync, RP_ID: 'localhost', ORIGIN: `http://localhost:${PORT_SYNC}` },
+      stdio: 'pipe',
+    });
+    const deadline = Date.now() + 8000;
+    while (Date.now() < deadline) {
+      try { const r = await fetch(`${BASE_SYNC}/api/health`); if (r.ok) break; } catch {}
+      await new Promise(r => setTimeout(r, 100));
+    }
+  });
+
+  after(() => {
+    serverSync?.kill();
+    try { rmSync(dataDirSync, { recursive: true, force: true }); } catch {}
+  });
+
+  it('accepts the first save when the server has no copy', async () => {
+    const r = await apiSync('PUT', '/api/data', { state: { _ts: 100, workouts: ['a'] }, base: null });
+    assert.equal(r.status, 200);
+    assert.equal(r.data.ts, 100);
+  });
+
+  it('accepts a save based on the current server copy', async () => {
+    const r = await apiSync('PUT', '/api/data', { state: { _ts: 200, workouts: ['a', 'b'] }, base: 100 });
+    assert.equal(r.status, 200);
+  });
+
+  it('rejects a save based on a stale copy and returns the newer one', async () => {
+    const r = await apiSync('PUT', '/api/data', { state: { _ts: 300, workouts: ['a', 'c'] }, base: 100 });
+    assert.equal(r.status, 409);
+    assert.deepEqual(r.data.state.workouts, ['a', 'b']);
+    const g = await apiSync('GET', '/api/data');
+    assert.equal(g.data.state._ts, 200, 'stale save must not overwrite');
+  });
+
+  it('keeps last-writer-wins for clients that send no base', async () => {
+    const r = await apiSync('PUT', '/api/data', { state: { _ts: 400, workouts: ['x'] } });
+    assert.equal(r.status, 200);
   });
 });

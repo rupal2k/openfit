@@ -452,6 +452,14 @@ const routes = {
     if (!user) return json(res, 401, { error: 'not signed in' });
     const body = await readBody(req);
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
+    // `base` = the _ts of the server copy this client last synced with. If another device has
+    // saved since, refuse and hand back the newer copy for the client to merge — a whole-state
+    // overwrite would silently drop that device's workouts. Clients that send no base (older
+    // builds) keep the old last-writer-wins behaviour.
+    if ('base' in body) {
+      const cur = readState(user.id);
+      if (cur && (cur._ts || 0) !== body.base) return json(res, 409, { error: 'state changed on another device', state: cur });
+    }
     delete body.state.active;              // in-progress workouts stay device-local
     atomicWrite(stateFile(user.id), JSON.stringify(body.state));
     stateCache.delete(user.id);

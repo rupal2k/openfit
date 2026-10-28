@@ -59,7 +59,7 @@ Chain applied by `readSession()` at `api/server.js:172`:
 | Endpoint | Auth check | Side effects |
 |----------|-----------|-------------|
 | `GET /api/data` | readSession → 401 | reads `state-<uid>.json` |
-| `PUT /api/data` | readSession → 401 | writes `state-<uid>.json` (atomic rename); strips `active` field |
+| `PUT /api/data` | readSession → 401 | `409 {state}` if `base` is sent and ≠ stored `_ts` (another device saved since); else writes `state-<uid>.json` (atomic rename); strips `active` field |
 
 uid is sanitized to `[a-zA-Z0-9_-]` before building the file path (`server.js:50`).
 

@@ -43,9 +43,10 @@
 **Sink:** `state-<uid>.json` on server, then back to other devices via pull  
 **Transformations:**
 1. User action → `store.persist()` → `localStorage.setItem(KEY, JSON.stringify(S))` (immediate)
-2. 1500 ms debounce → `PUT /api/data` with full state JSON
-3. Server strips `S.active` field → `atomicWrite(stateFile(uid), JSON.stringify(state))`
-4. On next device page load → `GET /api/data` → merge with localStorage (newest `_ts` wins)
+2. 1500 ms debounce → `PUT /api/data` with `{ state, base }`, where `base` is the `_ts` of the server copy this device last synced with (`localStorage.gym_base`)
+3. If the stored copy's `_ts` ≠ `base`, another device saved in between → `409 { state }`; the client merges (`lib/sync.js mergeState`: records unioned by id / weigh-ins by date, settings from this device) and re-saves on top of it. Requests without `base` (old clients) stay last-writer-wins.
+4. Server strips `S.active` field → `atomicWrite(stateFile(uid), JSON.stringify(state))`
+5. On page load → `GET /api/data`; if the server copy changed since `base`, merge it in (or adopt it as-is when there is no local data) and push the result
 
 **Shape:** full Zustand state JSON — `{ workouts[], routines[], bodyweight[], nutrition{}, settings..., _ts: timestamp }`
 
