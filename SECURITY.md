@@ -138,8 +138,8 @@ Read this before hosting openfit for anyone other than yourself.
   characters / 32 bits and still work, so revoke and reissue any that are still unused. The only
   hard limit
   in the app is a 5 MB request body (`api/server.js:27`).
-- **A few endpoints answer without a session:** `/api/health` (which includes the total user
-  count), `/api/config` (whether invite-only is on), `/api/push/public-key`, and the
+- **A few endpoints answer without a session:** `/api/health` (returns only
+  `{ok:true}`), `/api/config` (whether invite-only is on), `/api/push/public-key`, and the
   register/login handshakes.
 - **Changing `RP_ID` invalidates every existing passkey.** They were bound to the old hostname
   and will fail verification against the new one. The data stays on disk but is unreachable until

@@ -46,7 +46,7 @@ No secret values are injected into the frontend bundle.
 | Name | Code ref | Scope | Source | Default | Risk | Notes |
 |------|----------|-------|--------|---------|------|-------|
 | `RATE_LIMIT_MAX` | server.js | server | env | `20` | none | Max auth requests per IP per 60s (fallback; reverse proxy's limit takes precedence) |
-| `TRUST_PROXY` | server.js | server | env | `false` | medium | `1/true` = read `X-Forwarded-For` for rate limiter IP. Only set if nginx forwards a trusted header. |
+| `TRUST_PROXY` | server.js | server | env | `0` | medium | Number of trusted proxies in front of the API (`true` = 1). The rate limiter reads the `X-Forwarded-For` entry that many places from the right; entries further left are client-supplied and ignored. Too high = spoofable; too low = all users share one bucket. |
 
 ---
 

@@ -31,15 +31,19 @@ const REQUIRE_UV = process.env.REQUIRE_UV === '1';
 if (!REQUIRE_UV) console.warn('[security] REQUIRE_UV not set — passkey user-verification is preferred but not enforced; set REQUIRE_UV=1 for multi-user deployments');
 // In-process rate limit for auth endpoints — fallback for instances deployed without a reverse
 // proxy. Window: 60s, configurable max via RATE_LIMIT_MAX (default 20). When behind nginx/Caddy,
-// the reverse proxy's rate limit applies first; this is a last-resort guard. Set TRUST_PROXY=1
-// only if nginx is configured to pass a trusted X-Forwarded-For header.
-const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
+// the reverse proxy's rate limit applies first; this is a last-resort guard. TRUST_PROXY is the
+// number of trusted proxies in front of the API (1 = the bundled nginx; true/yes/on also mean 1).
+const TRUST_PROXY = /^(true|yes|on)$/i.test(process.env.TRUST_PROXY || '') ? 1 : Math.max(0, parseInt(process.env.TRUST_PROXY, 10) || 0);
 const RATE_LIMIT_MAX = Math.max(1, +(process.env.RATE_LIMIT_MAX || 20) || 20);
 const _rl = new Map(); // ip -> { count, windowStart }
+function clientIp(req) {
+  // Each trusted proxy appends the address it saw, so the real client is TRUST_PROXY entries from
+  // the right; everything left of that is client-supplied and spoofable — never read it.
+  const xff = TRUST_PROXY ? (req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean) : [];
+  return xff[xff.length - TRUST_PROXY] || req.socket.remoteAddress;
+}
 function checkRateLimit(req) {
-  const ip = TRUST_PROXY
-    ? (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress
-    : req.socket.remoteAddress;
+  const ip = clientIp(req);
   const now = Date.now();
   const e = _rl.get(ip);
   if (!e || now - e.windowStart > 60000) { _rl.set(ip, { count: 1, windowStart: now }); return false; }
@@ -574,8 +578,8 @@ const routes = {
       bodyweight: S.bodyweight || [],
       workouts: (() => {
         const sp = new URL(req.url, 'http://x').searchParams;
-        const limit = Math.min(500, Math.max(1, +(sp.get('limit') || 100)));
-        const offset = Math.max(0, +(sp.get('offset') || 0));
+        const limit = Math.min(500, Math.max(1, +sp.get('limit') || 100));
+        const offset = Math.max(0, +sp.get('offset') || 0);
         return (S.workouts || []).slice().reverse().slice(offset, offset + limit);
       })()
     });

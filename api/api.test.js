@@ -365,7 +365,7 @@ let serverRL, dataDirRL;
 const PORT_RL = 19475;
 const BASE_RL = `http://localhost:${PORT_RL}`;
 async function apiRL(method, path2, opts = {}) {
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = { 'Content-Type': 'application/json', ...opts.headers };
   if (opts.cookie) headers['Cookie'] = opts.cookie;
   const res = await fetch(`${BASE_RL}${path2}`, {
     method, headers,
@@ -387,6 +387,7 @@ describe('rate limiting on auth endpoints', { concurrency: false }, () => {
         RP_ID: 'localhost',
         ORIGIN: `http://localhost:${PORT_RL}`,
         RATE_LIMIT_MAX: '3',
+        TRUST_PROXY: '1',
       },
       stdio: 'pipe',
     });
@@ -416,6 +417,15 @@ describe('rate limiting on auth endpoints', { concurrency: false }, () => {
     const r = await apiRL('POST', '/api/login/options', {});
     assert.equal(r.status, 429);
     assert.match(r.data.error, /rate limit/i);
+  });
+
+  it('ignores client-supplied X-Forwarded-For entries left of the proxy-appended one', async () => {
+    // nginx appends the real peer; a client rotating a fake leading entry must not get a fresh bucket
+    const results = [];
+    for (let i = 0; i < 4; i++) {
+      results.push(await apiRL('POST', '/api/login/options', { headers: { 'X-Forwarded-For': `6.6.6.${i}, 10.9.9.9` } }));
+    }
+    assert.deepEqual(results.map(r => r.status === 429), [false, false, false, true]);
   });
 });
 
