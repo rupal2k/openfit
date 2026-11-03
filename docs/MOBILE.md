@@ -43,16 +43,18 @@ into both native projects — re-run it after every web-code change before build
 
 ## App icons & splash screens
 
-`frontend/resources/icon.svg` is the 1024×1024 source (the app's dumbbell glyph on the
-app background). Generate all platform assets from it on a machine with the tooling:
+`assets/icon-source.png` is the master icon: a rounded-square logo on a transparent
+background. One script builds every icon and splash screen from it (Android launcher,
+round and adaptive icons, Android and iOS splash, PWA and website icons, favicon, README
+logo and banner):
 
 ```sh
-cd frontend
-npx @capacitor/assets generate --iconBackgroundColor '#0c0e12' --splashBackgroundColor '#0c0e12'
+cd frontend && npm install && cd ..
+node scripts/generate-brand.mjs
 ```
 
-(If the generator won't take the SVG directly, export it to `resources/icon.png` at
-1024×1024 first — any image tool can do it.)
+To change the logo, replace `assets/icon-source.png` (keep the background transparent)
+and run the script again.
 
 ## Distribution — deliberately no app stores
 

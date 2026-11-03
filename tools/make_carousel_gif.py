@@ -27,14 +27,20 @@ OUTER_Y0 = PHONE_Y - BEZEL_PAD
 OUTER_X1 = PHONE_X + SCREEN_W + BEZEL_PAD
 OUTER_Y1 = PHONE_Y + SCREEN_H + BEZEL_PAD
 
-# Fonts
-FONT_BOLD_PATH = "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf"
-FONT_REG_PATH = "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"
-
-try:
-    font_title = ImageFont.truetype(FONT_BOLD_PATH, 18)
-    font_sub = ImageFont.truetype(FONT_REG_PATH, 13)
-except Exception:
+# Fonts: Noto on Linux, Segoe UI on Windows, Pillow's default as a last resort
+FONT_CANDIDATES = [
+    ("/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf", "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf"),
+    ("C:/Windows/Fonts/segoeuib.ttf", "C:/Windows/Fonts/segoeui.ttf"),
+]
+font_title = font_sub = None
+for bold, reg in FONT_CANDIDATES:
+    try:
+        font_title = ImageFont.truetype(bold, 18)
+        font_sub = ImageFont.truetype(reg, 13)
+        break
+    except OSError:
+        continue
+if font_title is None:
     font_title = ImageFont.load_default()
     font_sub = ImageFont.load_default()
 

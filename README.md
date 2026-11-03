@@ -1,27 +1,21 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="OPENFIT logo" width="112">
+<img src="assets/banner.png" alt="OPENFIT: training, body weight and nutrition, self-hosted" width="720">
 
-# OPENFIT
+<h1>OPENFIT</h1>
 
 **Self-hosted training, body-weight and nutrition tracking that you own.**
 
 Plan routines, run guided workouts with automatic progressive overload, log meals by search or barcode, and track body weight, all in one app that runs on your own server.
 
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-a3e635?style=flat-square)](LICENSE)
-![Version](https://img.shields.io/badge/version-1.4.0-22d3ee?style=flat-square)
+[![Latest release](https://img.shields.io/github/v/release/rupal2k/openfit?style=flat-square&label=release&color=22d3ee)](https://github.com/rupal2k/openfit/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/rupal2k/openfit/ci.yml?branch=main&style=flat-square&label=tests)](https://github.com/rupal2k/openfit/actions/workflows/ci.yml)
 ![Self-hosted](https://img.shields.io/badge/self--hosted-docker-22d3ee?style=flat-square&logo=docker&logoColor=white)
-![PWA](https://img.shields.io/badge/PWA-installable-06b6d4?style=flat-square&logo=pwa&logoColor=white)
-![Android](https://img.shields.io/badge/Android-standalone-3ddc84?style=flat-square&logo=android&logoColor=white)
-![Telemetry](https://img.shields.io/badge/telemetry-none-a3e635?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-447%20passing-a3e635?style=flat-square)
-![Security audit](https://img.shields.io/badge/security%20audit-passed-a3e635?style=flat-square)
 
 [![Download APK](https://img.shields.io/badge/Download-Android%20APK-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/rupal2k/openfit/releases/latest/download/app-release.apk)
 
-<img src="assets/banner.png" alt="OPENFIT" width="720">
-
-<br><br>
+<br>
 
 <img src="assets/screenshots/openfit-carousel.gif" alt="OPENFIT App Walkthrough Carousel" width="360" style="max-width: 100%; height: auto; border-radius: 12px;">
 
@@ -75,30 +69,19 @@ Fitness apps tend to put your own training history behind a subscription, or los
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black) ![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white) ![Zustand](https://img.shields.io/badge/Zustand-5-443E38?style=for-the-badge) ![JavaScript](https://img.shields.io/badge/JavaScript-ESM-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) ![PWA](https://img.shields.io/badge/PWA-offline-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white) |
-| **Mobile** | ![Capacitor](https://img.shields.io/badge/Capacitor-7-119EFF?style=for-the-badge&logo=capacitor&logoColor=white) ![Android](https://img.shields.io/badge/Android-WebView-3DDC84?style=for-the-badge&logo=android&logoColor=white) ![Gradle](https://img.shields.io/badge/Gradle-build-02303A?style=for-the-badge&logo=gradle&logoColor=white) |
-| **Backend** | ![Node.js](https://img.shields.io/badge/Node.js-22-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white) ![WebAuthn](https://img.shields.io/badge/WebAuthn-passkeys-3423A6?style=for-the-badge&logo=webauthn&logoColor=white) ![nginx](https://img.shields.io/badge/nginx-proxy-009639?style=for-the-badge&logo=nginx&logoColor=white) |
-| **On-device AI** | ![Hugging Face](https://img.shields.io/badge/transformers.js-4.3-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black) ![ONNX](https://img.shields.io/badge/ONNX_Runtime-WASM-005CED?style=for-the-badge&logo=onnx&logoColor=white) ![WebAssembly](https://img.shields.io/badge/WebAssembly-CPU-654FF0?style=for-the-badge&logo=webassembly&logoColor=white) |
-| **Data** | ![Open Food Facts](https://img.shields.io/badge/Open_Food_Facts-ODbL-FF8714?style=for-the-badge) ![USDA](https://img.shields.io/badge/USDA-FNDDS-2E7D32?style=for-the-badge) ![JSON](https://img.shields.io/badge/storage-JSON_files-000000?style=for-the-badge&logo=json&logoColor=white) |
-| **Ops & tests** | ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![Vitest](https://img.shields.io/badge/Vitest-4-6E9F18?style=for-the-badge&logo=vitest&logoColor=white) |
+| **Frontend** | React 19, Vite 8, Zustand 5, JavaScript (ESM), offline PWA |
+| **Mobile** | Capacitor 7 (Android WebView), Gradle |
+| **Backend** | Node.js 22, WebAuthn passkeys, nginx proxy |
+| **On-device AI** | transformers.js 4.3, ONNX Runtime (WASM), WebAssembly on the CPU |
+| **Data** | Open Food Facts (ODbL), USDA FNDDS, JSON files on disk |
+| **Ops & tests** | Docker Compose, Vitest 4 |
 
 ## Architecture
 
 One React codebase ships two ways: a **self-hosted web app** (nginx + a small Node.js API, data as JSON files) and a **standalone Android app** (Capacitor, no server).
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/architecture.png">
-    <source media="(prefers-color-scheme: light)" srcset="docs/images/architecture-light.png">
-    <img alt="OPENFIT Full System Architecture" src="docs/images/architecture.png" width="100%">
-  </picture>
-</p>
-
 > [!TIP]
-> **Interactive Architecture Diagram**: An interactive showcase diagram is available in [`docs/architecture.html`](docs/architecture.html) — open it in any browser to explore subsystem filters (Self-Hosted Web, Standalone Android, On-Device AI Vision, Food Search Proxy), inspect components, and trace data-flow paths.
-
-<details>
-<summary><b>View GitHub-native Mermaid Diagram</b></summary>
+> **Interactive architecture diagram:** download [`docs/architecture.html`](docs/architecture.html) and open it in a browser (GitHub shows only its source) to explore subsystem filters (Self-Hosted Web, Standalone Android, On-Device AI Vision, Food Search Proxy), inspect components, and trace data-flow paths.
 
 ```mermaid
 flowchart LR
@@ -135,13 +118,11 @@ flowchart LR
     ONNX -.->|"one-time model fetch"| HF
 ```
 
-</details>
-
 The web request path, the code layers (presentation / state / domain / adapters) and a mapping to Android Clean Architecture are in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ## Deploy
 
-> **Self-hosting is the recommended path** — two containers, one command. For managed cloud hosting without a VPS, see [One-click cloud deploy](#one-click-cloud-deploy).
+> **Self-hosting is the recommended path** — two containers, one command. For managed cloud hosting without a VPS, see [Cloud deploy](#cloud-deploy).
 
 ### Self-hosted with Docker Compose (recommended)
 
@@ -168,7 +149,7 @@ ORIGIN=https://yourdomain.com
 
 ---
 
-## Quick start (localhost)
+## Configuration & backups
 
 ### Configuration
 
@@ -200,9 +181,9 @@ tar -czf openfit-backup.tar.gz data/
 0 3 * * * cd /path/to/openfit && tar -czf ~/backups/openfit-$(date +\%F).tar.gz data/
 ```
 
-## One-click cloud deploy
+## Cloud deploy
 
-> **Self-hosting is the recommended path** (see Quick start above — two containers, one `docker compose up`). These cloud options are for users who want managed hosting without a VPS.
+These options are for managed hosting without a VPS. For your own server, use [Self-hosted with Docker Compose](#self-hosted-with-docker-compose-recommended) above.
 
 ### Render
 
@@ -221,8 +202,6 @@ Deploys two services (API + web) from the `render.yaml` in this repo:
 ---
 
 ### Railway
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/openfit?referralCode=openfit)
 
 Railway can import the `docker-compose.yml` directly:
 

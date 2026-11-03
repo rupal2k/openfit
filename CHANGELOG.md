@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased (1.4.0)
+
+- 🎨 **New app icon.** A new OPENFIT logo on the Android launcher (square, round and adaptive), splash screens, iOS icon, PWA and website icons, favicon and the in-app header. The adaptive Android icon now shows the whole logo instead of cropping its edges.
+- 🖼️ Fresh screenshots and carousel from the current app.
+
 ## v1.3.3 — 2026-10-21
 
 Only real sets get logged.
