@@ -46,3 +46,18 @@ describe('mergeState', () => {
     expect(remote.workouts).toHaveLength(2)
   })
 })
+
+describe('mergeState: lab reports', () => {
+  const local = { labs: { units: 'us', reports: [{ id: 'a', d: '2026-03-01' }, { id: 'b', d: '2026-07-14', lab: 'mine' }] } }
+  const remote = { labs: { units: 'si', reports: [{ id: 'b', d: '2026-07-14', lab: 'theirs' }, { id: 'c', d: '2025-11-02' }] } }
+  const m = mergeState(local, remote)
+  it('keeps reports from both devices once, sorted by date, local wins on the same id', () => {
+    expect(m.labs.reports.map(r => r.id)).toEqual(['c', 'a', 'b'])
+    expect(m.labs.reports[2].lab).toBe('mine')
+  })
+  it('keeps this device unit choice', () => expect(m.labs.units).toBe('us'))
+  it('copes with one side having no labs yet', () => {
+    expect(mergeState({}, remote).labs.reports.map(r => r.id)).toEqual(['c', 'b'])
+    expect(mergeState(local, {}).labs.reports).toHaveLength(2)
+  })
+})

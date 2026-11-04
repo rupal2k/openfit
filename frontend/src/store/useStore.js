@@ -19,7 +19,9 @@ export const DEF = {
   // keeps the column it had. See effortOf.
   reminder: { on: false, time: '08:00', tz: null }, effort: null,
   // food diary — see lib/nutrition.js for the shapes
-  nutrition: { profile: null, days: {}, foods: [] }
+  nutrition: { profile: null, days: {}, foods: [] },
+  // blood test reports — see lib/labs/reports.js for the shapes; units: 'si' | 'us' | null (not chosen yet)
+  labs: { reports: [], units: null }
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -29,6 +31,10 @@ export function normalizeState(raw) {
     profile: s.nutrition?.profile || null,
     days: s.nutrition?.days || {},
     foods: Array.isArray(s.nutrition?.foods) ? s.nutrition.foods : []
+  }
+  s.labs = {
+    reports: Array.isArray(s.labs?.reports) ? s.labs.reports : [],
+    units: s.labs?.units === 'us' || s.labs?.units === 'si' ? s.labs.units : null
   }
   return s
 }
@@ -42,7 +48,7 @@ function loadState() {
 }
 
 const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length
-  || Object.keys(st.nutrition?.days || {}).length)
+  || Object.keys(st.nutrition?.days || {}).length || (st.labs?.reports || []).length)
 
 export const useStore = create((set, get) => {
   let pushTm = null

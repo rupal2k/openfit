@@ -1,0 +1,90 @@
+import { MARKERS } from './catalog.js'
+import { toCanonical, sameUnit } from './units.js'
+import { uid } from '../format.js'
+
+// S.labs.reports[]: { id, d: 'YYYY-MM-DD', lab, src (file name), t (saved at), dob?,
+//   markers: [{ key, v, lo, hi, rv, ru, raw, cmp? }] }
+// v, lo and hi are canonical (SI); rv/ru/raw are what the report printed, kept for the record.
+
+// Rows from parseLabText, each with whether it can be saved as-is.
+export function reviewRows(rows) {
+  const seen = new Set()
+  return rows.map(r => {
+    const ok = r.key ? toCanonical(r.key, r.value, r.unit).ok : false
+    const dup = r.key && seen.has(r.key)
+    if (r.key) seen.add(r.key)
+    return { ...r, include: !!r.key && ok && !dup, unitOk: ok, dup: !!dup }
+  })
+}
+
+// The reviewed rows → a report. Only included rows whose unit is known are stored.
+export function buildReport(rows, { date, lab = '', src = '', dob = null } = {}) {
+  const markers = []
+  const seen = new Set()
+  for (const r of rows) {
+    if (!r.include || !r.key || seen.has(r.key)) continue
+    const c = toCanonical(r.key, r.value, r.unit)
+    if (!c.ok) continue
+    seen.add(r.key)
+    const conv = x => (x == null ? null : toCanonical(r.key, x, r.unit).v)
+    markers.push({ key: r.key, v: c.v, lo: conv(r.lo), hi: conv(r.hi), rv: r.value, ru: r.unit, raw: r.name, ...(r.cmp ? { cmp: r.cmp } : {}) })
+  }
+  return { id: uid(), d: date, lab, src, t: Date.now(), ...(dob ? { dob } : {}), markers }
+}
+
+export const reportValues = rep => Object.fromEntries(rep.markers.map(m => [m.key, m.v]))
+
+// 'high' | 'low' | 'in' against the range printed on that report; null when it printed none.
+export function status(m) {
+  if (m.hi != null && m.v > m.hi) return 'high'
+  if (m.lo != null && m.v < m.lo) return 'low'
+  return m.lo != null || m.hi != null ? 'in' : null
+}
+
+export const byDate = reports => [...reports].sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : a.t - b.t))
+
+// One marker over time, oldest first.
+export function markerSeries(reports, key) {
+  return byDate(reports).flatMap(r => {
+    const m = r.markers.find(x => x.key === key)
+    return m ? [{ d: r.d, t: Date.parse(r.d + 'T12:00:00'), m, report: r }] : []
+  })
+}
+
+// Latest reading of every marker, in catalogue order.
+export function latestByMarker(reports) {
+  const last = new Map()
+  for (const r of byDate(reports)) for (const m of r.markers) last.set(m.key, { m, report: r })
+  return Object.keys(MARKERS).filter(k => last.has(k)).map(k => ({ key: k, ...last.get(k) }))
+}
+
+// Age on the report date: from the profile's birth year, else the date of birth the report printed.
+export function ageAt(S, report) {
+  const by = S.nutrition?.profile?.birthYear
+  const y = +String(report.d).slice(0, 4)
+  if (by && y) return y - by
+  if (report.dob) {
+    const [a, b] = [new Date(report.dob + 'T00:00:00'), new Date(report.d + 'T00:00:00')]
+    let age = b.getFullYear() - a.getFullYear()
+    if (b.getMonth() < a.getMonth() || (b.getMonth() === a.getMonth() && b.getDate() < a.getDate())) age--
+    return age
+  }
+  return null
+}
+
+export const sexOf = S => {
+  const s = S.nutrition?.profile?.sex || S.body
+  return s === 'female' || s === 'male' ? s : null
+}
+
+// 'us' when a report mostly prints the US unit of markers whose US and SI units differ.
+export function guessUnits(rows) {
+  let us = 0, si = 0
+  for (const r of rows) {
+    const d = r.key && MARKERS[r.key]
+    if (!d || !d.alt[0] || sameUnit(d.alt[0].unit, d.unit)) continue
+    if (sameUnit(r.unit, d.alt[0].unit)) us++
+    else if (sameUnit(r.unit, d.unit)) si++
+  }
+  return us > si ? 'us' : 'si'
+}
