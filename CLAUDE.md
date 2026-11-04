@@ -50,7 +50,7 @@ Key vars: `RP_ID`, `ORIGIN`, `WEB_PORT`, `RP_NAME`, `INVITE_ONLY`.
 - **Challenges are single-consume.** `takeChallenge` deletes on first call. Never cache or re-use a challenge ID across requests.
 - **`atomicWrite` must be used for all state writes.** Direct `fs.writeFileSync` on state files bypasses the tmp+rename guard and risks partial-write corruption on concurrent requests.
 - **`INVITE_ONLY` is re-checked at `/api/register/verify`.** Do not accept an invite token at options time and skip the check at verify time — the TOCTOU window is closed deliberately.
-- **Secrets in `.env` — never commit.** `SESSION_SECRET`, `VAPID_PRIVATE_KEY`, `ADMIN_UIDS` are all env-only. The `.env` file is gitignored; `.env.example` is the committed template.
+- **Secrets in `.env` — never commit.** `ADMIN_UIDS` and the other settings live in `.env`; the session key (`data/secret`) and VAPID keys (`data/vapid.json`) are generated on first start, not read from env. The `.env` file is gitignored; `.env.example` is the committed template.
 - **AGPL-3.0**: any modifications served over a network must be open-sourced.
 
 ## System documentation
