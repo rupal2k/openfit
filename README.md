@@ -68,6 +68,7 @@ Fitness apps tend to put your own training history behind a subscription, or los
 | | |
 |---|---|
 | **Lab report import** | Import a lab report PDF and OPENFIT reads it on your device, with no AI model and nothing uploaded. Check every value, unit and range before it is saved. |
+| **Photos and scans** | Photograph a printed report or import a scanned PDF: on-device OCR (Tesseract, bundled in the app, works offline) reads it, puts back decimal points OCR drops and flags every value it changed or was unsure of. |
 | **Trends** | Every marker gets a chart over time, with High and Low against the lab's own range, in SI or US units. |
 | **Published scores** | HOMA-IR, TG/HDL, ApoB/ApoA1, FIB-4, non-HDL cholesterol, homocysteine and Omega-3 Index, plus a PhenoAge biological-age estimate, each with its formula and source. Information, not medical advice. |
 

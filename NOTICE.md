@@ -88,3 +88,14 @@ The test fixtures in `frontend/src/lib/labs/fixtures/` (`getbased-reference-us-v
 `.gold.json`) are getbased's synthetic reference report, copied unchanged under the AGPL v3.0 or
 later. They contain no real patient or laboratory data, are used only by the test suite and are not
 part of the built app, so the app store exception above is not affected by them.
+
+## On-device OCR (Tesseract)
+
+Photographed and scanned lab reports are read by [**Tesseract.js**](https://github.com/naptha/tesseract.js)
+and [**tesseract.js-core**](https://github.com/naptha/tesseract.js-core) (the
+[Tesseract OCR engine](https://github.com/tesseract-ocr/tesseract) compiled to WebAssembly), all under
+the **Apache License 2.0**, with the English model from
+[**tessdata**](https://github.com/tesseract-ocr/tessdata) (Apache License 2.0), packaged as
+[`@tesseract.js-data/eng`](https://www.npmjs.com/package/@tesseract.js-data/eng) (MIT). The worker,
+WebAssembly core and model are shipped inside the app under `ocr/` unmodified. PDF text and page
+rendering use Mozilla's [**pdf.js**](https://github.com/mozilla/pdf.js) (Apache License 2.0).
