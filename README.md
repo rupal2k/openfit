@@ -64,6 +64,13 @@ Fitness apps tend to put your own training history behind a subscription, or los
 | **Science-based targets** | IOM 2005 energy equations with a lifter-focused protein target of 1.6 g/kg. |
 | **History stays accurate** | Each entry snapshots the food's nutrition values, so later database edits never rewrite old logs. |
 
+### Blood tests
+| | |
+|---|---|
+| **Lab report import** | Import a lab report PDF and OPENFIT reads it on your device, with no AI model and nothing uploaded. Check every value, unit and range before it is saved. |
+| **Trends** | Every marker gets a chart over time, with High and Low against the lab's own range, in SI or US units. |
+| **Published scores** | HOMA-IR, TG/HDL, ApoB/ApoA1, FIB-4, non-HDL cholesterol, homocysteine and Omega-3 Index, plus a PhenoAge biological-age estimate, each with its formula and source. Information, not medical advice. |
+
 ### Planning & data
 | | |
 |---|---|

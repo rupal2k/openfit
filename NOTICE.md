@@ -75,3 +75,16 @@ available under the Open Database License (ODbL).
 - Architecture (model catalogue, verified download with a marker, GPU→CPU fallback, one analysis
   pipeline, review before logging) adapted from [fud-ai](https://github.com/apoorvdarshan/fud-ai)
   by Apoorv Darshan (MIT).
+
+## Blood test markers and test report (getbased)
+
+The lab-report reader (`frontend/src/lib/labs/`) follows the marker keys, canonical SI units and
+unit conversion factors of [**getbased**](https://github.com/elkimek/get-based) by elkimek and
+contributors, licensed under the **GNU AGPL v3.0 or later**. These are factual laboratory values;
+the marker names' aliases, the parser and the scoring code are openfit's own. The PhenoAge
+coefficients are from the published paper (Levine ME et al., *Aging*, 2018).
+
+The test fixtures in `frontend/src/lib/labs/fixtures/` (`getbased-reference-us-v2.pdf` and
+`.gold.json`) are getbased's synthetic reference report, copied unchanged under the AGPL v3.0 or
+later. They contain no real patient or laboratory data, are used only by the test suite and are not
+part of the built app, so the app store exception above is not affected by them.
