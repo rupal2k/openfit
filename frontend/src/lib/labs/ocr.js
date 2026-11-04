@@ -1,3 +1,6 @@
+// same flag as lib/mobile.js, read here directly so this module also loads in plain Node
+const MOBILE = import.meta.env?.VITE_MOBILE === '1'
+
 // On-device OCR for photographed and scanned lab reports. Tesseract runs in a web worker with
 // the English model bundled under ocr/ (see vite.config.js), so nothing is downloaded and the
 // image never leaves the device. Output matches lib/labs/pdf.js: one line per printed row, a tab
@@ -77,6 +80,9 @@ async function getWorker(onProgress) {
     workerPath: base + 'worker.min.js',
     corePath: base + 'tesseract-core-simd-lstm.wasm.js',
     langPath: base.replace(/\/$/, ''),
+    // Android's packager unpacks assets ending in .gz and drops the suffix, so the APK holds
+    // eng.traineddata; the web build serves eng.traineddata.gz.
+    gzip: !MOBILE,
     workerBlobURL: false,
     logger: m => m.status === 'recognizing text' && onProgress?.(m.progress),
   }).catch(e => { worker = null; throw e })
