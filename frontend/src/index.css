@@ -1083,3 +1083,9 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 .lab-date input{min-height:40px;padding:6px 10px;border-radius:10px;border:var(--hair) solid var(--sep);background:var(--surface-2);color:var(--label);font:inherit}
 .lab-more{display:flex;align-items:center;gap:6px;color:var(--acc);font-weight:600;min-height:44px;background:none}
 .lab-units{margin-bottom:16px}
+.lab-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.lab-reading{padding:8px 0 4px}
+.lab-reading h3{margin:0 0 14px}
+.lab-bar{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.lab-bar span{display:block;height:100%;background:var(--acc);transition:width .3s}
+@media (prefers-reduced-motion:reduce){.lab-bar span{transition:none}}

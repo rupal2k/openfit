@@ -91,7 +91,7 @@ export const MARKERS = {
   'vitamins.folate': m('vitamins', 'Folate', 'nmol/L', ['folate', 'folic acid', 'serum folate'], [{ unit: 'ng/mL', f: 0.4413, us: 1 }]),
 
   // mmol/mol (IFCC) ↔ % (NGSP): mmol/mol = 10.929 × (% − 2.15)
-  'diabetes.hba1c': m('diabetes', 'HbA1c', '%', ['hemoglobin a1c', 'haemoglobin a1c', 'hba1c', 'glycated hemoglobin', 'glycosylated hemoglobin', 'a1c'], [{ unit: 'mmol/mol', f: 10.929, o: -23.497 }]),
+  'diabetes.hba1c': m('diabetes', 'HbA1c', '%', ['hemoglobin a1c', 'haemoglobin a1c', 'hemoglobin alc', 'hba1c', 'hbalc', 'glycated hemoglobin', 'glycosylated hemoglobin', 'a1c'], [{ unit: 'mmol/mol', f: 10.929, o: -23.497 }]),
   'diabetes.insulin': m('diabetes', 'Insulin (fasting)', 'µIU/mL', ['fasting insulin', 'insulin fasting', 'insulin'], [{ unit: 'pmol/L', f: 6 }]),
   'diabetes.cPeptide': m('diabetes', 'C-peptide', 'ng/mL', ['c peptide'], [{ unit: 'nmol/L', f: 0.331 }]),
   'diabetes.fructosamine': m('diabetes', 'Fructosamine', 'µmol/L', ['fructosamine']),

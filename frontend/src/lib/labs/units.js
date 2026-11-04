@@ -2,13 +2,14 @@ import { MARKERS } from './catalog.js'
 
 // Spelling variants of one unit compare equal: "K/uL" = "x10^3/µL" = "10^9/L", "mEq/L" = "mmol/L".
 const SAME = [
-  ['10^9/l', 'k/ul', '10^3/ul', 'x10^3/ul', 'x10e3/ul', '10e3/ul', 'thou/ul', 'thou/mm3', '10^3/mm3', 'x10^9/l', '10e9/l', 'g/l (cells)'],
-  ['10^12/l', 'm/ul', '10^6/ul', 'x10^6/ul', 'x10e6/ul', '10e6/ul', 'mill/ul', 'mil/ul', 'x10^12/l', '10e12/l', 'million/ul'],
+  // OCR misreadings of the same units sit alongside the real spellings
+  ['10^9/l', 'k/ul', 'kul', 'k/ui', 'kiul', 'kl', 'k/l', '10^3/ul', 'x10^3/ul', 'x10e3/ul', '10e3/ul', 'thou/ul', 'thou/mm3', '10^3/mm3', 'x10^9/l', '10e9/l', 'g/l (cells)'],
+  ['10^12/l', 'm/ul', 'mul', 'm/ui', 'miul', '10^6/ul', 'x10^6/ul', 'x10e6/ul', '10e6/ul', 'mill/ul', 'mil/ul', 'x10^12/l', '10e12/l', 'million/ul'],
   ['mmol/l', 'meq/l'],
   ['u/l', 'iu/l'],
-  ['miu/l', 'uiu/ml', 'mu/l', 'uu/ml', 'microiu/ml'],
+  ['miu/l', 'uiu/ml', 'mu/l', 'uu/ml', 'microiu/ml', 'ulu/ml', 'uiu/mi', 'piu/ml', 'liu/ml', 'ulu/mi'],
   ['ku/l', 'iu/ml', 'u/ml'],
-  ['ug/l', 'ng/ml'],
+  ['ug/l', 'ng/ml', 'ng/mi'],
   ['ml/min/1.73m2', 'ml/min/1.73m^2', 'ml/min/1.73 m2', 'ml/min'],
   ['%', 'percent'],
 ]

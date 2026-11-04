@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 const backend = process.env.API_TARGET || 'http://127.0.0.1:3000'
 const media = process.env.MEDIA_TARGET || 'http://127.0.0.1:8888'
@@ -14,8 +16,32 @@ const dropUnusedOrtWasm = {
   generateBundle(_, bundle) { for (const k of Object.keys(bundle)) if (/ort-wasm[^/]*\.wasm$/.test(k)) delete bundle[k] },
 }
 
+// On-device OCR for photographed and scanned lab reports (lib/labs/ocr.js). The Tesseract worker,
+// its SIMD core and the English model ship inside the app under ocr/, so OCR never fetches
+// anything: dev serves them from node_modules, the build emits them as plain files.
+const OCR_FILES = {
+  'worker.min.js': 'tesseract.js/dist/worker.min.js',
+  'tesseract-core-simd-lstm.wasm.js': 'tesseract.js-core/tesseract-core-simd-lstm.wasm.js',
+  'eng.traineddata.gz': '@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz',
+}
+const ocrPath = f => fileURLToPath(new URL('./node_modules/' + OCR_FILES[f], import.meta.url))
+const ocrAssets = {
+  name: 'ocr-assets',
+  configureServer(server) {
+    server.middlewares.use('/ocr/', (req, res, next) => {
+      const f = decodeURIComponent((req.url || '').split('?')[0].replace(/^\//, ''))
+      if (!OCR_FILES[f]) return next()
+      res.setHeader('Content-Type', f.endsWith('.js') ? 'text/javascript' : 'application/octet-stream')
+      res.end(readFileSync(ocrPath(f)))
+    })
+  },
+  generateBundle() {
+    for (const f of Object.keys(OCR_FILES)) this.emitFile({ type: 'asset', fileName: 'ocr/' + f, source: readFileSync(ocrPath(f)) })
+  },
+}
+
 export default defineConfig({
-  plugins: [react(), dropUnusedOrtWasm],
+  plugins: [react(), dropUnusedOrtWasm, ocrAssets],
   base: './',
   server: {
     proxy: {

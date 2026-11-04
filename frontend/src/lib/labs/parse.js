@@ -1,4 +1,5 @@
 import { MARKERS, findMarker } from './catalog.js'
+import { repairRow } from './repair.js'
 
 // Reads lab-report text into rows, with no AI model: a row is a marker name, a number, a unit and
 // a reference range. Lines come from pdf.js (lib/labs/pdf.js), one per printed row, with a tab
@@ -6,7 +7,8 @@ import { MARKERS, findMarker } from './catalog.js'
 // so the review screen shows it.
 
 const NUM = String.raw`[-+]?\d+(?:[.,]\d+)?`
-const num = s => parseFloat(String(s).replace(',', '.'))
+// Labs never print "08" or "008": that is OCR losing the point in 0.8 / 0.08
+const num = s => { const t = String(s).replace(',', '.'); return /^0\d+$/.test(t) ? parseFloat('0.' + t.slice(1)) : parseFloat(t) }
 const FLAG = /^(h|l|hi|lo|high|low|a|abn|abnormal|\*|crit|critical|hh|ll)$/i
 const RANGE = new RegExp(String.raw`(${NUM})\s*(?:-|–|—|to)\s*(${NUM})`)
 const UPPER = new RegExp(String.raw`^(?:<|≤|<=|up to|upto|below)\s*(${NUM})`, 'i')
@@ -120,7 +122,7 @@ export function parseLabText(text, { mdy = false } = {}) {
     let key = hit && (hit.rest === '' || /^(serum|plasma|blood|calculated|calc|direct|absolute|abs|total|ckd epi|sgot|sgpt|fasting|25 hydroxy|%)\b/.test(hit.rest) || hit.rest.length < 12) ? hit.key : null
     // "Neutrophils" with a % unit or a "%" in the name is the percentage, not the count
     if (key && MARKERS[key].pct && (r.unit === '%' || /%|percent/i.test(r.name))) key = MARKERS[key].pct
-    rows.push({ raw: line.replace(/\t/g, '  '), ...r, key })
+    rows.push(repairRow({ raw: line.replace(/\t/g, '  '), ...r, key }))
   }
   return { date, dob, rows }
 }

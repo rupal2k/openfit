@@ -1,10 +1,10 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { fmtDate, todayISO } from '../lib/format.js'
 import { MARKERS, CATEGORIES } from '../lib/labs/catalog.js'
-import { fromCanonical, toCanonical } from '../lib/labs/units.js'
+import { fromCanonical, toCanonical, sameUnit } from '../lib/labs/units.js'
 import { parseLabText } from '../lib/labs/parse.js'
 import { reviewRows, buildReport, reportValues, status, markerSeries, latestByMarker, ageAt, sexOf, guessUnits, byDate } from '../lib/labs/reports.js'
 import { labScores } from '../lib/labs/scores.js'
@@ -33,20 +33,62 @@ const rangeText = (key, m, sys) => {
 
 /* ---------------- import: PDF → text → rows → review ---------------- */
 
-async function importPdf(file) {
-  try {
-    const { pdfText } = await import('../lib/labs/pdf.js')
-    const text = await pdfText(await file.arrayBuffer())
-    const mdy = /^en-US$/i.test(navigator.language || '')
-    const parsed = parseLabText(text, { mdy })
-    if (!parsed.rows.length) {
-      toast(t('No results found. Scanned reports and photos need OCR, which is coming later.'))
-      return
-    }
-    ui().openSheet(close => <ReviewSheet parsed={parsed} src={file.name} close={close} />)
-  } catch (e) {
-    toast(t('Couldn’t read that PDF.'))
-  }
+// A PDF with a text layer is read directly. A scanned PDF (no usable text) and a photo go through
+// on-device OCR, which takes a few seconds, so a progress sheet stays up while it runs.
+function importFile(file) {
+  const isPdf = /pdf$/i.test(file.type) || /\.pdf$/i.test(file.name)
+  ui().openSheet(close => <ReadingSheet file={file} isPdf={isPdf} close={close} />, { locked: true })
+}
+
+function ReadingSheet({ file, isPdf, close }) {
+  const [msg, setMsg] = useState(t('Reading the report…'))
+  const [pct, setPct] = useState(null)
+  useEffect(() => {
+    let live = true
+    const progress = p => live && setPct(Math.round(p * 100))
+    ;(async () => {
+      const mdy = /^en-US$/i.test(navigator.language || '')
+      let text = '', ocr = false
+      const unsure = new Set()
+      if (isPdf) {
+        const { pdfText } = await import('../lib/labs/pdf.js')
+        const data = await file.arrayBuffer()
+        text = await pdfText(data.slice(0))
+        if (parseLabText(text, { mdy }).rows.length < 3) {   // no text layer: a scan
+          live && setMsg(t('This PDF is a scan. Reading it with OCR on this device…'))
+          const { ocrPdfPages } = await import('../lib/labs/ocr.js')
+          text = await ocrPdfPages(data, progress, unsure); ocr = true
+        }
+      } else {
+        live && setMsg(t('Reading the photo with OCR on this device…'))
+        const { ocrText, preparePhoto } = await import('../lib/labs/ocr.js')
+        text = await ocrText(await preparePhoto(file), progress, unsure); ocr = true
+      }
+      const parsed = parseLabText(text, { mdy })
+      if (ocr) {
+        const shaky = new Set([...unsure].map(l => l.replace(/\t/g, '  ')))   // same form as row.raw
+        parsed.rows = parsed.rows.map(r => ({ ...r, unsure: shaky.has(r.raw), unit: tidyUnit(r.key, r.unit) }))
+      }
+      if (!live) return
+      close()
+      if (!parsed.rows.length) { toast(t('No results found in that file.')); return }
+      ui().openSheet(c => <ReviewSheet parsed={parsed} src={file.name} ocr={ocr} close={c} />)
+    })().catch(() => { if (live) { close(); toast(isPdf ? t('Couldn’t read that PDF.') : t('Couldn’t read that photo.')) } })
+    return () => { live = false }
+  }, [])
+  return <div className="lab-reading" role="status">
+    <h3>{msg}</h3>
+    <div className="lab-bar" aria-hidden="true"><span style={{ width: (pct ?? 8) + '%' }} /></div>
+    <p className="muted small">{pct != null ? `${pct}%` : t('Nothing leaves this device.')}</p>
+  </div>
+}
+
+// An OCR'd unit ("Kul") shown in the catalogue's spelling when it is the same unit.
+function tidyUnit(key, unit) {
+  const d = key && MARKERS[key]
+  if (!d || !unit) return unit
+  if (sameUnit(unit, d.unit)) return d.unit
+  return d.alt.find(a => sameUnit(a.unit, unit))?.unit || unit
 }
 
 function unitOptions(key, current) {
@@ -56,7 +98,7 @@ function unitOptions(key, current) {
   return current && !list.some(u => u.toLowerCase() === current.toLowerCase()) ? [current, ...list] : list
 }
 
-function ReviewSheet({ parsed, src, close }) {
+function ReviewSheet({ parsed, src, ocr = false, close }) {
   const [rows, setRows] = useState(() => reviewRows(parsed.rows))
   const [date, setDate] = useState(parsed.date || todayISO())
   const [showOther, setShowOther] = useState(false)
@@ -105,6 +147,9 @@ function ReviewSheet({ parsed, src, close }) {
         </div>
         {r.key && !r.unitOk && <div className="lab-warn small">{t('Unit not recognised for this marker. Pick the unit printed on the report.')}</div>}
         {r.dup && <div className="dim small">{t('Already in this report; only the first is saved.')}</div>}
+        {r.unsure && !r.fixed && <div className="lab-warn small">{t('OCR was unsure of this number. Check it against the report.')}</div>}
+        {r.fixed && <div className="lab-warn small">{t('A decimal point was added: the number as read was not possible. Check it against the report.')}</div>}
+        {r.unitGuessed && <div className="lab-warn small">{t('Unit filled in: it was missing or unreadable. Check it against the report.')}</div>}
       </div>
     </div>
   )
@@ -112,7 +157,9 @@ function ReviewSheet({ parsed, src, close }) {
   return <>
     <h3>{t('Check the results')}</h3>
     <p className="muted small">{t('Read on this device from {0}. Nothing was uploaded. Fix anything that looks wrong before saving.', src)}</p>
+    {ocr && <p className="lab-warn small">{t('Read from an image with OCR: compare every value with the report before saving.')}</p>}
     <label className="lab-date">{t('Sample date')}<input type="date" value={date} max={todayISO()} onChange={e => setDate(e.target.value)} /></label>
+    {!parsed.date && <p className="lab-warn small">{t('The sample date wasn’t found on the report. Set the date the blood was taken.')}</p>}
     <div className="lab-list">{matched.map(line)}</div>
     {other.length > 0 && <>
       <button type="button" className="lab-more" onClick={() => setShowOther(v => !v)} aria-expanded={showOther}>
@@ -179,8 +226,10 @@ export default function Labs() {
   const latestReport = reports[reports.length - 1]
   const scores = latestReport ? labScores(reportValues(latestReport), { age: ageAt(S, latestReport), sex: sexOf(S) }) : []
   const latest = latestByMarker(reports)
+  const photoRef = useRef(null)
   const pick = () => fileRef.current?.click()
-  const onFile = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) importPdf(f) }
+  const pickPhoto = () => photoRef.current?.click()
+  const onFile = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) importFile(f) }
   const del = r => confirmSheet({
     title: t('Delete this report?'), message: t('{0} results from {1} will be removed.', r.markers.length, fmtDate(r.d, true)),
     confirmText: t('Delete'), danger: true,
@@ -190,15 +239,22 @@ export default function Labs() {
   return <div className="narrow">
     <div className="hdr">
       <div><h1>{t('Blood tests')}</h1><div className="sub">{t('Read on this device. Never uploaded.')}</div></div>
-      <button className="iconbtn" onClick={pick} aria-label={t('Import a lab report')}><Icon name="upload" /></button>
+      <div className="row" style={{ gap: 6 }}>
+        <button className="iconbtn" onClick={pickPhoto} aria-label={t('Photograph a lab report')}><Icon name="camera" /></button>
+        <button className="iconbtn" onClick={pick} aria-label={t('Import a lab report PDF')}><Icon name="upload" /></button>
+      </div>
     </div>
     <input ref={fileRef} type="file" accept="application/pdf,.pdf" hidden onChange={onFile} />
+    <input ref={photoRef} type="file" accept="image/*" capture="environment" hidden onChange={onFile} />
 
     {!reports.length && <div className="card lab-empty">
       <Icon name="heart" />
       <h2>{t('Bring in your blood tests')}</h2>
-      <p className="muted">{t('Import a lab report PDF. OPENFIT reads it on this device, you check the values, and every marker gets a chart over time, plus published scores such as HOMA-IR and a biological age estimate.')}</p>
-      <Button variant="primary" icon="upload" onClick={pick}>{t('Import a lab report (PDF)')}</Button>
+      <p className="muted">{t('Import a lab report PDF or take a photo of a printed one. OPENFIT reads it on this device, you check the values, and every marker gets a chart over time, plus published scores such as HOMA-IR and a biological age estimate.')}</p>
+      <div className="lab-actions">
+        <Button variant="primary" icon="upload" onClick={pick}>{t('Import a PDF')}</Button>
+        <Button icon="camera" onClick={pickPhoto}>{t('Take a photo')}</Button>
+      </div>
     </div>}
 
     {reports.length > 0 && <>
@@ -231,7 +287,10 @@ export default function Labs() {
           <button className="iconbtn" onClick={() => del(r)} aria-label={t('Delete report from {0}', fmtDate(r.d, true))}><Icon name="trash" /></button>
         </Row>)}
       </Section>
-      <Button icon="upload" onClick={pick}>{t('Import another report')}</Button>
+      <div className="lab-actions">
+        <Button icon="upload" onClick={pick}>{t('Import a PDF')}</Button>
+        <Button icon="camera" onClick={pickPhoto}>{t('Take a photo')}</Button>
+      </div>
     </>}
   </div>
 }
