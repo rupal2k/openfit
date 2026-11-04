@@ -82,8 +82,9 @@ export function guessUnits(rows) {
   let us = 0, si = 0
   for (const r of rows) {
     const d = r.key && MARKERS[r.key]
-    if (!d || !d.alt[0] || sameUnit(d.alt[0].unit, d.unit)) continue
-    if (sameUnit(r.unit, d.alt[0].unit)) us++
+    const usAlt = d && d.alt.find(a => a.us)
+    if (!usAlt || sameUnit(usAlt.unit, d.unit)) continue
+    if (sameUnit(r.unit, usAlt.unit)) us++
     else if (sameUnit(r.unit, d.unit)) si++
   }
   return us > si ? 'us' : 'si'

@@ -32,10 +32,10 @@ export function toCanonical(key, value, unit) {
   return { v: (value - (alt.o || 0)) / alt.f, ok: true }
 }
 
-// A canonical value shown in SI (canonical) or US units (the marker's first alternative).
+// A canonical value shown in SI (canonical) or in the unit US labs print (alt marked us: 1).
 export function fromCanonical(key, v, system = 'si') {
   const d = MARKERS[key]
   if (!d) return { v, unit: '' }
-  const alt = system === 'us' && d.alt[0] && !/kat|mmol\/mol/.test(d.alt[0].unit) ? d.alt[0] : null
+  const alt = system === 'us' ? d.alt.find(a => a.us) : null
   return alt ? { v: v * alt.f + (alt.o || 0), unit: alt.unit } : { v, unit: d.unit }
 }

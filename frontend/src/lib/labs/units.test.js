@@ -48,3 +48,12 @@ describe('marker names', () => {
     expect(findMarker('Nature of specimen')).toBe(null)   // not "na"
   })
 })
+
+describe('US display units', () => {
+  it('uses the unit US labs print, not just any alternative', () => {
+    expect(fromCanonical('proteins.hsCRP', 3.8, 'us')).toEqual({ v: 3.8, unit: 'mg/L' })
+    expect(fromCanonical('diabetes.insulin', 9.8, 'us')).toEqual({ v: 9.8, unit: 'µIU/mL' })
+    expect(fromCanonical('biochemistry.alt', 28, 'us').unit).toBe('U/L')
+    expect(fromCanonical('lipids.ldl', 3.103, 'us').unit).toBe('mg/dL')
+  })
+})
