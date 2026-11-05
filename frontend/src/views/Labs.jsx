@@ -138,8 +138,16 @@ function ReviewSheet({ parsed, src, ocr = false, close }) {
                 </optgroup>))}
             </select>}
         <div className="lab-rev-v">
-          <input className="lab-num" inputMode="decimal" value={String(r.value)} aria-label={t('Value')}
-            onChange={e => { const v = parseFloat(e.target.value.replace(',', '.')); if (Number.isFinite(v)) set(i, { value: v }) }} />
+          <input className="lab-num" inputMode="decimal" value={String(r.value ?? '')} aria-label={t('Value')}
+            onChange={e => {
+              const vStr = e.target.value;
+              if (vStr === '' ) {
+                set(i, { value: null });
+                return;
+              }
+              const v = parseFloat(vStr.replace(',', '.'));
+              if (Number.isFinite(v)) set(i, { value: v });
+            }} />
           {r.key && <select className="lab-sel" value={r.unit} onChange={e => set(i, { unit: e.target.value })} aria-label={t('Unit')}>
             {unitOptions(r.key, r.unit).map(u => <option key={u} value={u}>{u || t('no unit')}</option>)}
           </select>}

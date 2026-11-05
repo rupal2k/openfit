@@ -11,11 +11,11 @@ const NUM = String.raw`[-+]?\d+(?:[.,]\d+)?`
 const num = s => { const t = String(s).replace(',', '.'); return /^0\d+$/.test(t) ? parseFloat('0.' + t.slice(1)) : parseFloat(t) }
 const FLAG = /^(h|l|hi|lo|high|low|a|abn|abnormal|\*|crit|critical|hh|ll)$/i
 const RANGE = new RegExp(String.raw`(${NUM})\s*(?:-|–|—|to)\s*(${NUM})`)
-const UPPER = new RegExp(String.raw`^(?:<|≤|<=|up to|upto|below)\s*(${NUM})`, 'i')
-const LOWER = new RegExp(String.raw`^(?:>|≥|>=|above|over)\s*(${NUM})`, 'i')
-const VALUE = new RegExp(String.raw`^([<>≤≥])?\s*(${NUM})(?:\s*(h|l|hh|ll|\*))?$`, 'i')
+const UPPER = new RegExp(String.raw`^(?:\u003c|≤|\u003c=|up to|upto|below)\s*(${NUM})`, 'i')
+const LOWER = new RegExp(String.raw`^(?:\u003e|≥|\u003e=|above|over)\s*(${NUM})`, 'i')
+const VALUE = new RegExp(String.raw`^([\u003c\u003e≤≥])?\s*(${NUM})(?:\s*(h|l|hh|ll|\*))?$`, 'i')
 // a cell that is a unit: letters, µ, %, /, ^, digits after a letter or caret (10^9/L, mL/min/1.73m2)
-const UNIT = /^(%|[a-zµμ]*\/?\s?[a-zµμ0-9^*.×\s/²-]*[a-zµμ%²0-9]|(?:x\s*)?10\s*[\^e*]\s*\d+\s*\/\s*[a-zµμ]+|[a-zµμ]+)$/i
+const UNIT = /^(%|[a-zµμ0-9^*.×\s/²-]*[a-zµμ%²0-9]|(?:x\s*)?10\s*[\^e*]\s*\d+\s*\/\s*[a-zµμ]+|[a-zµμ]+)$/i;
 
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 }
 const pad = n => String(n).padStart(2, '0')
@@ -32,7 +32,9 @@ export function findDate(s, mdy = false) {
   x = s.match(/(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/)
   if (x) {
     let [a, b, y] = [+x[1], +x[2], +x[3]]
-    if (y < 100) y += 2000
+        // Adjust two‑digit years: treat > current two‑digit year as 1900s, else 2000s
+    const curY = new Date().getFullYear() % 100;
+    if (y < 100) y += (y > curY ? 1900 : 2000);
     // the number over 12 can only be the day; otherwise follow the locale
     const monthFirst = a > 12 ? false : b > 12 ? true : mdy
     return monthFirst ? iso(y, a, b) : iso(y, b, a)
@@ -68,14 +70,14 @@ function reportDates(lines, mdy) {
 function cellsOf(line) {
   if (line.includes('\t')) return line.split('\t').map(c => c.trim()).filter(Boolean)
   if (/ {2,}/.test(line)) return line.split(/ {2,}/).map(c => c.trim()).filter(Boolean)
-  const m = line.match(new RegExp(String.raw`^(.*?[a-z)%\]])\s+([<>≤≥]?\s*${NUM}\b)(.*)$`, 'i'))
+  const m = line.match(new RegExp(String.raw`^(.*?[a-z)%\]])\s+([\u003c\u003e≤≥]?\s*${NUM}\b)(.*)$`, 'i'))
   return m ? [m[1], m[2], m[3].trim()].filter(Boolean) : [line]
 }
 
 // After the value, a cell may hold several things ("mg/dL 0,7 - 1,2"): take a range out first,
 // then read what is left word by word.
 function pieces(cell) {
-  const r = cell.match(RANGE) || cell.match(/(?:<|≤|<=|>|≥|>=)\s*[-+]?\d+(?:[.,]\d+)?/)
+  const r = cell.match(RANGE) || cell.match(/(?:\u003c|≤|\u003c=|\u003e|≥|\u003e=)\s*[-+]?\d+(?:[.,]\d+)?/)
   if (!r) return cell.includes(' ') && !UNIT.test(cell) ? cell.split(/\s+/) : [cell]
   const before = cell.slice(0, r.index).trim(), after = cell.slice(r.index + r[0].length).trim()
   return [...(before ? pieces(before) : []), r[0].trim(), ...(after ? pieces(after) : [])]
