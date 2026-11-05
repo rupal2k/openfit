@@ -359,7 +359,7 @@ h4.sec,.sect-t{
    fades it as one shape — and it does that for every icon, not just this one. */
 /* large system text (Android font scale): labels wrap onto two lines instead of running into each other */
 #tabbar button{min-width:0;padding-left:2px;padding-right:2px}
-#tabbar button span{max-width:100%;text-align:center;line-height:1.15;overflow-wrap:break-word;hyphens:auto}
+#tabbar button span{text-align:center;line-height:1.15}   /* words never split ("Exercise|s") */
 #tabbar button .icn{font-size:25px;--icon-stroke:1.65;color:var(--label)}
 #tabbar button.on{color:var(--acc)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
