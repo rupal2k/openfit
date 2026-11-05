@@ -14,7 +14,7 @@ Plan routines, run guided workouts with automatic progressive overload, log meal
 ![Self-hosted](https://img.shields.io/badge/self--hosted-docker-22d3ee?style=flat-square&logo=docker&logoColor=white)
 
 [![Download APK](https://img.shields.io/badge/Download-Android%20APK-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/rupal2k/openfit/releases/latest/download/app-release.apk)
-[![Watch the video tour](https://img.shields.io/badge/Watch-7--episode%20tour-ff0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PLIlQz5UNxQ1c)
+[![Watch the video tour](https://img.shields.io/badge/Watch-8--episode%20tour-ff0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PLIlQz5UNxQ1c)
 
 <br>
 
@@ -26,11 +26,11 @@ Plan routines, run guided workouts with automatic progressive overload, log meal
 
 ## Video tour
 
-Seven short comic-style episodes, one per module, about a minute and a half each.
+A short trailer and eight comic-style episodes, one per module, about a minute and a half each.
 
-<a href="https://www.youtube.com/playlist?list=PLIlQz5UNxQ1c"><img src="assets/video-tour.jpg" alt="OPENFIT video tour: the whole app in 7 episodes" width="640"></a>
+<a href="https://www.youtube.com/playlist?list=PLIlQz5UNxQ1c"><img src="assets/video-tour.jpg" alt="OPENFIT video tour: the whole app in 8 episodes" width="640"></a>
 
-[1. Today](https://www.youtube.com/watch?v=hB6LLFcCpPI&list=PLIlQz5UNxQ1c) · [2. Guided workouts](https://www.youtube.com/watch?v=LpxnzEjcCTc&list=PLIlQz5UNxQ1c) · [3. My Plan](https://www.youtube.com/watch?v=-yHLYWLfpzE&list=PLIlQz5UNxQ1c) · [4. My Meals](https://www.youtube.com/watch?v=w5pAtuHNU38&list=PLIlQz5UNxQ1c) · [5. My Stats](https://www.youtube.com/watch?v=JdfB-Oq2mR8&list=PLIlQz5UNxQ1c) · [6. Exercise library](https://www.youtube.com/watch?v=1WvinN-iHXM&list=PLIlQz5UNxQ1c) · [7. Settings & backups](https://www.youtube.com/watch?v=ZjggkLvZ_64&list=PLIlQz5UNxQ1c)
+[Trailer](https://www.youtube.com/watch?v=8bsf6MMnFoA&list=PLIlQz5UNxQ1c) · [1. Today](https://www.youtube.com/watch?v=hB6LLFcCpPI&list=PLIlQz5UNxQ1c) · [2. Guided workouts](https://www.youtube.com/watch?v=LpxnzEjcCTc&list=PLIlQz5UNxQ1c) · [3. My Plan](https://www.youtube.com/watch?v=-yHLYWLfpzE&list=PLIlQz5UNxQ1c) · [4. My Meals](https://www.youtube.com/watch?v=w5pAtuHNU38&list=PLIlQz5UNxQ1c) · [5. My Stats](https://www.youtube.com/watch?v=JdfB-Oq2mR8&list=PLIlQz5UNxQ1c) · [6. Exercise library](https://www.youtube.com/watch?v=1WvinN-iHXM&list=PLIlQz5UNxQ1c) · [7. Settings & backups](https://www.youtube.com/watch?v=ZjggkLvZ_64&list=PLIlQz5UNxQ1c) · [8. Blood tests](https://www.youtube.com/watch?v=fM3kZanQOA8&list=PLIlQz5UNxQ1c)
 
 ## Why OPENFIT
 
