@@ -357,6 +357,9 @@ h4.sec,.sect-t{
    the alpha doubled up and the icon read as a stack of loose layers. Carrying the
    fade on the <svg> instead of in the stroke colour flattens the icon first and
    fades it as one shape — and it does that for every icon, not just this one. */
+/* large system text (Android font scale): labels wrap onto two lines instead of running into each other */
+#tabbar button{min-width:0;padding-left:2px;padding-right:2px}
+#tabbar button span{text-align:center;line-height:1.15}   /* words never split ("Exercise|s") */
 #tabbar button .icn{font-size:25px;--icon-stroke:1.65;color:var(--label)}
 #tabbar button.on{color:var(--acc)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
@@ -1072,6 +1075,10 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 .lab-score .lrow-v{text-align:right;line-height:1.35}
 .lab-score-d{padding:0 14px 12px;display:grid;gap:4px;color:var(--label-2)}
 .lab-list{display:grid;gap:2px;margin:8px 0}
+/* Save/Cancel stay on screen below a long list: sticky to the sheet's bottom edge (past its padding) */
+.lab-rev-foot{position:sticky;bottom:calc(-20px - var(--sab));z-index:1;margin:14px -18px calc(-20px - var(--sab));
+  padding:10px 18px calc(10px + var(--sab));background:var(--bg-el);border-top:var(--hair) solid var(--sep)}
+:root[data-theme="light"] .lab-rev-foot{background:var(--bg)}
 .lab-rev{display:flex;gap:10px;align-items:flex-start;padding:9px 2px;border-bottom:var(--hair) solid var(--sep)}
 .lab-rev-m{flex:1;min-width:0;display:grid;gap:6px}
 .lab-rev-n{font-weight:600;overflow-wrap:anywhere}
