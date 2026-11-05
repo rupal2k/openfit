@@ -62,8 +62,13 @@ function guessUnit(key, value, basis) {
 // ocr: the text came from OCR. Only then are decimal points put back and garbled units replaced:
 // a digital PDF prints exactly what the lab measured, so glucose 900 stays 900. Every change is
 // flagged (fixed, unitGuessed) and such rows are never saved without the person ticking them.
+// Units labs commonly misprint for a marker: read as the real one, but tagged so the person confirms.
+const MISPRINTS = { 'thyroid.tsh': [['mIU/mL', 'mIU/L']] }
+
 export function repairRow(r, { ocr = false } = {}) {
   if (!r.key) return r
+  const mis = (MISPRINTS[r.key] || []).find(([bad]) => sameUnit(bad, r.unit))
+  if (mis) return { ...r, unit: mis[1], unitGuessed: true }
   let { unit } = r, unitGuessed = false
   const missing = !unit, garbled = !!unit && ocr && !isRealUnit(unit)
   if (MARKERS[r.key].unit && (missing || garbled) && !toCanonical(r.key, r.value, unit, r.basis).ok) {

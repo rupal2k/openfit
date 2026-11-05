@@ -75,3 +75,11 @@ describe('cleanReports', () => {
     expect(cleanReports('nope')).toEqual([])
   })
 })
+
+describe('age limits for adult scores', () => {
+  it('gives no age for a child or an impossible birth year', () => {
+    expect(ageAt({ nutrition: { profile: { birthYear: 2015 } } }, { d: '2026-07-14' })).toBe(null)
+    expect(ageAt({ nutrition: { profile: { birthYear: 1890 } } }, { d: '2026-07-14' })).toBe(null)
+    expect(ageAt({}, { d: '2026-07-14', birthYear: 1990 })).toBe(36)
+  })
+})

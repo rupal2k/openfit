@@ -154,3 +154,10 @@ describe('re-audit (2026-11-05, reader2.md)', () => {
     expect(row('Neutrophils\t60').unitGuessed).toBeUndefined()
   })
 })
+
+describe('re-audit leftovers', () => {
+  it('TSH printed in mIU/mL is read as mIU/L, tagged and left unticked', () => {
+    const [r] = reviewRows(parseLabText('TSH\t2.1\tmIU/mL\t0.4 - 4.0').rows)
+    expect(r).toMatchObject({ unit: 'mIU/L', unitGuessed: true, include: false })
+  })
+})

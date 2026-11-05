@@ -86,7 +86,13 @@ export function latestByMarker(reports) {
 }
 
 // Age on the report date: from the profile's birth year, else the date of birth the report printed.
+// The scores here are adult formulas: an age under 18 or over 120 (a typo, a child's report) gives none.
 export function ageAt(S, report) {
+  const a = rawAge(S, report)
+  return a != null && a >= 18 && a <= 120 ? a : null
+}
+
+function rawAge(S, report) {
   const by = S.nutrition?.profile?.birthYear
   const y = +String(report.d).slice(0, 4)
   if (by && y) return y - by
