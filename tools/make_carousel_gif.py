@@ -3,7 +3,7 @@
 Renders an elegant mobile device frame with rounded screen corners,
 animated pagination dots, and the screen title and subtitle labels below.
 
-Includes all core app screens plus on-device AI vision photo logging (8 screens).
+Includes all core app screens, on-device AI photo logging and blood tests (10 screens).
 
 Run with:
     uv run --with pillow python3 tools/make_carousel_gif.py
@@ -61,13 +61,15 @@ SCREENS_INFO = [
     ("assets/screenshots/photo-capture.png", "Snap a dish", "Recognised on your device"),
     ("assets/screenshots/photo-review.png", "Review and log", "Top-3 guesses, USDA portion and macros"),
     ("assets/screenshots/stats.png", "My Stats", "Activity heatmap & muscle balance"),
+    ("assets/screenshots/blood-review.png", "Blood tests", "Lab report read on your device"),
+    ("assets/screenshots/blood-scores.png", "Blood test scores", "Published formulas, in your units"),
     ("assets/screenshots/plan.png", "My Plan", "Weekly schedule & routines"),
     ("assets/screenshots/library.png", "Exercises", "1,300+ animated exercises"),
 ]
 
 TOTAL_SCREENS = len(SCREENS_INFO)
 
-# Dot track geometry (8 dots)
+# Dot track geometry (one dot per screen)
 DOT_SIZE = 6
 DOT_RADIUS = DOT_SIZE // 2
 ACTIVE_W = 18
