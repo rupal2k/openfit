@@ -94,3 +94,16 @@ describe('cleanReports migrates old reports', () => {
     expect(r.markers).toEqual([{ key: 'lipids.hdl', v: 1.2 }])
   })
 })
+
+describe('reports with nothing left and the scores window', () => {
+  it('drops a report whose markers were all invalid', async () => {
+    const { cleanReports } = await import('./reports.js')
+    expect(cleanReports([{ id: 'a', d: '2026-07-14', markers: [null, { key: 'made.up', v: 3 }] }])).toEqual([])
+  })
+  it('recentReports keeps the reports within the window before the newest, oldest first', async () => {
+    const { recentReports } = await import('./reports.js')
+    const r = (id, d) => ({ id, d, t: 0, markers: [] })
+    expect(recentReports([r('c', '2026-10-01'), r('a', '2026-01-01'), r('b', '2026-07-14')], 120).map(x => x.id)).toEqual(['b', 'c'])
+    expect(recentReports([], 120)).toEqual([])
+  })
+})

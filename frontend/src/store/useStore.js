@@ -43,7 +43,16 @@ export function normalizeState(raw) {
 function loadState() {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return normalizeState(JSON.parse(raw))
+    if (raw) {
+      const old = JSON.parse(raw), s = normalizeState(old)
+      // reports saved before the privacy fix (full birth date, file name): store the cleaned copy now
+      // and send it on the next sync, instead of keeping the old one until the next edit
+      if (JSON.stringify(s.labs) !== JSON.stringify(old.labs ?? DEF.labs)) {
+        localStorage.setItem(KEY, JSON.stringify(s))
+        localStorage.setItem('gym_dirty', '1')
+      }
+      return s
+    }
   } catch (e) { /* ignore */ }
   return clone(DEF)
 }

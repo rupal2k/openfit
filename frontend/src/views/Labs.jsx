@@ -6,7 +6,7 @@ import { fmtDate, todayISO } from '../lib/format.js'
 import { MARKERS, CATEGORIES } from '../lib/labs/catalog.js'
 import { fromCanonical, toCanonical, sameUnit } from '../lib/labs/units.js'
 import { parseLabText } from '../lib/labs/parse.js'
-import { reviewRows, buildReport, recentValues, status, markerSeries, latestByMarker, ageAt, sexOf, guessUnits, byDate } from '../lib/labs/reports.js'
+import { reviewRows, buildReport, recentValues, recentReports, status, markerSeries, latestByMarker, ageAt, sexOf, guessUnits, byDate } from '../lib/labs/reports.js'
 import { labScores } from '../lib/labs/scores.js'
 import { confirmSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
@@ -86,7 +86,11 @@ function ReadingSheet({ file, isPdf, close }) {
       if (!parsed.rows.length) { toast(t('No results found in that file.')); return }
       // locked: Escape or a tap outside must not throw away the reading and the person's edits
       ui().openSheet(c => <ReviewSheet parsed={parsed} kind={kind} ocr={ocr} close={c} />, { locked: true })
-    })().catch(() => { if (live.current) { close(); toast(isPdf ? t('Couldn’t read that PDF.') : t('Couldn’t read that photo.')) } })
+    })().catch(e => {
+      if (!live.current) return
+      close()
+      toast(e?.message === 'too-large' ? t('That photo is too large (over 120 megapixels).') : isPdf ? t('Couldn’t read that PDF.') : t('Couldn’t read that photo.'))
+    })
     return () => { live.current = false }
   }, [])
   return <div className="lab-reading">
@@ -262,6 +266,8 @@ export default function Labs() {
   const born = [...reports].reverse().find(r => r.birthYear || r.dob)
   const age = latestReport ? ageAt(S, { d: latestReport.d, birthYear: born?.birthYear, dob: born?.dob }) : null
   const scores = latestReport ? labScores(recentValues(reports, 120), { age, sex: sexOf(S) }) : []
+  const first = recentReports(reports, 120)[0]   // the scores mix values from every report in this window
+  const scoreDates = latestReport && (first.d === latestReport.d ? fmtDate(latestReport.d, true) : `${fmtDate(first.d, true)} – ${fmtDate(latestReport.d, true)}`)
   const latest = latestByMarker(reports)
   const photoRef = useRef(null)
   const pick = () => fileRef.current?.click()
@@ -298,7 +304,7 @@ export default function Labs() {
       <Segmented className="lab-units" options={[{ value: 'si', label: t('SI units') }, { value: 'us', label: t('US units') }]} value={sys}
         onChange={v => update(s => { s.labs.units = v })} />
 
-      {scores.length > 0 && <Section title={`${t('Scores')} · ${fmtDate(latestReport.d, true)}`}
+      {scores.length > 0 && <Section title={`${t('Scores')} · ${scoreDates}`}
         footer={t('Published formulas, for information only. Not medical advice: talk to your doctor about your results.')}>
         {scores.map(s => <ScoreRow key={s.id} s={s} sys={sys} />)}
       </Section>}

@@ -55,7 +55,16 @@ export function enhanceGray(g, w, h) {
 
 // A photo File → a cleaned canvas: at least 2400 px on its long side (OCR wants ~300 dpi), grey,
 // contrast-stretched and sharpened.
+export const MAX_PHOTO_PX = 120e6
 export async function preparePhoto(file) {
+  // size from the header first (an <img> off the page loads without decoding): a small file can
+  // decode to gigabytes of pixels
+  const url = URL.createObjectURL(file)
+  try {
+    const im = new Image()
+    await new Promise(res => { im.onload = im.onerror = res; im.src = url })
+    if (im.naturalWidth * im.naturalHeight > MAX_PHOTO_PX) throw new Error('too-large')
+  } finally { URL.revokeObjectURL(url) }
   const bmp = await createImageBitmap(file)
   const scale = Math.min(4000 / Math.max(bmp.width, bmp.height), Math.max(1, 2400 / Math.max(bmp.width, bmp.height)))
   const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale)

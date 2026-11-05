@@ -18,6 +18,7 @@ export function cleanReports(list) {
       src: ['PDF', 'Scan', 'Photo'].includes(r.src) ? r.src : /\.pdf$/i.test(r.src || '') ? 'PDF' : r.src ? 'Photo' : '',
       markers: r.markers.filter(okMarker),
     }))
+    .filter(r => r.markers.length)   // nothing left to show or delete
 }
 
 // Rows from parseLabText, each with whether it can be saved as-is.
@@ -53,15 +54,16 @@ export const reportValues = rep => Object.fromEntries(rep.markers.map(m => [m.ke
 
 // Each marker's latest value from reports within `days` of the newest one: scores then survive a
 // later report that only re-tests a few markers, without mixing in results from years ago.
-export function recentValues(reports, days = 120) {
+export function recentReports(reports, days = 120) {
   const sorted = byDate(reports)
-  if (!sorted.length) return {}
+  if (!sorted.length) return []
   const newest = Date.parse(sorted[sorted.length - 1].d + 'T12:00:00')
+  return sorted.filter(r => newest - Date.parse(r.d + 'T12:00:00') <= days * 864e5)
+}
+
+export function recentValues(reports, days = 120) {
   const out = {}
-  for (const r of sorted) {
-    if (newest - Date.parse(r.d + 'T12:00:00') > days * 864e5) continue
-    for (const m of r.markers) out[m.key] = m.v
-  }
+  for (const r of recentReports(reports, days)) for (const m of r.markers) out[m.key] = m.v
   return out
 }
 
