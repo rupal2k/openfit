@@ -63,6 +63,7 @@ function ReadingSheet({ file, isPdf, close }) {
         const { pdfText } = await import('../lib/labs/pdf.js')
         const data = await file.arrayBuffer()
         text = await pdfText(data.slice(0))
+        if (!live.current) return
         if (text.replace(/\s/g, '').length < 40) {   // no text layer at all: a scan
           live.current && setMsg(t('This PDF is a scan. Reading it with OCR on this device…'))
           const { ocrPdfPages } = await import('../lib/labs/ocr.js')
@@ -71,7 +72,9 @@ function ReadingSheet({ file, isPdf, close }) {
       } else {
         live.current && setMsg(t('Reading the photo with OCR on this device…'))
         const { ocrText, preparePhoto } = await import('../lib/labs/ocr.js')
-        text = await ocrText(await preparePhoto(file), progress, unsure); ocr = true
+        const img = await preparePhoto(file)
+        if (!live.current) return
+        text = await ocrText(img, progress, unsure); ocr = true
       }
       const parsed = parseLabText(text, { mdy, ocr })
       if (ocr) {
@@ -137,7 +140,7 @@ function ReviewSheet({ parsed, kind, ocr = false, close }) {
     if (patch.key === 'biochemistry.urea' && !n.basis) n.basis = /bun|nitrogen/i.test(n.name) ? 'bun' : 'urea'
     n.unitOk = n.key ? toCanonical(n.key, n.value, n.unit, n.basis).ok : false
     if (!n.unitOk || !n.key) n.include = false
-    else if ('key' in patch || 'unit' in patch) n.include = true
+    else if ('key' in patch || 'unit' in patch || ('value' in patch && Number.isFinite(n.value))) n.include = true
     return n
   }))
   const order = ([a], [b]) => (tagsOf(b).length ? 1 : 0) - (tagsOf(a).length ? 1 : 0)   // rows needing a look first
@@ -256,7 +259,9 @@ export default function Labs() {
   const sys = S.labs?.units || 'si'
   const latestReport = reports[reports.length - 1]
   // each marker's latest reading from the last 120 days, so a later partial report keeps the scores
-  const scores = latestReport ? labScores(recentValues(reports, 120), { age: ageAt(S, latestReport), sex: sexOf(S) }) : []
+  const born = [...reports].reverse().find(r => r.birthYear || r.dob)
+  const age = latestReport ? ageAt(S, { d: latestReport.d, birthYear: born?.birthYear, dob: born?.dob }) : null
+  const scores = latestReport ? labScores(recentValues(reports, 120), { age, sex: sexOf(S) }) : []
   const latest = latestByMarker(reports)
   const photoRef = useRef(null)
   const pick = () => fileRef.current?.click()
@@ -297,7 +302,7 @@ export default function Labs() {
         footer={t('Published formulas, for information only. Not medical advice: talk to your doctor about your results.')}>
         {scores.map(s => <ScoreRow key={s.id} s={s} sys={sys} />)}
       </Section>}
-      {latestReport && !Number.isFinite(ageAt(S, latestReport)) && <p className="dim small">{t('Set your birth year in My Meals to see FIB-4 and biological age.')}</p>}
+      {latestReport && !Number.isFinite(age) && <p className="dim small">{t('Set your birth year in My Meals to see FIB-4 and biological age.')}</p>}
 
       {Object.entries(CATEGORIES).map(([c, label]) => {
         const items = latest.filter(x => MARKERS[x.key].cat === c)

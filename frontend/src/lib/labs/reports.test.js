@@ -83,3 +83,14 @@ describe('age limits for adult scores', () => {
     expect(ageAt({}, { d: '2026-07-14', birthYear: 1990 })).toBe(36)
   })
 })
+
+describe('cleanReports migrates old reports', () => {
+  it('keeps only the birth year and the import kind, and drops unknown markers', async () => {
+    const { cleanReports } = await import('./reports.js')
+    const [r] = cleanReports([{ id: 'a', d: '2026-07-14', dob: '1990-08-01', src: 'Jane_Doe_LabCorp.pdf',
+      markers: [{ key: 'lipids.hdl', v: 1.2 }, { key: 'made.up', v: 3 }] }])
+    expect(r).toMatchObject({ birthYear: 1990, src: 'PDF' })
+    expect(r.dob).toBeUndefined()
+    expect(r.markers).toEqual([{ key: 'lipids.hdl', v: 1.2 }])
+  })
+})

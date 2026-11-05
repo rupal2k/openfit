@@ -71,14 +71,14 @@ export async function preparePhoto(file) {
   return c
 }
 
-let worker = null
+let worker = null, progress = null, generation = 0
 // Cancel from the progress sheet: stop the worker mid-recognition; the next import starts a fresh one.
 export function cancelOcr() {
-  const w = worker; worker = null
+  const w = worker; worker = null; generation++
   w?.then(x => x.terminate()).catch(() => {})
 }
 
-async function getWorker(onProgress) {
+async function getWorker() {
   if (worker) return worker
   const { createWorker, OEM } = await import('tesseract.js')
   const base = new URL('ocr/', document.baseURI).href
@@ -90,14 +90,18 @@ async function getWorker(onProgress) {
     // eng.traineddata; the web build serves eng.traineddata.gz.
     gzip: !MOBILE,
     workerBlobURL: false,
-    logger: m => m.status === 'recognizing text' && onProgress?.(m.progress),
+    logger: m => m.status === 'recognizing text' && progress?.(m.progress),
   }).catch(e => { worker = null; throw e })
   return worker
 }
 
 // image: File, Blob, canvas or data URL → text lines. unsure: optional Set, see rowsFromWords.
-export async function ocrText(image, onProgress, unsure = null) {
-  const w = await getWorker(onProgress)
+// gen: the cancel generation the import started in; a Cancel since then stops it before a new worker starts
+export async function ocrText(image, onProgress, unsure = null, gen = generation) {
+  if (gen !== generation) throw new Error('cancelled')
+  progress = onProgress
+  const w = await getWorker()
+  if (gen !== generation) throw new Error('cancelled')
   const { data } = await w.recognize(image, { rotateAuto: true }, { blocks: true })
   return rowsFromWords(wordsOf(data), unsure)
 }
@@ -108,6 +112,7 @@ export function wordsOf(data) {
 
 // A scanned PDF has pages but no text layer: render each page and OCR it.
 export async function ocrPdfPages(pdfData, onProgress, unsure = null, maxPages = 6) {
+  const gen = generation
   const P = await import('pdfjs-dist')
   const { default: workerSrc } = await import('pdfjs-dist/build/pdf.worker.min.mjs?url')
   P.GlobalWorkerOptions.workerSrc = workerSrc
@@ -117,11 +122,13 @@ export async function ocrPdfPages(pdfData, onProgress, unsure = null, maxPages =
   const n = Math.min(doc.numPages, maxPages)
   for (let i = 1; i <= n; i++) {
     const page = await doc.getPage(i)
-    const vp = page.getViewport({ scale: 4 })   // ~290 dpi on a letter page: smaller loses decimal points
+    const base = page.getViewport({ scale: 1 })
+    const vp = page.getViewport({ scale: Math.min(4, Math.sqrt(25e6 / (base.width * base.height))) })   // ~290 dpi on a letter page: smaller loses decimal points
     const canvas = document.createElement('canvas')
     canvas.width = vp.width; canvas.height = vp.height
     await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise
-    out.push(await ocrText(canvas, p => onProgress?.((i - 1 + p) / n), unsure))
+    if (gen !== generation) { await task.destroy(); throw new Error('cancelled') }
+    out.push(await ocrText(canvas, p => onProgress?.((i - 1 + p) / n), unsure, gen))
   }
   await task.destroy()
   return out.join('\n')

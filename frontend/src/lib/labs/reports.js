@@ -9,10 +9,15 @@ import { uid } from '../format.js'
 // A report from an old backup, a hand edit or a bad synced copy must not break the screen that
 // would let the person delete it: keep only well-formed reports and markers.
 export function cleanReports(list) {
-  const okMarker = m => m && typeof m.key === 'string' && Number.isFinite(m.v)
+  const okMarker = m => m && MARKERS[m.key] && Number.isFinite(m.v)
   return (Array.isArray(list) ? list : [])
     .filter(r => r && typeof r.id === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.d) && Array.isArray(r.markers))
-    .map(r => ({ ...r, markers: r.markers.filter(okMarker) }))
+    .map(({ dob, ...r }) => ({
+      ...r,
+      ...(dob && !r.birthYear && +String(dob).slice(0, 4) ? { birthYear: +String(dob).slice(0, 4) } : {}),
+      src: ['PDF', 'Scan', 'Photo'].includes(r.src) ? r.src : /\.pdf$/i.test(r.src || '') ? 'PDF' : r.src ? 'Photo' : '',
+      markers: r.markers.filter(okMarker),
+    }))
 }
 
 // Rows from parseLabText, each with whether it can be saved as-is.
