@@ -205,7 +205,7 @@ function ReviewSheet({ parsed, kind, ocr = false, close }) {
       </button>
       {showOther && <div className="lab-list">{other.map(line)}</div>}
     </>}
-    <div className="row" style={{ gap: 8, marginTop: 14 }}>
+    <div className="row lab-rev-foot" style={{ gap: 8 }}>
       <Button onClick={() => confirmSheet({ title: t('Discard this reading?'), message: t('Nothing from this report will be saved.'), confirmText: t('Discard'), danger: true, onConfirm: close })}>{t('Cancel')}</Button>
       <Button variant="primary" onClick={save} disabled={!count || !date}>{!date ? t('Set the sample date') : t('Save {0} results', count)}</Button>
     </div>

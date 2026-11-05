@@ -99,3 +99,10 @@ the **Apache License 2.0**, with the English model from
 [`@tesseract.js-data/eng`](https://www.npmjs.com/package/@tesseract.js-data/eng) (MIT). The worker,
 WebAssembly core and model are shipped inside the app under `ocr/` unmodified. PDF text and page
 rendering use Mozilla's [**pdf.js**](https://github.com/mozilla/pdf.js) (Apache License 2.0).
+
+## Font (Poppins)
+
+The interface font is [**Poppins**](https://github.com/itfoundry/Poppins) by the Poppins Project
+Authors, under the **SIL Open Font License 1.1** (full text in `frontend/public/fonts/OFL.txt`). The
+Latin, Latin Extended and Devanagari subsets from Google Fonts are shipped unmodified in
+`frontend/public/fonts/`, so the app never requests fonts from Google.
