@@ -71,11 +71,13 @@ export async function preparePhoto(file) {
   return c
 }
 
-let worker = null, progress = null, generation = 0
-// Cancel from the progress sheet: stop the worker mid-recognition; the next import starts a fresh one.
+let worker = null, progress = null, generation = 0, inflight = null
+// Cancel from the progress sheet: the import stops before its next page, and the next import starts a
+// fresh worker. The old one is closed once its current page settles: closing it while Tesseract is still
+// preparing the image makes Tesseract post to a dead worker and throw.
 export function cancelOcr() {
-  const w = worker; worker = null; generation++
-  w?.then(x => x.terminate()).catch(() => {})
+  const w = worker, busy = inflight; worker = null; generation++
+  Promise.resolve(busy).catch(() => {}).finally(() => w?.then(x => x.terminate()).catch(() => {}))
 }
 
 async function getWorker() {
@@ -102,7 +104,9 @@ export async function ocrText(image, onProgress, unsure = null, gen = generation
   progress = onProgress
   const w = await getWorker()
   if (gen !== generation) throw new Error('cancelled')
-  const { data } = await w.recognize(image, { rotateAuto: true }, { blocks: true })
+  const job = inflight = w.recognize(image, { rotateAuto: true }, { blocks: true })
+  const { data } = await job.finally(() => { if (inflight === job) inflight = null })
+  if (gen !== generation) throw new Error('cancelled')
   return rowsFromWords(wordsOf(data), unsure)
 }
 
