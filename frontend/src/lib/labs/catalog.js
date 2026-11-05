@@ -69,8 +69,8 @@ export const MARKERS = {
 
   'lipids.cholesterol': m('lipids', 'Total cholesterol', 'mmol/L', ['cholesterol total', 'total cholesterol', 'cholesterol', 'serum cholesterol'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
   'lipids.triglycerides': m('lipids', 'Triglycerides', 'mmol/L', ['triglycerides', 'triglyceride', 'tg'], [{ unit: 'mg/dL', f: 88.57, us: 1 }]),
-  'lipids.hdl': m('lipids', 'HDL cholesterol', 'mmol/L', ['hdl cholesterol', 'cholesterol hdl', 'hdl cholesterol direct', 'hdl c', 'hdl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
-  'lipids.ldl': m('lipids', 'LDL cholesterol', 'mmol/L', ['ldl cholesterol', 'cholesterol ldl', 'ldl cholesterol direct', 'direct ldl', 'ldl c', 'ldl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
+  'lipids.hdl': m('lipids', 'HDL cholesterol', 'mmol/L', ['hdl cholesterol', 'cholesterol hdl', 'hdl cholesterol direct', 'hdl direct', 'direct hdl', 'hdl c', 'hdl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
+  'lipids.ldl': m('lipids', 'LDL cholesterol', 'mmol/L', ['ldl cholesterol', 'cholesterol ldl', 'ldl cholesterol direct', 'ldl direct', 'direct ldl', 'ldl c', 'ldl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
   'lipids.nonHdl': m('lipids', 'Non-HDL cholesterol', 'mmol/L', ['non hdl cholesterol', 'non hdl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
   'lipids.apoAI': m('lipids', 'Apo A-I', 'g/L', ['apolipoprotein a i', 'apolipoprotein a1', 'apo a i', 'apo a1', 'apoa1'], [{ unit: 'mg/dL', f: 100, us: 1 }]),
   'lipids.apoB': m('lipids', 'Apo B', 'g/L', ['apolipoprotein b', 'apo b', 'apob'], [{ unit: 'mg/dL', f: 100, us: 1 }]),
@@ -88,7 +88,7 @@ export const MARKERS = {
   'thyroid.tpoAb': m('thyroid', 'TPO antibodies', 'kU/L', ['tpo antibodies', 'anti tpo', 'thyroid peroxidase antibodies', 'tpo ab']),
   'thyroid.tgAb': m('thyroid', 'Thyroglobulin antibodies', 'kU/L', ['thyroglobulin antibodies', 'anti tg', 'tg ab']),
 
-  'vitamins.vitaminD': m('vitamins', 'Vitamin D (25-OH)', 'nmol/L', ['vitamin d 25 hydroxy', '25 hydroxy vitamin d', '25 oh vitamin d', 'vitamin d', '25 oh d'], [{ unit: 'ng/mL', f: 0.4006, us: 1 }]),
+  'vitamins.vitaminD': m('vitamins', 'Vitamin D (25-OH)', 'nmol/L', ['vitamin d 25 hydroxy', 'vitamin d3', '25 hydroxy vitamin d', '25 oh vitamin d', 'vitamin d', '25 oh d'], [{ unit: 'ng/mL', f: 0.4006, us: 1 }]),
   'vitamins.vitaminB12': m('vitamins', 'Vitamin B12', 'pmol/L', ['vitamin b12', 'b12', 'cobalamin', 'cyanocobalamin'], [{ unit: 'pg/mL', f: 1.355, us: 1 }]),
   'vitamins.folate': m('vitamins', 'Folate', 'nmol/L', ['folate', 'folic acid', 'serum folate'], [{ unit: 'ng/mL', f: 0.4413, us: 1 }]),
 
@@ -116,9 +116,11 @@ const ALIASES = Object.entries(MARKERS)
 
 // The marker a report row starts with, and the text after its name.
 export function findMarker(name) {
-  const n = norm(name)
-  for (const [a, key] of ALIASES) {
-    if (n === a || n.startsWith(a + ' ')) return { key, alias: a, rest: n.slice(a.length).trim() }
+  const full = norm(name)
+  for (const n of [full, full.replace(/^(?:s|sr|ser) (?=[a-z])/, '')]) {
+    for (const [a, key] of ALIASES) {
+      if (n === a || n.startsWith(a + ' ')) return { key, alias: a, rest: n.slice(a.length).trim() }
+    }
   }
   return null
 }

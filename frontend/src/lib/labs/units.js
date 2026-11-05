@@ -4,7 +4,7 @@ import { MARKERS } from './catalog.js'
 // equals mmol/L only for a single charge, so each marker lists it with its own factor.
 const SAME = [
   // OCR misreadings of the same units sit alongside the real spellings
-  ['10^9/l', 'k/ul', 'kul', 'k/ui', 'kiul', 'kl', 'k/l', '10^3/ul', 'x10^3/ul', 'x10e3/ul', '10e3/ul', 'thou/ul', 'thou/mm3', '10^3/mm3', 'x10^9/l', '10e9/l', 'g/l (cells)'],
+  ['10^9/l', 'k/ul', 'kul', 'k/ui', 'kiul', 'kl', 'k/l', '10^3/ul', 'x10^3/ul', 'x10e3/ul', '10e3/ul', 'thou/ul', 'thou/mm3', 'thou/cumm', 'thou/cu.mm', 'x10^3/cumm', '10^3/cumm', '10^3/mm3', 'x10^9/l', '10e9/l', 'g/l (cells)'],
   ['10^12/l', 'm/ul', 'mul', 'm/ui', 'miul', '10^6/ul', 'x10^6/ul', 'x10e6/ul', '10e6/ul', 'mill/ul', 'mil/ul', 'x10^12/l', '10e12/l', 'million/ul', 'mill/cumm', 'million/cumm', 'millions/cumm', 'mill/cu.mm', 'mill/mm3'],
   // counts per µL as Indian labs print them (/cumm = per mm³ = per µL)
   ['/ul', '/cumm', 'cells/cumm', '/cu.mm', 'cells/cu.mm', '/mm3', 'cells/mm3', 'cells/ul', '/cmm', '/c.mm'],
@@ -19,7 +19,7 @@ const SAME = [
   ['%', 'percent'],
 ]
 const canonUnit = u => {
-  const s = String(u || '').toLowerCase().replace(/µ|μ|mc(?=g)/g, 'u').replace(/²/g, '2').replace(/\s+/g, '')
+  const s = String(u || '').toLowerCase().replace(/µ|μ|mc(?=g)/g, 'u').replace(/²/g, '2').replace(/³/g, '^3').replace(/\s+/g, '')
     .replace(/\*/g, '^').replace(/×/g, 'x')
   for (const group of SAME) if (group.some(g => g.replace(/\s+/g, '') === s)) return group[0]
   return s

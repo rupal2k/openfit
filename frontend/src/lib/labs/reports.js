@@ -62,6 +62,7 @@ export function recentValues(reports, days = 120) {
 
 // 'high' | 'low' | 'in' against the range printed on that report; null when it printed none.
 export function status(m) {
+  if (m.cmp === '<' && m.hi != null && m.v <= m.hi) return 'in'
   if (m.hi != null && m.v > m.hi) return 'high'
   if (m.lo != null && m.v < m.lo) return 'low'
   return m.lo != null || m.hi != null ? 'in' : null

@@ -112,3 +112,45 @@ describe('10 · a value and its range are never scaled apart', () => {
     expect(r.fixed).toBeUndefined()
   })
 })
+
+describe('re-audit (2026-11-05, reader2.md)', () => {
+  it('R1 · decimal commas before three digits stay decimals', () => {
+    expect(row('Creatinine\t0,950\tmg/dL\t0,700-1,200')).toMatchObject({ value: 0.95, lo: 0.7, hi: 1.2 })
+    expect(row('Bilirubin Total\t0,123\tmg/dL').value).toBe(0.123)
+    expect(row('Ferritin\t1.250,5\tng/mL').value).toBe(1250.5)
+    expect(row('Glukose\t5,4\tmmol/L\t3,9 - 5,5')).toMatchObject({ value: 5.4, lo: 3.9, hi: 5.5 })
+    expect(row('Vitamin B12\t1,050\tpg/mL\t197 - 771').value).toBe(1050)
+  })
+  it('R2 · method words and abbreviations in brackets keep the match', () => {
+    const k = { 'Total Cholesterol (CHOD-PAP)': 'lipids.cholesterol', 'Triglycerides (GPO-PAP)': 'lipids.triglycerides',
+      'Creatinine (Jaffe)': 'biochemistry.creatinine', 'Glucose Fasting (Hexokinase)': 'biochemistry.glucose',
+      'Urea (Urease)': 'biochemistry.urea', 'TSH (CLIA)': 'thyroid.tsh', 'TSH (ECLIA)': 'thyroid.tsh', 'HbA1c (HPLC)': 'diabetes.hba1c',
+      'LDL Direct': 'lipids.ldl', 'HDL Direct': 'lipids.hdl', 'eGFR (CKD-EPI 2021)': 'biochemistry.egfr',
+      'Total Cholesterol (CHOL)': 'lipids.cholesterol', 'Glucose Fasting (F)': 'biochemistry.glucose', 'Glucose, Fasting (FBS)': 'biochemistry.glucose',
+      'Haemoglobin (Hb)': 'hematology.hemoglobin', 'Triglycerides (TG)': 'lipids.triglycerides', 'Platelet Count (PLT)': 'hematology.platelets',
+      'TSH 3rd Generation': 'thyroid.tsh', 'Vitamin D3 (25-OH)': 'vitamins.vitaminD', 'S. Cholesterol': 'lipids.cholesterol',
+      'S. Uric Acid': 'biochemistry.uricAcid', 'Sr. Creatinine': 'biochemistry.creatinine', 'S. Calcium': 'electrolytes.calciumTotal' }
+    for (const [n, key] of Object.entries(k)) expect(row(n + '\t5\tmg/dL').key, n).toBe(key)
+    expect(row('Bilirubin Direct\t0.2\tmg/dL').key).toBe(null)
+  })
+  it('R3 · single-space names with a number inside, and a flag word before the unit', () => {
+    expect(row('Vitamin D, 25 - Hydroxy 18.4 ng/mL 30 - 100')).toMatchObject({ key: 'vitamins.vitaminD', value: 18.4, lo: 30, hi: 100 })
+    expect(row('Vitamin D3 18.4 ng/mL 30 - 100')).toMatchObject({ key: 'vitamins.vitaminD', value: 18.4, lo: 30, hi: 100 })
+    expect(row('Creatinine 1.4 H mg/dL 0.6 - 1.2')).toMatchObject({ value: 1.4, unit: 'mg/dL', flag: 'H' })
+  })
+  it('R5 · an OCR leading zero turned into a decimal is tagged and not saved by default', () => {
+    const [r] = reviewRows(parseLabText('Creatinine\t08\tmg/dL\t0.6-1.2', { ocr: true }).rows)
+    expect(r).toMatchObject({ value: 0.8, fixed: true, include: false })
+  })
+  it('P1 10 · OCR range ends are scaled together', () => {
+    const r = parseLabText('Platelets\t250\t10^9/L\t1500-4500', { ocr: true }).rows[0]
+    expect(r.lo <= r.hi).toBe(true)
+  })
+  it('units: 10³/µL and thou/cumm', () => {
+    expect(toCanonical('hematology.wbc', 7.8, '10³/µL').v).toBeCloseTo(7.8, 6)
+    expect(toCanonical('hematology.wbc', 7.8, 'thou/cumm').v).toBeCloseTo(7.8, 6)
+  })
+  it('a count with no unit is not guessed as per µL', () => {
+    expect(row('Neutrophils\t60').unitGuessed).toBeUndefined()
+  })
+})

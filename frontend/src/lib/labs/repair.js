@@ -53,7 +53,7 @@ const isRealUnit = u => KNOWN_UNITS.some(k => sameUnit(k, u))
 // A row with no usable unit: the one known unit in which the value is possible, if exactly one fits.
 function guessUnit(key, value, basis) {
   const d = MARKERS[key]
-  const fits = [d.unit, ...d.alt.map(a => a.unit)].filter(u => u && possible(key, value, u, basis))
+  const fits = [d.unit, ...d.alt.filter(a => a.f < 1000).map(a => a.unit)].filter(u => u && possible(key, value, u, basis))
   // units that give the same value (sodium mmol/L and mEq/L) count as one
   const values = new Set(fits.map(u => toCanonical(key, value, u, basis).v.toPrecision(9)))
   return values.size === 1 ? fits[0] : null
@@ -72,8 +72,12 @@ export function repairRow(r, { ocr = false } = {}) {
   }
   if (!ocr) return unitGuessed ? { ...r, unit, unitGuessed } : r
   const v = placeDecimal(r.key, r.value, unit, r.basis)
-  const lo = placeDecimal(r.key, r.lo, unit, r.basis), hi = placeDecimal(r.key, r.hi, unit, r.basis)
-  const fixed = v.fixed || lo.fixed || hi.fixed
+  let lo = placeDecimal(r.key, r.lo, unit, r.basis), hi = placeDecimal(r.key, r.hi, unit, r.basis)
+  if (lo.value != null && hi.value != null && lo.value > hi.value) {   // one end moved alone: scale both like the moved one
+    const f = hi.fixed ? r.hi / hi.value : r.lo / lo.value
+    lo = { value: +(r.lo / f).toFixed(6), fixed: true }; hi = { value: +(r.hi / f).toFixed(6), fixed: true }
+  }
+  const fixed = !!r.fixed || v.fixed || lo.fixed || hi.fixed
   if (!fixed && !unitGuessed) return r
   return { ...r, value: v.value, lo: lo.value, hi: hi.value, unit, fixed, unitGuessed }
 }

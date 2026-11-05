@@ -112,7 +112,7 @@ function unitOptions(key, current) {
 // The text the person types is kept as typed ("5." on the way to "5.4"); the number is taken from it.
 function ValueInput({ value, onValue }) {
   const [text, setText] = useState(value == null ? '' : String(value))
-  useEffect(() => { const n = parseFloat(text.replace(',', '.')); if (n !== value) setText(value == null ? '' : String(value)) }, [value])
+  useEffect(() => { const n = parseFloat(text.replace(',', '.')); if (n !== value && !(value == null && Number.isNaN(n))) setText(value == null ? '' : String(value)) }, [value])
   return <input className="lab-num" inputMode="decimal" value={text} aria-label={t('Value')}
     onChange={e => {
       const s = e.target.value
@@ -134,6 +134,7 @@ function ReviewSheet({ parsed, kind, ocr = false, close }) {
   const set = (i, patch) => setRows(rs => rs.map((r, j) => {
     if (j !== i) return r
     const n = { ...r, ...patch }
+    if (patch.key === 'biochemistry.urea' && !n.basis) n.basis = /bun|nitrogen/i.test(n.name) ? 'bun' : 'urea'
     n.unitOk = n.key ? toCanonical(n.key, n.value, n.unit, n.basis).ok : false
     if (!n.unitOk || !n.key) n.include = false
     else if ('key' in patch || 'unit' in patch) n.include = true
@@ -172,6 +173,9 @@ function ReviewSheet({ parsed, kind, ocr = false, close }) {
           <ValueInput value={r.value} onValue={v => set(i, { value: v })} />
           {r.key && <select className="lab-sel" value={r.unit} onChange={e => set(i, { unit: e.target.value })} aria-label={t('Unit')}>
             {unitOptions(r.key, r.unit).map(u => <option key={u} value={u}>{u || t('no unit')}</option>)}
+          </select>}
+          {r.key === 'biochemistry.urea' && sameUnit(r.unit, 'mg/dL') && <select className="lab-sel" value={r.basis || 'bun'} onChange={e => set(i, { basis: e.target.value })} aria-label={t('Urea or BUN')}>
+            <option value="bun">BUN</option><option value="urea">{t('Urea')}</option>
           </select>}
           {(r.lo != null || r.hi != null) && <span className="dim small">{t('Range')} {r.lo ?? ''}{r.lo != null && r.hi != null ? '–' : ''}{r.hi != null ? (r.lo == null ? '< ' : '') + r.hi : ''}</span>}
           {tagsOf(r).map(k => <span key={k} className="lab-tag">{t(TAGS[k])}</span>)}

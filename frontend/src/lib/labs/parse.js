@@ -8,12 +8,15 @@ import { repairRow } from './repair.js'
 
 // A number, including thousands separators: "1,050", "1,234.5" and the Indian "2,50,000". A comma
 // followed by one or two digits ("5,4", "0,94") is a decimal comma.
-const NUM = String.raw`[-+]?(?:\d{1,2}(?:,\d{2})+,\d{3}|\d{1,3}(?:,\d{3})+)(?:\.\d+)?(?![\d,])|[-+]?\d+(?:[.,]\d+)?`
-const THOUSANDS = /^[-+]?(?:\d{1,2}(?:,\d{2})+,\d{3}|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/
+const NUM = String.raw`[-+]?\d{1,3}(?:\.\d{3})+,\d+|[-+]?(?:[1-9]\d?(?:,\d{2})+,\d{3}|[1-9]\d{0,2}(?:,\d{3})+)(?:\.\d+)?(?![\d,])|[-+]?\d+(?:[.,]\d+)?`
+const THOUSANDS = /^[-+]?(?:[1-9]\d?(?:,\d{2})+,\d{3}|[1-9]\d{0,2}(?:,\d{3})+)(?:\.\d+)?$/
+const EURO = /(?:^|[^\d.,])0,\d|\d\.\d{3},\d/   // "0,950" or "1.250,5" in a row: its commas are decimal
 let ocrText = false   // set per parseLabText call
+let euroRow = false   // set per row in readRow
 // OCR (only) drops the point in 0.8 / 0.08 and prints "08"; a digital report's "02 %" is just 2 %
 const num = s => {
   const t = String(s)
+  if (euroRow) return parseFloat(t.replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.'))
   if (THOUSANDS.test(t)) return parseFloat(t.replace(/,/g, ''))
   const d = t.replace(',', '.')
   return ocrText && /^0\d+$/.test(d) ? parseFloat('0.' + d.slice(1)) : parseFloat(d)
@@ -86,7 +89,8 @@ function cellsOf(line) {
   let cut = -1
   for (let k = 1; k < words.length; k++) {
     if (!isNum(words[k])) continue
-    if (cut < 0 && /[a-z)%\]]$/i.test(words[k - 1])) cut = k
+    if (/^[-–]$/.test(words[k + 1] || '') && /^[a-z]/i.test(words[k + 2] || '')) continue   // "Vitamin D, 25 - Hydroxy"
+    if (cut < 0 && /[a-z)%\]]/i.test(words[k - 1])) cut = k
     const name = words.slice(0, k).join(' '), hit = findMarker(name)
     if (hit && nameFits(hit, name)) { cut = k; break }
   }
@@ -98,11 +102,16 @@ function cellsOf(line) {
 // "... Ratio") is a different test, so the row stays unmatched for the person to place.
 const QUALIFIERS = new Set(['serum', 'plasma', 'blood', 'whole', 'calculated', 'calc', 'measured', 'absolute', 'abs',
   'count', 'level', 'test', 'ckd', 'epi', 'mdrd', 'sgot', 'sgpt', 'fasting', 'hydroxy', '25', 'oh', 'ultrasensitive',
-  'ultra', 'sensitive', 'high', 'sensitivity', 's', 'total', '%', 'percent'])
+  'ultra', 'sensitive', 'high', 'sensitivity', 's', 'total', '%', 'percent',
+  // assay methods printed in brackets, and the usual short forms
+  'chod', 'pap', 'gpo', 'jaffe', 'kinetic', 'enzymatic', 'hexokinase', 'god', 'pod', 'urease', 'gldh', 'clia', 'eclia', 'cmia',
+  'elfa', 'hplc', 'photometry', 'photometric', 'immunoturbidimetry', 'method', 'generation', '3rd', '4th', 'f', 'fbs', 'chol',
+  'tg', 'hb', 'hgb', 'plt', 'd3', 'oh'])
+const YEAR = /^(?:19|20)\d\d$/   // "eGFR (CKD-EPI 2021)"
 function nameFits(hit, name) {
   if (/\bratio\b|\/\s*hdl\b|\bindex\b/i.test(name) && !/ratio|index/.test(hit.alias)) return false
   if (!hit.rest) return true
-  if (hit.rest.split(' ').every(w => QUALIFIERS.has(w))) return true
+  if (hit.rest.split(' ').every(w => QUALIFIERS.has(w) || YEAR.test(w))) return true
   return findMarker(hit.rest)?.key === hit.key   // "AST (SGOT)": the rest is another name for the same test
 }
 
@@ -110,6 +119,8 @@ function nameFits(hit, name) {
 // then read what is left word by word.
 function pieces(cell) {
   const r = cell.match(RANGE) || cell.match(/(?:\u003c|≤|\u003c=|\u003e|≥|\u003e=)\s*[-+]?\d+(?:[.,]\d+)?/)
+  const w = cell.split(/\s+/)
+  if (w.length > 1 && FLAG.test(w[0])) return [w[0], ...pieces(w.slice(1).join(' '))]
   if (!r) return cell.includes(' ') && !UNIT.test(cell) ? cell.split(/\s+/) : [cell]
   const before = cell.slice(0, r.index).trim(), after = cell.slice(r.index + r[0].length).trim()
   return [...(before ? pieces(before) : []), r[0].trim(), ...(after ? pieces(after) : [])]
@@ -117,16 +128,17 @@ function pieces(cell) {
 
 // One row → { name, value, unit, lo, hi, flag } or null when the row has no number result.
 function readRow(line) {
+  euroRow = EURO.test(line)
   const cells = cellsOf(line)
   if (cells.length < 2) return null
   const name = cells[0]
   if (!/[a-z]/i.test(name) || name.length > 80 || /^(page|pg\.?|sheet)$/i.test(name)) return null
-  let value = null, cmp = null, flag = null, unit = '', lo = null, hi = null
+  let value = null, cmp = null, flag = null, unit = '', lo = null, hi = null, zeroFixed = false
   const [first, ...more] = cells.slice(1)
   for (const c of [first, ...more.flatMap(pieces)]) {
     if (value == null) {
       const v = c.match(VALUE)
-      if (v) { value = num(v[2]); cmp = v[1] || null; if (v[3]) flag = v[3].toUpperCase(); continue }
+      if (v) { value = num(v[2]); zeroFixed = ocrText && /^0\d+$/.test(v[2]); cmp = v[1] || null; if (v[3]) flag = v[3].toUpperCase(); continue }
       if (/^\d/.test(c)) return null   // first data cell isn't a clean number (e.g. "1+", a date)
       if (!FLAG.test(c)) return null   // a text result ("Negative", "Non-reactive"): not a numeric row
       continue
@@ -139,7 +151,7 @@ function readRow(line) {
     if (!unit && UNIT.test(c) && /[a-zµμ%]/i.test(c)) { unit = c.replace(/\s+/g, ''); continue }
   }
   if (value == null) return null
-  return { name, value, cmp, unit, lo, hi, flag }
+  return { name, value, cmp, unit, lo, hi, flag, ...(zeroFixed ? { fixed: true } : {}) }
 }
 
 // Text of a whole report → { date, dob, rows }. Each row: raw line, name, key (null if unmatched),
