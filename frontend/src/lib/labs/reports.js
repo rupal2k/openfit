@@ -2,18 +2,28 @@ import { MARKERS } from './catalog.js'
 import { toCanonical, sameUnit } from './units.js'
 import { uid } from '../format.js'
 
-// S.labs.reports[]: { id, d: 'YYYY-MM-DD', lab, src (file name), t (saved at), dob?,
+// S.labs.reports[]: { id, d: 'YYYY-MM-DD', lab, src ('PDF' | 'Scan' | 'Photo'), t (saved at), birthYear?,
 //   markers: [{ key, v, lo, hi, rv, ru, raw, cmp? }] }
 // v, lo and hi are canonical (SI); rv/ru/raw are what the report printed, kept for the record.
 
+// A report from an old backup, a hand edit or a bad synced copy must not break the screen that
+// would let the person delete it: keep only well-formed reports and markers.
+export function cleanReports(list) {
+  const okMarker = m => m && typeof m.key === 'string' && Number.isFinite(m.v)
+  return (Array.isArray(list) ? list : [])
+    .filter(r => r && typeof r.id === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.d) && Array.isArray(r.markers))
+    .map(r => ({ ...r, markers: r.markers.filter(okMarker) }))
+}
+
 // Rows from parseLabText, each with whether it can be saved as-is.
+// Rows repaired or given a guessed unit start unticked: the person has to look at them first.
 export function reviewRows(rows) {
   const seen = new Set()
   return rows.map(r => {
-    const ok = r.key ? toCanonical(r.key, r.value, r.unit).ok : false
-    const dup = r.key && seen.has(r.key)
-    if (r.key) seen.add(r.key)
-    return { ...r, include: !!r.key && ok && !dup, unitOk: ok, dup: !!dup }
+    const ok = r.key ? toCanonical(r.key, r.value, r.unit, r.basis).ok : false
+    const dup = ok && seen.has(r.key)      // only a row that could be saved knocks out a later one
+    if (ok) seen.add(r.key)
+    return { ...r, include: ok && !dup && !r.fixed && !r.unitGuessed && !r.unsure, unitOk: ok, dup: !!dup }
   })
 }
 
@@ -23,16 +33,32 @@ export function buildReport(rows, { date, lab = '', src = '', dob = null } = {})
   const seen = new Set()
   for (const r of rows) {
     if (!r.include || !r.key || seen.has(r.key)) continue
-    const c = toCanonical(r.key, r.value, r.unit)
+    const c = toCanonical(r.key, r.value, r.unit, r.basis)
     if (!c.ok) continue
     seen.add(r.key)
-    const conv = x => (x == null ? null : toCanonical(r.key, x, r.unit).v)
+    const conv = x => (x == null ? null : toCanonical(r.key, x, r.unit, r.basis).v)
     markers.push({ key: r.key, v: c.v, lo: conv(r.lo), hi: conv(r.hi), rv: r.value, ru: r.unit, raw: r.name, ...(r.cmp ? { cmp: r.cmp } : {}) })
   }
-  return { id: uid(), d: date, lab, src, t: Date.now(), ...(dob ? { dob } : {}), markers }
+  // only the birth year from a printed date of birth: enough for an age, and the server copy holds less
+  const birthYear = dob ? +String(dob).slice(0, 4) || null : null
+  return { id: uid(), d: date, lab, src, t: Date.now(), ...(birthYear ? { birthYear } : {}), markers }
 }
 
 export const reportValues = rep => Object.fromEntries(rep.markers.map(m => [m.key, m.v]))
+
+// Each marker's latest value from reports within `days` of the newest one: scores then survive a
+// later report that only re-tests a few markers, without mixing in results from years ago.
+export function recentValues(reports, days = 120) {
+  const sorted = byDate(reports)
+  if (!sorted.length) return {}
+  const newest = Date.parse(sorted[sorted.length - 1].d + 'T12:00:00')
+  const out = {}
+  for (const r of sorted) {
+    if (newest - Date.parse(r.d + 'T12:00:00') > days * 864e5) continue
+    for (const m of r.markers) out[m.key] = m.v
+  }
+  return out
+}
 
 // 'high' | 'low' | 'in' against the range printed on that report; null when it printed none.
 export function status(m) {
@@ -63,7 +89,8 @@ export function ageAt(S, report) {
   const by = S.nutrition?.profile?.birthYear
   const y = +String(report.d).slice(0, 4)
   if (by && y) return y - by
-  if (report.dob) {
+  if (report.birthYear && y) return y - report.birthYear
+  if (report.dob) {   // reports saved before birthYear replaced the full date
     const [a, b] = [new Date(report.dob + 'T00:00:00'), new Date(report.d + 'T00:00:00')]
     let age = b.getFullYear() - a.getFullYear()
     if (b.getMonth() < a.getMonth() || (b.getMonth() === a.getMonth() && b.getDate() < a.getDate())) age--

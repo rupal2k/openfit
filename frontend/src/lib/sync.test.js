@@ -61,3 +61,10 @@ describe('mergeState: lab reports', () => {
     expect(mergeState(local, {}).labs.reports).toHaveLength(2)
   })
 })
+
+describe('mergeState: malformed lab data from another device', () => {
+  it('does not throw when the other copy has no report list', () => {
+    expect(mergeState({ labs: { reports: [{ id: 'a', d: '2026-01-01' }] } }, { labs: { reports: null } }).labs.reports).toHaveLength(1)
+    expect(mergeState({ labs: { reports: 'x' } }, { labs: { reports: [{ id: 'b', d: '2026-01-02' }] } }).labs.reports).toHaveLength(1)
+  })
+})

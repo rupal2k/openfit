@@ -37,14 +37,16 @@ export function linesOf(items) {
 }
 
 // data: ArrayBuffer or Uint8Array of a PDF. lib may be passed in (tests use the Node build).
-export async function pdfText(data, pdf = null) {
+// maxPages: a lab report is a few pages; a huge PDF must not stall the phone
+export async function pdfText(data, pdf = null, maxPages = 30) {
   const P = pdf || await pdfjs()
-  const doc = await P.getDocument({ data: new Uint8Array(data), isEvalSupported: false, disableFontFace: true }).promise
+  const task = P.getDocument({ data: new Uint8Array(data), isEvalSupported: false, disableFontFace: true })   // pdf.js 6: the loading task owns destroy()
+  const doc = await task.promise
   const out = []
-  for (let p = 1; p <= doc.numPages; p++) {
+  for (let p = 1; p <= Math.min(doc.numPages, maxPages); p++) {
     const tc = await (await doc.getPage(p)).getTextContent()
     out.push(...linesOf(tc.items))
   }
-  await doc.destroy()
+  await task.destroy()
   return out.join('\n')
 }

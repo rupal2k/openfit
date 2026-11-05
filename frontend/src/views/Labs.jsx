@@ -6,7 +6,7 @@ import { fmtDate, todayISO } from '../lib/format.js'
 import { MARKERS, CATEGORIES } from '../lib/labs/catalog.js'
 import { fromCanonical, toCanonical, sameUnit } from '../lib/labs/units.js'
 import { parseLabText } from '../lib/labs/parse.js'
-import { reviewRows, buildReport, reportValues, status, markerSeries, latestByMarker, ageAt, sexOf, guessUnits, byDate } from '../lib/labs/reports.js'
+import { reviewRows, buildReport, recentValues, status, markerSeries, latestByMarker, ageAt, sexOf, guessUnits, byDate } from '../lib/labs/reports.js'
 import { labScores } from '../lib/labs/scores.js'
 import { confirmSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
@@ -35,51 +35,62 @@ const rangeText = (key, m, sys) => {
 
 // A PDF with a text layer is read directly. A scanned PDF (no usable text) and a photo go through
 // on-device OCR, which takes a few seconds, so a progress sheet stays up while it runs.
+const MAX_FILE = 25 * 1024 * 1024   // a lab report is well under this; bigger files would stall a phone
 function importFile(file) {
   const isPdf = /pdf$/i.test(file.type) || /\.pdf$/i.test(file.name)
+  if (file.size > MAX_FILE) { toast(t('That file is too large for a lab report (over 25 MB).')); return }
   ui().openSheet(close => <ReadingSheet file={file} isPdf={isPdf} close={close} />, { locked: true })
 }
 
 function ReadingSheet({ file, isPdf, close }) {
   const [msg, setMsg] = useState(t('Reading the report…'))
   const [pct, setPct] = useState(null)
+  const live = useRef(true)
+  const cancel = async () => {
+    live.current = false
+    close()
+    const { cancelOcr } = await import('../lib/labs/ocr.js')
+    cancelOcr()
+  }
   useEffect(() => {
-    let live = true
-    const progress = p => live && setPct(Math.round(p * 100))
+    live.current = true
+    const progress = p => live.current && setPct(Math.round(p * 100))
     ;(async () => {
       const mdy = /^en-US$/i.test(navigator.language || '')
-      let text = '', ocr = false
+      let text = '', ocr = false, kind = isPdf ? 'PDF' : 'Photo'
       const unsure = new Set()
       if (isPdf) {
         const { pdfText } = await import('../lib/labs/pdf.js')
         const data = await file.arrayBuffer()
         text = await pdfText(data.slice(0))
-        if (parseLabText(text, { mdy }).rows.length < 3) {   // no text layer: a scan
-          live && setMsg(t('This PDF is a scan. Reading it with OCR on this device…'))
+        if (text.replace(/\s/g, '').length < 40) {   // no text layer at all: a scan
+          live.current && setMsg(t('This PDF is a scan. Reading it with OCR on this device…'))
           const { ocrPdfPages } = await import('../lib/labs/ocr.js')
-          text = await ocrPdfPages(data, progress, unsure); ocr = true
+          text = await ocrPdfPages(data, progress, unsure); ocr = true; kind = 'Scan'
         }
       } else {
-        live && setMsg(t('Reading the photo with OCR on this device…'))
+        live.current && setMsg(t('Reading the photo with OCR on this device…'))
         const { ocrText, preparePhoto } = await import('../lib/labs/ocr.js')
         text = await ocrText(await preparePhoto(file), progress, unsure); ocr = true
       }
-      const parsed = parseLabText(text, { mdy })
+      const parsed = parseLabText(text, { mdy, ocr })
       if (ocr) {
         const shaky = new Set([...unsure].map(l => l.replace(/\t/g, '  ')))   // same form as row.raw
         parsed.rows = parsed.rows.map(r => ({ ...r, unsure: shaky.has(r.raw), unit: tidyUnit(r.key, r.unit) }))
       }
-      if (!live) return
+      if (!live.current) return
       close()
       if (!parsed.rows.length) { toast(t('No results found in that file.')); return }
-      ui().openSheet(c => <ReviewSheet parsed={parsed} src={file.name} ocr={ocr} close={c} />)
-    })().catch(() => { if (live) { close(); toast(isPdf ? t('Couldn’t read that PDF.') : t('Couldn’t read that photo.')) } })
-    return () => { live = false }
+      // locked: Escape or a tap outside must not throw away the reading and the person's edits
+      ui().openSheet(c => <ReviewSheet parsed={parsed} kind={kind} ocr={ocr} close={c} />, { locked: true })
+    })().catch(() => { if (live.current) { close(); toast(isPdf ? t('Couldn’t read that PDF.') : t('Couldn’t read that photo.')) } })
+    return () => { live.current = false }
   }, [])
-  return <div className="lab-reading" role="status">
+  return <div className="lab-reading">
     <h3>{msg}</h3>
-    <div className="lab-bar" aria-hidden="true"><span style={{ width: (pct ?? 8) + '%' }} /></div>
-    <p className="muted small">{pct != null ? `${pct}%` : t('Nothing leaves this device.')}</p>
+    <div className="lab-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct ?? undefined} aria-label={t('Reading progress')}><span style={{ width: (pct ?? 8) + '%' }} /></div>
+    <p className="muted small" aria-live="polite">{pct != null ? `${pct}%` : t('Nothing leaves this device.')}</p>
+    <Button onClick={cancel}>{t('Cancel')}</Button>
   </div>
 }
 
@@ -94,28 +105,48 @@ function tidyUnit(key, unit) {
 function unitOptions(key, current) {
   const d = MARKERS[key]
   if (!d) return [current]
-  const list = [d.unit, ...d.alt.map(a => a.unit)].filter(Boolean)
+  const list = [...new Set([d.unit, ...d.alt.map(a => a.unit)].filter(Boolean))]
   return current && !list.some(u => u.toLowerCase() === current.toLowerCase()) ? [current, ...list] : list
 }
 
-function ReviewSheet({ parsed, src, ocr = false, close }) {
+// The text the person types is kept as typed ("5." on the way to "5.4"); the number is taken from it.
+function ValueInput({ value, onValue }) {
+  const [text, setText] = useState(value == null ? '' : String(value))
+  useEffect(() => { const n = parseFloat(text.replace(',', '.')); if (n !== value) setText(value == null ? '' : String(value)) }, [value])
+  return <input className="lab-num" inputMode="decimal" value={text} aria-label={t('Value')}
+    onChange={e => {
+      const s = e.target.value
+      if (!/^[-+]?\d*[.,]?\d*$/.test(s)) return
+      setText(s)
+      const n = parseFloat(s.replace(',', '.'))
+      onValue(Number.isFinite(n) ? n : null)
+    }} />
+}
+
+// What needs a look, as a short tag; the sheet explains the tags once at the top.
+const TAGS = { unitOk: 'Pick unit', fixed: 'Decimal added', unitGuessed: 'Unit filled in', unsure: 'Unclear', dup: 'Duplicate' }
+const tagsOf = r => [r.key && !r.unitOk && 'unitOk', r.fixed && 'fixed', r.unitGuessed && 'unitGuessed', r.unsure && !r.fixed && 'unsure', r.dup && 'dup'].filter(Boolean)
+
+function ReviewSheet({ parsed, kind, ocr = false, close }) {
   const [rows, setRows] = useState(() => reviewRows(parsed.rows))
-  const [date, setDate] = useState(parsed.date || todayISO())
+  const [date, setDate] = useState(parsed.date || '')
   const [showOther, setShowOther] = useState(false)
   const set = (i, patch) => setRows(rs => rs.map((r, j) => {
     if (j !== i) return r
     const n = { ...r, ...patch }
-    n.unitOk = n.key ? toCanonical(n.key, n.value, n.unit).ok : false
+    n.unitOk = n.key ? toCanonical(n.key, n.value, n.unit, n.basis).ok : false
     if (!n.unitOk || !n.key) n.include = false
     else if ('key' in patch || 'unit' in patch) n.include = true
     return n
   }))
-  const matched = rows.map((r, i) => [r, i]).filter(([r]) => r.key)
+  const order = ([a], [b]) => (tagsOf(b).length ? 1 : 0) - (tagsOf(a).length ? 1 : 0)   // rows needing a look first
+  const matched = rows.map((r, i) => [r, i]).filter(([r]) => r.key).sort(order)
   const other = rows.map((r, i) => [r, i]).filter(([r]) => !r.key)
   const count = rows.filter(r => r.include).length
+  const flagged = matched.filter(([r]) => tagsOf(r).length).length
 
   const save = () => {
-    const rep = buildReport(rows, { date, src, dob: parsed.dob })
+    const rep = buildReport(rows, { date, src: kind, dob: parsed.dob })
     update(S => {
       S.labs.reports.push(rep)
       if (!S.labs.units) S.labs.units = guessUnits(rows)
@@ -125,8 +156,8 @@ function ReviewSheet({ parsed, src, ocr = false, close }) {
   }
 
   const line = ([r, i]) => (
-    <div key={i} className="lab-rev">
-      <Check checked={r.include} onChange={v => r.unitOk && set(i, { include: v })} aria-label={t('Include')} />
+    <div key={i} className={'lab-rev' + (tagsOf(r).length ? ' flagged' : '')}>
+      <Check checked={r.include} onChange={v => r.unitOk && set(i, { include: v })} aria-label={t('Save {0}', r.key ? t(MARKERS[r.key].name) : r.name)} />
       <div className="lab-rev-m">
         {r.key
           ? <div className="lab-rev-n">{t(MARKERS[r.key].name)}{r.name.toLowerCase() !== MARKERS[r.key].name.toLowerCase() && <span className="dim"> · {r.name}</span>}</div>
@@ -138,35 +169,23 @@ function ReviewSheet({ parsed, src, ocr = false, close }) {
                 </optgroup>))}
             </select>}
         <div className="lab-rev-v">
-          <input className="lab-num" inputMode="decimal" value={String(r.value ?? '')} aria-label={t('Value')}
-            onChange={e => {
-              const vStr = e.target.value;
-              if (vStr === '' ) {
-                set(i, { value: null });
-                return;
-              }
-              const v = parseFloat(vStr.replace(',', '.'));
-              if (Number.isFinite(v)) set(i, { value: v });
-            }} />
+          <ValueInput value={r.value} onValue={v => set(i, { value: v })} />
           {r.key && <select className="lab-sel" value={r.unit} onChange={e => set(i, { unit: e.target.value })} aria-label={t('Unit')}>
             {unitOptions(r.key, r.unit).map(u => <option key={u} value={u}>{u || t('no unit')}</option>)}
           </select>}
           {(r.lo != null || r.hi != null) && <span className="dim small">{t('Range')} {r.lo ?? ''}{r.lo != null && r.hi != null ? '–' : ''}{r.hi != null ? (r.lo == null ? '< ' : '') + r.hi : ''}</span>}
+          {tagsOf(r).map(k => <span key={k} className="lab-tag">{t(TAGS[k])}</span>)}
         </div>
-        {r.key && !r.unitOk && <div className="lab-warn small">{t('Unit not recognised for this marker. Pick the unit printed on the report.')}</div>}
-        {r.dup && <div className="dim small">{t('Already in this report; only the first is saved.')}</div>}
-        {r.unsure && !r.fixed && <div className="lab-warn small">{t('OCR was unsure of this number. Check it against the report.')}</div>}
-        {r.fixed && <div className="lab-warn small">{t('A decimal point was added: the number as read was not possible. Check it against the report.')}</div>}
-        {r.unitGuessed && <div className="lab-warn small">{t('Unit filled in: it was missing or unreadable. Check it against the report.')}</div>}
       </div>
     </div>
   )
 
   return <>
     <h3>{t('Check the results')}</h3>
-    <p className="muted small">{t('Read on this device from {0}. Nothing was uploaded. Fix anything that looks wrong before saving.', src)}</p>
+    <p className="muted small">{t('Read on this device. Nothing was uploaded. Fix anything that looks wrong before saving.')}</p>
     {ocr && <p className="lab-warn small">{t('Read from an image with OCR: compare every value with the report before saving.')}</p>}
-    <label className="lab-date">{t('Sample date')}<input type="date" value={date} max={todayISO()} onChange={e => setDate(e.target.value)} /></label>
+    {flagged > 0 && <p className="small lab-legend">{t('{0} rows need a look and are listed first, unticked. Decimal added: the number as read was not possible. Unit filled in: it was missing or unreadable. Unclear: OCR was unsure. Pick unit: the unit isn’t one we know for this test.', flagged)}</p>}
+    <label className="lab-date">{t('Sample date')}<input type="date" value={date} max={todayISO()} required onChange={e => setDate(e.target.value)} /></label>
     {!parsed.date && <p className="lab-warn small">{t('The sample date wasn’t found on the report. Set the date the blood was taken.')}</p>}
     <div className="lab-list">{matched.map(line)}</div>
     {other.length > 0 && <>
@@ -176,8 +195,8 @@ function ReviewSheet({ parsed, src, ocr = false, close }) {
       {showOther && <div className="lab-list">{other.map(line)}</div>}
     </>}
     <div className="row" style={{ gap: 8, marginTop: 14 }}>
-      <Button onClick={close}>{t('Cancel')}</Button>
-      <Button variant="primary" onClick={save} disabled={!count || !date}>{t('Save {0} results', count)}</Button>
+      <Button onClick={() => confirmSheet({ title: t('Discard this reading?'), message: t('Nothing from this report will be saved.'), confirmText: t('Discard'), danger: true, onConfirm: close })}>{t('Cancel')}</Button>
+      <Button variant="primary" onClick={save} disabled={!count || !date}>{!date ? t('Set the sample date') : t('Save {0} results', count)}</Button>
     </div>
   </>
 }
@@ -232,7 +251,8 @@ export default function Labs() {
   const reports = byDate(S.labs?.reports || [])
   const sys = S.labs?.units || 'si'
   const latestReport = reports[reports.length - 1]
-  const scores = latestReport ? labScores(reportValues(latestReport), { age: ageAt(S, latestReport), sex: sexOf(S) }) : []
+  // each marker's latest reading from the last 120 days, so a later partial report keeps the scores
+  const scores = latestReport ? labScores(recentValues(reports, 120), { age: ageAt(S, latestReport), sex: sexOf(S) }) : []
   const latest = latestByMarker(reports)
   const photoRef = useRef(null)
   const pick = () => fileRef.current?.click()

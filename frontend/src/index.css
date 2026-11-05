@@ -1089,3 +1089,16 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 .lab-bar{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
 .lab-bar span{display:block;height:100%;background:var(--acc);transition:width .3s}
 @media (prefers-reduced-motion:reduce){.lab-bar span{transition:none}}
+
+/* review tags: short labels, the sheet explains them once */
+.lab-tag{font-size:12px;font-weight:650;padding:2px 8px;border-radius:999px;color:var(--lab-warn-ink,var(--orange));background:color-mix(in srgb,var(--orange) 14%,transparent)}
+.lab-rev.flagged{background:color-mix(in srgb,var(--orange) 6%,transparent);border-radius:10px;padding-left:6px;padding-right:6px}
+.lab-legend{color:var(--label-2);margin:4px 0 8px}
+.lab-rev .chk,.lab-rev [role=checkbox]{min-width:44px;min-height:44px}
+/* light theme: status text dark enough for 4.5:1 on white */
+:root[data-theme="light"]{--lab-warn-ink:#9a3412;--lab-ok-ink:#166534;--lab-bad-ink:#b91c1c}
+:root[data-theme="light"] .lab-warn{color:var(--lab-warn-ink)}
+:root[data-theme="light"] .lab-band.good{color:var(--lab-ok-ink)}
+:root[data-theme="light"] .lab-band.mid{color:var(--lab-warn-ink)}
+:root[data-theme="light"] .lab-band.high,:root[data-theme="light"] .lab-st.high{color:var(--lab-bad-ink)}
+:root[data-theme="light"] .lab-st.low{color:var(--lab-warn-ink)}

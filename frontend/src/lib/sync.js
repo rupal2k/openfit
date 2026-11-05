@@ -33,7 +33,8 @@ export function mergeState(local, remote) {
   out.labs = {
     ...ll,
     units: ll.units ?? rl.units ?? null,
-    reports: byId(ll.reports, rl.reports).sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0))
+    reports: byId(Array.isArray(ll.reports) ? ll.reports : [], Array.isArray(rl.reports) ? rl.reports : [])
+      .sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0))
   }
   return out
 }

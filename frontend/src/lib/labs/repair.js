@@ -1,5 +1,5 @@
 import { MARKERS } from './catalog.js'
-import { toCanonical } from './units.js'
+import { toCanonical, sameUnit } from './units.js'
 
 // OCR drops small decimal points ("33.3" → "333", "4 – 5.8" → "4-58") and sometimes a unit.
 // Values a human body can't produce give that away. For each marker, a wide band of values that
@@ -31,38 +31,48 @@ export const POSSIBLE = {
   'fattyAcids.omega3Index': [1, 20],
 }
 
-const possible = (key, value, unit) => {
-  const b = POSSIBLE[key], c = toCanonical(key, value, unit)
+const possible = (key, value, unit, basis) => {
+  const b = POSSIBLE[key], c = toCanonical(key, value, unit, basis)
   return !b || !c.ok ? null : c.v >= b[0] && c.v <= b[1]
 }
 
 // The value, or the same digits with a decimal point put back, that is physically possible.
-function placeDecimal(key, value, unit) {
-  if (value == null || possible(key, value, unit) !== false) return { value, fixed: false }
+function placeDecimal(key, value, unit, basis) {
+  if (value == null || possible(key, value, unit, basis) !== false) return { value, fixed: false }
   if (!Number.isInteger(value)) return { value, fixed: false }   // has a decimal already: leave it
   for (const d of [10, 100, 1000]) {
-    if (possible(key, value / d, unit)) return { value: +(value / d).toFixed(6), fixed: true }
+    if (possible(key, value / d, unit, basis)) return { value: +(value / d).toFixed(6), fixed: true }
   }
   return { value, fixed: false }
 }
 
-// A row with no unit: the one known unit in which the value is possible, if exactly one fits.
-function guessUnit(key, value) {
+// A unit any marker uses ("mg/dL", "nmol/L"): printed by the lab, so never swapped for another.
+const KNOWN_UNITS = Object.values(MARKERS).flatMap(d => [d.unit, ...d.alt.map(a => a.unit)]).filter(Boolean)
+const isRealUnit = u => KNOWN_UNITS.some(k => sameUnit(k, u))
+
+// A row with no usable unit: the one known unit in which the value is possible, if exactly one fits.
+function guessUnit(key, value, basis) {
   const d = MARKERS[key]
-  const fits = [d.unit, ...d.alt.map(a => a.unit)].filter(u => u && possible(key, value, u))
-  return fits.length === 1 ? fits[0] : null
+  const fits = [d.unit, ...d.alt.map(a => a.unit)].filter(u => u && possible(key, value, u, basis))
+  // units that give the same value (sodium mmol/L and mEq/L) count as one
+  const values = new Set(fits.map(u => toCanonical(key, value, u, basis).v.toPrecision(9)))
+  return values.size === 1 ? fits[0] : null
 }
 
-export function repairRow(r) {
+// ocr: the text came from OCR. Only then are decimal points put back and garbled units replaced:
+// a digital PDF prints exactly what the lab measured, so glucose 900 stays 900. Every change is
+// flagged (fixed, unitGuessed) and such rows are never saved without the person ticking them.
+export function repairRow(r, { ocr = false } = {}) {
   if (!r.key) return r
   let { unit } = r, unitGuessed = false
-  // no unit, or one OCR garbled ("n", "Kit"): use the one unit the value is possible in
-  if (MARKERS[r.key].unit && (!unit || !toCanonical(r.key, r.value, unit).ok)) {
-    const g = guessUnit(r.key, r.value) || guessUnit(r.key, r.value / 10)
+  const missing = !unit, garbled = !!unit && ocr && !isRealUnit(unit)
+  if (MARKERS[r.key].unit && (missing || garbled) && !toCanonical(r.key, r.value, unit, r.basis).ok) {
+    const g = guessUnit(r.key, r.value, r.basis) || (ocr ? guessUnit(r.key, r.value / 10, r.basis) : null)
     if (g) { unit = g; unitGuessed = true }
   }
-  const v = placeDecimal(r.key, r.value, unit)
-  const lo = placeDecimal(r.key, r.lo, unit), hi = placeDecimal(r.key, r.hi, unit)
+  if (!ocr) return unitGuessed ? { ...r, unit, unitGuessed } : r
+  const v = placeDecimal(r.key, r.value, unit, r.basis)
+  const lo = placeDecimal(r.key, r.lo, unit, r.basis), hi = placeDecimal(r.key, r.hi, unit, r.basis)
   const fixed = v.fixed || lo.fixed || hi.fixed
   if (!fixed && !unitGuessed) return r
   return { ...r, value: v.value, lo: lo.value, hi: hi.value, unit, fixed, unitGuessed }

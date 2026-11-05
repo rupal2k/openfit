@@ -47,3 +47,31 @@ describe('age for scores', () => {
   })
   it('is null when neither exists', () => expect(ageAt({}, { d: '2026-07-14' })).toBe(null))
 })
+
+describe('privacy and recent values', () => {
+  it('keeps only the birth year from a printed date of birth', () => {
+    const rep = buildReport([], { date: '2026-07-14', dob: '1990-08-01' })
+    expect(rep.birthYear).toBe(1990)
+    expect(rep.dob).toBeUndefined()
+    expect(ageAt({}, rep)).toBe(36)
+  })
+  it('scores survive a later report that re-tests only a few markers', async () => {
+    const { recentValues } = await import('./reports.js')
+    const m = (key, v) => ({ key, v })
+    const reports = [
+      { id: 'a', d: '2026-06-01', t: 0, markers: [m('lipids.hdl', 1.3), m('lipids.triglycerides', 1.1)] },
+      { id: 'b', d: '2026-07-01', t: 0, markers: [m('lipids.hdl', 1.4)] },
+      { id: 'c', d: '2024-01-01', t: 0, markers: [m('lipids.apoB', 0.9)] }]
+    expect(recentValues(reports, 120)).toEqual({ 'lipids.hdl': 1.4, 'lipids.triglycerides': 1.1 })
+  })
+})
+
+describe('cleanReports', () => {
+  it('drops malformed reports and markers instead of breaking the screen', async () => {
+    const { cleanReports } = await import('./reports.js')
+    const out = cleanReports([null, { id: 'a' }, { id: 'b', d: '2026-07-14', markers: [null, { key: 'lipids.hdl', v: 1.2 }, { key: 'x', v: 'NaN' }] }])
+    expect(out).toHaveLength(1)
+    expect(out[0].markers).toEqual([{ key: 'lipids.hdl', v: 1.2 }])
+    expect(cleanReports('nope')).toEqual([])
+  })
+})

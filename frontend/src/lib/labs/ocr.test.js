@@ -7,7 +7,13 @@ import { fileURLToPath } from 'node:url'
 import { createWorker, OEM } from 'tesseract.js'
 import { rowsFromWords, wordsOf } from './ocr.js'
 import { parseLabText } from './parse.js'
-import { sameUnit } from './units.js'
+import { toCanonical } from './units.js'
+
+// Right = same printed number and the same amount once converted (mEq/L sodium = mmol/L sodium).
+const sameAmount = (r, g) => {
+  const a = toCanonical(r.key, r.value, r.unit, r.basis), b = toCanonical(g.mappedKey, g.value, g.unit)
+  return a.ok && b.ok && Math.abs(a.v - b.v) <= 1e-6 * Math.max(1, Math.abs(b.v))
+}
 
 const dir = new URL('./fixtures/', import.meta.url)
 const gold = JSON.parse(readFileSync(new URL('getbased-reference-us-v2.gold.json', dir), 'utf8')).expected
@@ -17,7 +23,7 @@ function score(rows, expected) {
   const byKey = new Map(rows.filter(r => r.key).map(r => [r.key, r]))
   const misses = expected.filter(g => {
     const r = byKey.get(g.mappedKey)
-    return !r || Math.abs(r.value - g.value) > 1e-9 || !sameUnit(r.unit, g.unit)
+    return !r || Math.abs(r.value - g.value) > 1e-9 || !sameAmount(r, g)
   })
   return { right: expected.length - misses.length, of: expected.length, misses: misses.map(g => g.rawName) }
 }
@@ -36,14 +42,14 @@ describe('OCR of the reference report', { timeout: 240000 }, () => {
 
   it('reads a scanned report (all three pages)', async () => {
     const text = (await Promise.all(['reference-page1.png', 'reference-page2.png', 'reference-page3.png'].map(read))).join('\n')
-    const p = parseLabText(text, { mdy: true })
+    const p = parseLabText(text, { mdy: true, ocr: true })
     const s = score(p.rows, gold.markers)
     console.log(`OCR scan: ${s.right}/${s.of} rows right${s.misses.length ? '; missed: ' + s.misses.join(', ') : ''}; date ${p.date}`)
     expect(s.right / s.of).toBeGreaterThanOrEqual(0.9)
   })
 
   it('reads a tilted, soft phone photo of page 1', async () => {
-    const p = parseLabText(await read('reference-page1-photo.jpg'), { mdy: true })
+    const p = parseLabText(await read('reference-page1-photo.jpg'), { mdy: true, ocr: true })
     const s = score(p.rows, gold.markers.filter(g => g.page === 1))
     console.log(`OCR photo: ${s.right}/${s.of} rows right${s.misses.length ? '; missed: ' + s.misses.join(', ') : ''}`)
     // the fixture is deliberately harsh (tilt, blur, low contrast, heavy JPEG); misread digits are

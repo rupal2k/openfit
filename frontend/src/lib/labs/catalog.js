@@ -16,33 +16,35 @@ export const CATEGORIES = {
 }
 
 export const MARKERS = {
-  'hematology.wbc': m('hematology', 'White blood cells', '10^9/L', ['wbc', 'white blood cells', 'white blood cell count', 'leukocytes', 'total leucocyte count', 'tlc', 'total wbc count']),
-  'hematology.rbc': m('hematology', 'Red blood cells', '10^12/L', ['rbc', 'red blood cells', 'red blood cell count', 'erythrocytes', 'rbc count']),
-  'hematology.hemoglobin': m('hematology', 'Hemoglobin', 'g/L', ['hemoglobin', 'haemoglobin', 'hgb', 'hb'], [{ unit: 'g/dL', f: 0.1, us: 1 }]),
+  'hematology.wbc': m('hematology', 'White blood cells', '10^9/L', ['wbc', 'white blood cells', 'white blood cell count', 'white cell count', 'leukocytes', 'leukocyte count', 'leucocyte count', 'total leucocyte count', 'total leukocyte count', 'tlc', 'total wbc count'], [{ unit: '/µL', f: 1000 }]),
+  'hematology.rbc': m('hematology', 'Red blood cells', '10^12/L', ['rbc', 'red blood cells', 'red blood cell count', 'red cell count', 'erythrocytes', 'rbc count', 'total rbc count']),
+  'hematology.hemoglobin': m('hematology', 'Hemoglobin', 'g/L', ['hemoglobin', 'haemoglobin', 'hgb', 'hb'], [{ unit: 'g/dL', f: 0.1, us: 1 }, { unit: 'mmol/L', f: 0.06206 }]),
   'hematology.hematocrit': m('hematology', 'Hematocrit', '%', ['hematocrit', 'haematocrit', 'hct', 'packed cell volume', 'pcv']),
   'hematology.mcv': m('hematology', 'MCV', 'fL', ['mcv', 'mean corpuscular volume', 'mean cell volume']),
   'hematology.mch': m('hematology', 'MCH', 'pg', ['mch', 'mean corpuscular hemoglobin', 'mean cell hemoglobin']),
   'hematology.mchc': m('hematology', 'MCHC', 'g/L', ['mchc', 'mean corpuscular hemoglobin concentration'], [{ unit: 'g/dL', f: 0.1, us: 1 }]),
   'hematology.rdwcv': m('hematology', 'RDW-CV', '%', ['rdw cv', 'rdw', 'red cell distribution width']),
-  'hematology.platelets': m('hematology', 'Platelets', '10^9/L', ['platelets', 'platelet count', 'plt', 'thrombocytes']),
+  'hematology.platelets': m('hematology', 'Platelets', '10^9/L', ['platelets', 'platelet count', 'plt', 'thrombocytes', 'thrombocyte count'], [{ unit: '/µL', f: 1000 }, { unit: 'lakhs/µL', f: 0.01 }]),
   'hematology.mpv': m('hematology', 'MPV', 'fL', ['mpv', 'mean platelet volume']),
   'hematology.pdw': m('hematology', 'PDW', 'fL', ['pdw', 'platelet distribution width']),
   'hematology.pct': m('hematology', 'Plateletcrit', '%', ['plateletcrit', 'pct', 'thrombocrit']),
 
-  'differential.neutrophils': m('differential', 'Neutrophils', '10^9/L', ['neutrophils absolute', 'absolute neutrophil count', 'anc', 'neutrophils', 'neutrophil'], [], { pct: 'differential.neutrophilsPct' }),
-  'differential.lymphocytes': m('differential', 'Lymphocytes', '10^9/L', ['lymphocytes absolute', 'absolute lymphocyte count', 'alc', 'lymphocytes', 'lymphocyte'], [], { pct: 'differential.lymphocytesPct' }),
-  'differential.monocytes': m('differential', 'Monocytes', '10^9/L', ['monocytes absolute', 'absolute monocyte count', 'monocytes', 'monocyte'], [], { pct: 'differential.monocytesPct' }),
-  'differential.eosinophils': m('differential', 'Eosinophils', '10^9/L', ['eosinophils absolute', 'absolute eosinophil count', 'aec', 'eosinophils', 'eosinophil'], [], { pct: 'differential.eosinophilsPct' }),
-  'differential.basophils': m('differential', 'Basophils', '10^9/L', ['basophils absolute', 'absolute basophil count', 'basophils', 'basophil'], [], { pct: 'differential.basophilsPct' }),
+  'differential.neutrophils': m('differential', 'Neutrophils', '10^9/L', ['neutrophils absolute', 'absolute neutrophil count', 'anc', 'neutrophils', 'neutrophil'], [{ unit: '/µL', f: 1000 }], { pct: 'differential.neutrophilsPct' }),
+  'differential.lymphocytes': m('differential', 'Lymphocytes', '10^9/L', ['lymphocytes absolute', 'absolute lymphocyte count', 'alc', 'lymphocytes', 'lymphocyte'], [{ unit: '/µL', f: 1000 }], { pct: 'differential.lymphocytesPct' }),
+  'differential.monocytes': m('differential', 'Monocytes', '10^9/L', ['monocytes absolute', 'absolute monocyte count', 'monocytes', 'monocyte'], [{ unit: '/µL', f: 1000 }], { pct: 'differential.monocytesPct' }),
+  'differential.eosinophils': m('differential', 'Eosinophils', '10^9/L', ['eosinophils absolute', 'absolute eosinophil count', 'aec', 'eosinophils', 'eosinophil'], [{ unit: '/µL', f: 1000 }], { pct: 'differential.eosinophilsPct' }),
+  'differential.basophils': m('differential', 'Basophils', '10^9/L', ['basophils absolute', 'absolute basophil count', 'basophils', 'basophil'], [{ unit: '/µL', f: 1000 }], { pct: 'differential.basophilsPct' }),
   'differential.neutrophilsPct': m('differential', 'Neutrophils %', '%', ['neutrophils %', 'neutrophils percent']),
   'differential.lymphocytesPct': m('differential', 'Lymphocytes %', '%', ['lymphocytes %', 'lymphocytes percent']),
   'differential.monocytesPct': m('differential', 'Monocytes %', '%', ['monocytes %', 'monocytes percent']),
   'differential.eosinophilsPct': m('differential', 'Eosinophils %', '%', ['eosinophils %', 'eosinophils percent']),
   'differential.basophilsPct': m('differential', 'Basophils %', '%', ['basophils %', 'basophils percent']),
 
-  'biochemistry.glucose': m('biochemistry', 'Glucose', 'mmol/L', ['fasting glucose', 'glucose fasting', 'fasting blood sugar', 'fbs', 'fasting plasma glucose', 'fpg', 'blood glucose', 'plasma glucose', 'glucose'], [{ unit: 'mg/dL', f: 18.018, us: 1 }]),
-  'biochemistry.urea': m('biochemistry', 'Urea / BUN', 'mmol/L', ['bun', 'blood urea nitrogen', 'urea nitrogen', 'urea'], [{ unit: 'mg/dL', f: 2.801, us: 1 }]),
-  'biochemistry.creatinine': m('biochemistry', 'Creatinine', 'µmol/L', ['creatinine', 'serum creatinine'], [{ unit: 'mg/dL', f: 0.01131, us: 1 }]),
+  'biochemistry.glucose': m('biochemistry', 'Glucose', 'mmol/L', ['fasting glucose', 'glucose fasting', 'fasting blood sugar', 'blood sugar fasting', 'fasting blood glucose', 'sugar fasting', 'fbs', 'fasting plasma glucose', 'fpg', 'blood glucose', 'plasma glucose', 'glucose'], [{ unit: 'mg/dL', f: 18.018, us: 1 }]),
+  // Urea and BUN are one quantity in mmol/L, but BUN in mg/dL weighs only urea's nitrogen (2.801) and urea
+  // in mg/dL the whole molecule (6.006): the row's name decides which (basis, set by the parser).
+  'biochemistry.urea': m('biochemistry', 'Urea / BUN', 'mmol/L', ['bun', 'blood urea nitrogen', 'urea nitrogen', 'urea', 'blood urea', 'serum urea'], [{ unit: 'mg/dL', f: 2.801, us: 1, basis: 'bun' }, { unit: 'mg/dL', f: 6.006, basis: 'urea' }]),
+  'biochemistry.creatinine': m('biochemistry', 'Creatinine', 'µmol/L', ['creatinine', 'serum creatinine', 's creatinine', 'creatinine serum'], [{ unit: 'mg/dL', f: 0.01131, us: 1 }]),
   'biochemistry.egfr': m('biochemistry', 'eGFR', 'mL/min/1.73m²', ['egfr', 'estimated gfr', 'gfr estimated']),
   'biochemistry.uricAcid': m('biochemistry', 'Uric acid', 'µmol/L', ['uric acid', 'urate'], [{ unit: 'mg/dL', f: 0.01681, us: 1 }]),
   'biochemistry.bilirubinTotal': m('biochemistry', 'Bilirubin, total', 'µmol/L', ['bilirubin total', 'total bilirubin', 'bilirubin'], [{ unit: 'mg/dL', f: 0.05848, us: 1 }]),
@@ -53,12 +55,12 @@ export const MARKERS = {
   'biochemistry.ldh': m('biochemistry', 'LDH', 'U/L', ['ldh', 'lactate dehydrogenase'], [{ unit: 'µkat/L', f: 1 / 60 }]),
   'biochemistry.homocysteine': m('biochemistry', 'Homocysteine', 'µmol/L', ['homocysteine', 'total homocysteine']),
 
-  'electrolytes.sodium': m('electrolytes', 'Sodium', 'mmol/L', ['sodium', 'na']),
-  'electrolytes.potassium': m('electrolytes', 'Potassium', 'mmol/L', ['potassium', 'k']),
-  'electrolytes.chloride': m('electrolytes', 'Chloride', 'mmol/L', ['chloride', 'cl']),
-  'electrolytes.calciumTotal': m('electrolytes', 'Calcium', 'mmol/L', ['calcium total', 'total calcium', 'calcium'], [{ unit: 'mg/dL', f: 4.008, us: 1 }]),
+  'electrolytes.sodium': m('electrolytes', 'Sodium', 'mmol/L', ['sodium', 'na'], [{ unit: 'mEq/L', f: 1 }]),
+  'electrolytes.potassium': m('electrolytes', 'Potassium', 'mmol/L', ['potassium', 'k'], [{ unit: 'mEq/L', f: 1 }]),
+  'electrolytes.chloride': m('electrolytes', 'Chloride', 'mmol/L', ['chloride', 'cl'], [{ unit: 'mEq/L', f: 1 }]),
+  'electrolytes.calciumTotal': m('electrolytes', 'Calcium', 'mmol/L', ['calcium total', 'total calcium', 'calcium', 'serum calcium'], [{ unit: 'mg/dL', f: 4.008, us: 1 }, { unit: 'mEq/L', f: 2 }]),
   'electrolytes.phosphorus': m('electrolytes', 'Phosphorus', 'mmol/L', ['phosphorus', 'phosphate', 'inorganic phosphorus'], [{ unit: 'mg/dL', f: 3.097, us: 1 }]),
-  'electrolytes.magnesium': m('electrolytes', 'Magnesium', 'mmol/L', ['magnesium', 'mg'], [{ unit: 'mg/dL', f: 2.431, us: 1 }]),
+  'electrolytes.magnesium': m('electrolytes', 'Magnesium', 'mmol/L', ['magnesium', 'mg'], [{ unit: 'mg/dL', f: 2.431, us: 1 }, { unit: 'mEq/L', f: 2 }]),
 
   'proteins.totalProtein': m('proteins', 'Total protein', 'g/L', ['total protein', 'protein total'], [{ unit: 'g/dL', f: 0.1, us: 1 }]),
   'proteins.albumin': m('proteins', 'Albumin', 'g/L', ['albumin', 'serum albumin'], [{ unit: 'g/dL', f: 0.1, us: 1 }]),
@@ -67,8 +69,8 @@ export const MARKERS = {
 
   'lipids.cholesterol': m('lipids', 'Total cholesterol', 'mmol/L', ['cholesterol total', 'total cholesterol', 'cholesterol', 'serum cholesterol'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
   'lipids.triglycerides': m('lipids', 'Triglycerides', 'mmol/L', ['triglycerides', 'triglyceride', 'tg'], [{ unit: 'mg/dL', f: 88.57, us: 1 }]),
-  'lipids.hdl': m('lipids', 'HDL cholesterol', 'mmol/L', ['hdl cholesterol', 'hdl c', 'hdl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
-  'lipids.ldl': m('lipids', 'LDL cholesterol', 'mmol/L', ['ldl cholesterol', 'ldl c', 'ldl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
+  'lipids.hdl': m('lipids', 'HDL cholesterol', 'mmol/L', ['hdl cholesterol', 'cholesterol hdl', 'hdl cholesterol direct', 'hdl c', 'hdl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
+  'lipids.ldl': m('lipids', 'LDL cholesterol', 'mmol/L', ['ldl cholesterol', 'cholesterol ldl', 'ldl cholesterol direct', 'direct ldl', 'ldl c', 'ldl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
   'lipids.nonHdl': m('lipids', 'Non-HDL cholesterol', 'mmol/L', ['non hdl cholesterol', 'non hdl'], [{ unit: 'mg/dL', f: 38.67, us: 1 }]),
   'lipids.apoAI': m('lipids', 'Apo A-I', 'g/L', ['apolipoprotein a i', 'apolipoprotein a1', 'apo a i', 'apo a1', 'apoa1'], [{ unit: 'mg/dL', f: 100, us: 1 }]),
   'lipids.apoB': m('lipids', 'Apo B', 'g/L', ['apolipoprotein b', 'apo b', 'apob'], [{ unit: 'mg/dL', f: 100, us: 1 }]),
@@ -91,13 +93,13 @@ export const MARKERS = {
   'vitamins.folate': m('vitamins', 'Folate', 'nmol/L', ['folate', 'folic acid', 'serum folate'], [{ unit: 'ng/mL', f: 0.4413, us: 1 }]),
 
   // mmol/mol (IFCC) ↔ % (NGSP): mmol/mol = 10.929 × (% − 2.15)
-  'diabetes.hba1c': m('diabetes', 'HbA1c', '%', ['hemoglobin a1c', 'haemoglobin a1c', 'hemoglobin alc', 'hba1c', 'hbalc', 'glycated hemoglobin', 'glycosylated hemoglobin', 'a1c'], [{ unit: 'mmol/mol', f: 10.929, o: -23.497 }]),
+  'diabetes.hba1c': m('diabetes', 'HbA1c', '%', ['hemoglobin a1c', 'haemoglobin a1c', 'hemoglobin alc', 'hba1c', 'hbalc', 'hb a1c', 'hba 1c', 'glycated hemoglobin', 'glycosylated hemoglobin', 'glycated haemoglobin', 'glycosylated haemoglobin', 'a1c'], [{ unit: 'mmol/mol', f: 10.929, o: -23.497 }]),
   'diabetes.insulin': m('diabetes', 'Insulin (fasting)', 'µIU/mL', ['fasting insulin', 'insulin fasting', 'insulin'], [{ unit: 'pmol/L', f: 6 }]),
   'diabetes.cPeptide': m('diabetes', 'C-peptide', 'ng/mL', ['c peptide'], [{ unit: 'nmol/L', f: 0.331 }]),
   'diabetes.fructosamine': m('diabetes', 'Fructosamine', 'µmol/L', ['fructosamine']),
   'diabetes.homaIR': m('diabetes', 'HOMA-IR (from report)', '', ['homa ir']),
 
-  'hormones.testosterone': m('hormones', 'Testosterone', 'nmol/L', ['total testosterone', 'testosterone total', 'testosterone'], [{ unit: 'ng/dL', f: 28.818, us: 1 }]),
+  'hormones.testosterone': m('hormones', 'Testosterone', 'nmol/L', ['total testosterone', 'testosterone total', 'testosterone'], [{ unit: 'ng/dL', f: 28.818, us: 1 }, { unit: 'ng/mL', f: 0.28818 }]),
   'hormones.shbg': m('hormones', 'SHBG', 'nmol/L', ['shbg', 'sex hormone binding globulin']),
   'hormones.estradiol': m('hormones', 'Estradiol', 'pmol/L', ['estradiol', 'oestradiol', 'e2'], [{ unit: 'pg/mL', f: 0.2724, us: 1 }]),
 
@@ -116,7 +118,7 @@ const ALIASES = Object.entries(MARKERS)
 export function findMarker(name) {
   const n = norm(name)
   for (const [a, key] of ALIASES) {
-    if (n === a || n.startsWith(a + ' ')) return { key, rest: n.slice(a.length).trim() }
+    if (n === a || n.startsWith(a + ' ')) return { key, alias: a, rest: n.slice(a.length).trim() }
   }
   return null
 }

@@ -6,9 +6,18 @@ import { repairRow } from './repair.js'
 // between table cells. Nothing here guesses silently: a row it can't place is returned unmatched
 // so the review screen shows it.
 
-const NUM = String.raw`[-+]?\d+(?:[.,]\d+)?`
-// Labs never print "08" or "008": that is OCR losing the point in 0.8 / 0.08
-const num = s => { const t = String(s).replace(',', '.'); return /^0\d+$/.test(t) ? parseFloat('0.' + t.slice(1)) : parseFloat(t) }
+// A number, including thousands separators: "1,050", "1,234.5" and the Indian "2,50,000". A comma
+// followed by one or two digits ("5,4", "0,94") is a decimal comma.
+const NUM = String.raw`[-+]?(?:\d{1,2}(?:,\d{2})+,\d{3}|\d{1,3}(?:,\d{3})+)(?:\.\d+)?(?![\d,])|[-+]?\d+(?:[.,]\d+)?`
+const THOUSANDS = /^[-+]?(?:\d{1,2}(?:,\d{2})+,\d{3}|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/
+let ocrText = false   // set per parseLabText call
+// OCR (only) drops the point in 0.8 / 0.08 and prints "08"; a digital report's "02 %" is just 2 %
+const num = s => {
+  const t = String(s)
+  if (THOUSANDS.test(t)) return parseFloat(t.replace(/,/g, ''))
+  const d = t.replace(',', '.')
+  return ocrText && /^0\d+$/.test(d) ? parseFloat('0.' + d.slice(1)) : parseFloat(d)
+}
 const FLAG = /^(h|l|hi|lo|high|low|a|abn|abnormal|\*|crit|critical|hh|ll)$/i
 const RANGE = new RegExp(String.raw`(${NUM})\s*(?:-|–|—|to)\s*(${NUM})`)
 const UPPER = new RegExp(String.raw`^(?:\u003c|≤|\u003c=|up to|upto|below)\s*(${NUM})`, 'i')
@@ -70,8 +79,31 @@ function reportDates(lines, mdy) {
 function cellsOf(line) {
   if (line.includes('\t')) return line.split('\t').map(c => c.trim()).filter(Boolean)
   if (/ {2,}/.test(line)) return line.split(/ {2,}/).map(c => c.trim()).filter(Boolean)
-  const m = line.match(new RegExp(String.raw`^(.*?[a-z)%\]])\s+([\u003c\u003e≤≥]?\s*${NUM}\b)(.*)$`, 'i'))
-  return m ? [m[1], m[2], m[3].trim()].filter(Boolean) : [line]
+  // Single spaces: the name ends where the result begins. A name may end in a digit ("Free T4",
+  // "Apo A1", "Vitamin B12"), so prefer the split whose left part is a whole marker name.
+  const words = line.trim().split(/\s+/)
+  const isNum = w => new RegExp(String.raw`^[<>≤≥]?(?:${NUM})[hl*]?$`, 'i').test(w)
+  let cut = -1
+  for (let k = 1; k < words.length; k++) {
+    if (!isNum(words[k])) continue
+    if (cut < 0 && /[a-z)%\]]$/i.test(words[k - 1])) cut = k
+    const name = words.slice(0, k).join(' '), hit = findMarker(name)
+    if (hit && nameFits(hit, name)) { cut = k; break }
+  }
+  return cut > 0 ? [words.slice(0, cut).join(' '), words[cut], words.slice(cut + 1).join(' ')].filter(Boolean) : [line]
+}
+
+// Words that may follow a marker's name without changing what it is ("LDL Cholesterol (Calculated)",
+// "eGFR (CKD-EPI)"). Anything else ("Glucose PP", "Bilirubin Direct", "Calcium Ionized", "RDW-SD",
+// "... Ratio") is a different test, so the row stays unmatched for the person to place.
+const QUALIFIERS = new Set(['serum', 'plasma', 'blood', 'whole', 'calculated', 'calc', 'measured', 'absolute', 'abs',
+  'count', 'level', 'test', 'ckd', 'epi', 'mdrd', 'sgot', 'sgpt', 'fasting', 'hydroxy', '25', 'oh', 'ultrasensitive',
+  'ultra', 'sensitive', 'high', 'sensitivity', 's', 'total', '%', 'percent'])
+function nameFits(hit, name) {
+  if (/\bratio\b|\/\s*hdl\b|\bindex\b/i.test(name) && !/ratio|index/.test(hit.alias)) return false
+  if (!hit.rest) return true
+  if (hit.rest.split(' ').every(w => QUALIFIERS.has(w))) return true
+  return findMarker(hit.rest)?.key === hit.key   // "AST (SGOT)": the rest is another name for the same test
 }
 
 // After the value, a cell may hold several things ("mg/dL 0,7 - 1,2"): take a range out first,
@@ -112,7 +144,8 @@ function readRow(line) {
 
 // Text of a whole report → { date, dob, rows }. Each row: raw line, name, key (null if unmatched),
 // value, unit, lo, hi, flag. Flags printed on their own line under a result attach to that result.
-export function parseLabText(text, { mdy = false } = {}) {
+export function parseLabText(text, { mdy = false, ocr = false } = {}) {
+  ocrText = ocr
   const lines = String(text).split(/\r?\n/).map(l => l.replace(/\s+$/, '')).filter(l => l.trim())
   const { date, dob } = reportDates(lines, mdy)
   const rows = []
@@ -121,10 +154,11 @@ export function parseLabText(text, { mdy = false } = {}) {
     const r = readRow(line)
     if (!r) continue
     const hit = findMarker(r.name)
-    let key = hit && (hit.rest === '' || /^(serum|plasma|blood|calculated|calc|direct|absolute|abs|total|ckd epi|sgot|sgpt|fasting|25 hydroxy|%)\b/.test(hit.rest) || hit.rest.length < 12) ? hit.key : null
+    let key = hit && nameFits(hit, r.name) ? hit.key : null
     // "Neutrophils" with a % unit or a "%" in the name is the percentage, not the count
     if (key && MARKERS[key].pct && (r.unit === '%' || /%|percent/i.test(r.name))) key = MARKERS[key].pct
-    rows.push(repairRow({ raw: line.replace(/\t/g, '  '), ...r, key }))
+    const basis = key === 'biochemistry.urea' ? (/bun|nitrogen/.test(hit.alias) ? 'bun' : 'urea') : null
+    rows.push(repairRow({ raw: line.replace(/\t/g, '  '), ...r, key, ...(basis ? { basis } : {}) }, { ocr }))
   }
   return { date, dob, rows }
 }

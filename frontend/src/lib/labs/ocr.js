@@ -72,6 +72,12 @@ export async function preparePhoto(file) {
 }
 
 let worker = null
+// Cancel from the progress sheet: stop the worker mid-recognition; the next import starts a fresh one.
+export function cancelOcr() {
+  const w = worker; worker = null
+  w?.then(x => x.terminate()).catch(() => {})
+}
+
 async function getWorker(onProgress) {
   if (worker) return worker
   const { createWorker, OEM } = await import('tesseract.js')
@@ -105,7 +111,8 @@ export async function ocrPdfPages(pdfData, onProgress, unsure = null, maxPages =
   const P = await import('pdfjs-dist')
   const { default: workerSrc } = await import('pdfjs-dist/build/pdf.worker.min.mjs?url')
   P.GlobalWorkerOptions.workerSrc = workerSrc
-  const doc = await P.getDocument({ data: new Uint8Array(pdfData), isEvalSupported: false }).promise
+  const task = P.getDocument({ data: new Uint8Array(pdfData), isEvalSupported: false })
+  const doc = await task.promise
   const out = []
   const n = Math.min(doc.numPages, maxPages)
   for (let i = 1; i <= n; i++) {
@@ -116,6 +123,6 @@ export async function ocrPdfPages(pdfData, onProgress, unsure = null, maxPages =
     await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise
     out.push(await ocrText(canvas, p => onProgress?.((i - 1 + p) / n), unsure))
   }
-  await doc.destroy()
+  await task.destroy()
   return out.join('\n')
 }

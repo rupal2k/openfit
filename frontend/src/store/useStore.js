@@ -5,6 +5,7 @@ import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
 import { mergeState } from '../lib/sync.js'
+import { cleanReports } from '../lib/labs/reports.js'
 
 const KEY = 'gym_state_v1'
 const BASE_KEY = 'gym_base'
@@ -33,7 +34,7 @@ export function normalizeState(raw) {
     foods: Array.isArray(s.nutrition?.foods) ? s.nutrition.foods : []
   }
   s.labs = {
-    reports: Array.isArray(s.labs?.reports) ? s.labs.reports : [],
+    reports: cleanReports(s.labs?.reports),
     units: s.labs?.units === 'us' || s.labs?.units === 'si' ? s.labs.units : null
   }
   return s
