@@ -28,5 +28,13 @@ export function mergeState(local, remote) {
   const days = { ...(rn.days || {}) }
   for (const [iso, list] of Object.entries(ln.days || {})) days[iso] = byId(list, rn.days?.[iso])
   out.nutrition = { ...ln, profile: ln.profile || rn.profile || null, days, foods: byId(ln.foods, rn.foods) }
+
+  const ll = local.labs || {}, rl = remote.labs || {}
+  out.labs = {
+    ...ll,
+    units: ll.units ?? rl.units ?? null,
+    reports: byId(Array.isArray(ll.reports) ? ll.reports : [], Array.isArray(rl.reports) ? rl.reports : [])
+      .sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0))
+  }
   return out
 }

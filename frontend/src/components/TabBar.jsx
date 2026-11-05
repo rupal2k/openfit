@@ -14,7 +14,7 @@ export default function TabBar({ onStart }) {
   const cur = loc.pathname.split('/')[1] || 'home'
   const fab = (user || isGuest) && cur !== 'workout'
   if (!user && !isGuest) return null
-  const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'settings' && k === 'home')
+  const on = k => cur === k || ((cur === 'history' || cur === 'labs') && k === 'stats') || (cur === 'settings' && k === 'home')
 
   const startWorkout = () => {
     if (!S.active) {

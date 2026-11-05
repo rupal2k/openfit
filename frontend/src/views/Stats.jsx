@@ -210,6 +210,13 @@ export default function Stats() {
       <Heatmap S={S} onDay={iso => { const ws = S.workouts.filter(w => w.d === iso); if (ws.length === 1) workoutDetailSheet(ws[0]); else if (ws.length) calendarSheet(iso) }} />
     </div>
 
+    <button type="button" className="card lab-entry" onClick={() => nav('/labs')}>
+      <span className="lrow-i" style={{ '--tint': 'var(--red)' }}><Icon name="heart" /></span>
+      <span><b>{t('Blood tests')}</b><br /><span className="muted small">{(S.labs?.reports || []).length
+        ? t('{0} reports · charts and scores', S.labs.reports.length) : t('Import a lab report, read on this device')}</span></span>
+      <Icon name="chevronRight" />
+    </button>
+
     {S.workouts.length > 0 && <MuscleBalance S={S} />}
     {anyEffort && <EffortCard S={S} />}
 

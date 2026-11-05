@@ -64,12 +64,20 @@ Fitness apps tend to put your own training history behind a subscription, or los
 | **Science-based targets** | IOM 2005 energy equations with a lifter-focused protein target of 1.6 g/kg. |
 | **History stays accurate** | Each entry snapshots the food's nutrition values, so later database edits never rewrite old logs. |
 
+### Blood tests
+| | |
+|---|---|
+| **Lab report import** | Import a lab report PDF and OPENFIT reads it on your device, with no AI model and nothing uploaded. Check every value, unit and range before it is saved. |
+| **Photos and scans** | Photograph a printed report or import a scanned PDF: on-device OCR (Tesseract, bundled in the app, works offline) reads it, puts back decimal points OCR drops and flags every value it changed or was unsure of. |
+| **Trends** | Every marker gets a chart over time, with High and Low against the lab's own range, in SI or US units. |
+| **Published scores** | HOMA-IR, TG/HDL, ApoB/ApoA1, FIB-4, non-HDL cholesterol, homocysteine and Omega-3 Index, plus a PhenoAge biological-age estimate, each with its formula and source. Information, not medical advice. |
+
 ### Planning & data
 | | |
 |---|---|
 | **Weekly planner** | Assign routines to days, reschedule, or start from built-in templates. |
 | **Spreadsheet import** | Build plans in Excel or Google Sheets and import them as CSV or JSON. Sample plans are in [`samples/`](samples). |
-| **History import** | Bring in past workouts from FitNotes, Strong, Hevy and Apple Health. |
+| **History import** | Bring in past workouts from FitNotes, Strong and Hevy, and body-weight history from Apple Health. |
 | **Printable plans** | Clean one-page workout cards for the gym binder. |
 | **Multi-user** | Profiles sync across devices, with an optional admin dashboard and invite-only sign-up. |
 | **12 languages** | The full interface is localised, with matching exercise instructions. |
@@ -131,7 +139,7 @@ The web request path, the code layers (presentation / state / domain / adapters)
 
 ## Deploy
 
-> **Self-hosting is the recommended path** — two containers, one command. For managed cloud hosting without a VPS, see [Cloud deploy](#cloud-deploy).
+> **Self-hosting is the recommended path** — two long-running services (web and API) plus a one-time media download, all started with one command. Cloud options are listed under [Cloud deploy](#cloud-deploy) but are untested.
 
 ### Self-hosted with Docker Compose (recommended)
 
@@ -141,7 +149,7 @@ The web request path, the code layers (presentation / state / domain / adapters)
 git clone https://github.com/rupal2k/openfit.git
 cd openfit
 cp .env.example .env
-# edit .env — set SESSION_SECRET, RP_ID and ORIGIN at minimum
+# edit .env — set RP_ID and ORIGIN at minimum
 docker compose up -d --build
 ```
 
@@ -149,12 +157,14 @@ Open <http://localhost:8080>, choose **Create profile** and register a passkey. 
 
 **Minimum `.env` for a public instance:**
 ```env
-SESSION_SECRET=<64-char hex — generate with: openssl rand -hex 32>
 RP_ID=yourdomain.com
 ORIGIN=https://yourdomain.com
+TRUST_PROXY=2
 ```
 
-> **TLS note:** browsers require HTTPS for passkeys (except on `localhost`). Put OPENFIT behind Caddy, Traefik, or Cloudflare Tunnel and set `RP_ID`/`ORIGIN` to your public domain.
+The session signing key and web-push keys are generated on first start and stored in `./data` (see [Backups](#backups)); there is nothing to set for them.
+
+> **TLS note:** browsers require HTTPS for passkeys (except on `localhost`). Put OPENFIT behind Caddy, Traefik, or Cloudflare Tunnel, set `RP_ID`/`ORIGIN` to your public domain, and set `TRUST_PROXY=2` so rate limiting sees each visitor's real IP.
 
 ---
 
@@ -170,6 +180,10 @@ ORIGIN=https://yourdomain.com
 | `RP_NAME` | Name shown in passkey prompts | `openfit` |
 | `ADMIN_UIDS` | Comma-separated user IDs with admin access | — |
 | `INVITE_ONLY` | `1` requires an invite code to register | `0` |
+| `TRUST_PROXY` | Proxies in front of the API: `1` = bundled nginx only, `2` = also behind Caddy, Traefik or Cloudflare Tunnel | `1` |
+| `RATE_LIMIT_MAX` | Max sign-in requests per IP per minute | `20` |
+
+All variables, with risk notes, are in [`docs/VARIABLES.md`](docs/VARIABLES.md).
 
 ### Backups
 
@@ -192,7 +206,10 @@ tar -czf openfit-backup.tar.gz data/
 
 ## Cloud deploy
 
-These options are for managed hosting without a VPS. For your own server, use [Self-hosted with Docker Compose](#self-hosted-with-docker-compose-recommended) above.
+> [!WARNING]
+> **Untested.** None of these cloud paths has been verified end to end, and some are known not to work as written (for example, the Render blueprint uses the free plan, which has no persistent disk). Use [Self-hosted with Docker Compose](#self-hosted-with-docker-compose-recommended) for a supported install. Fixes and reports are welcome.
+
+These options are for managed hosting without a VPS.
 
 ### Render
 

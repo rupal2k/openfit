@@ -5,6 +5,7 @@ import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
 import { mergeState } from '../lib/sync.js'
+import { cleanReports } from '../lib/labs/reports.js'
 
 const KEY = 'gym_state_v1'
 const BASE_KEY = 'gym_base'
@@ -19,7 +20,9 @@ export const DEF = {
   // keeps the column it had. See effortOf.
   reminder: { on: false, time: '08:00', tz: null }, effort: null,
   // food diary — see lib/nutrition.js for the shapes
-  nutrition: { profile: null, days: {}, foods: [] }
+  nutrition: { profile: null, days: {}, foods: [] },
+  // blood test reports — see lib/labs/reports.js for the shapes; units: 'si' | 'us' | null (not chosen yet)
+  labs: { reports: [], units: null }
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -30,19 +33,32 @@ export function normalizeState(raw) {
     days: s.nutrition?.days || {},
     foods: Array.isArray(s.nutrition?.foods) ? s.nutrition.foods : []
   }
+  s.labs = {
+    reports: cleanReports(s.labs?.reports),
+    units: s.labs?.units === 'us' || s.labs?.units === 'si' ? s.labs.units : null
+  }
   return s
 }
 
 function loadState() {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return normalizeState(JSON.parse(raw))
+    if (raw) {
+      const old = JSON.parse(raw), s = normalizeState(old)
+      // reports saved before the privacy fix (full birth date, file name): store the cleaned copy now
+      // and send it on the next sync, instead of keeping the old one until the next edit
+      if (JSON.stringify(s.labs) !== JSON.stringify(old.labs ?? DEF.labs)) {
+        localStorage.setItem(KEY, JSON.stringify(s))
+        localStorage.setItem('gym_dirty', '1')
+      }
+      return s
+    }
   } catch (e) { /* ignore */ }
   return clone(DEF)
 }
 
 const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length
-  || Object.keys(st.nutrition?.days || {}).length)
+  || Object.keys(st.nutrition?.days || {}).length || (st.labs?.reports || []).length)
 
 export const useStore = create((set, get) => {
   let pushTm = null

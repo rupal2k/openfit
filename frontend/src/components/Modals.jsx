@@ -67,7 +67,13 @@ function Sheet({ sheet }) {
       if (focusable) focusable.focus()
     }
     return () => {
-      if (prevActive && prevActive.focus) prevActive.focus()
+      // after the sheet's DOM is gone: back to the opener, or to the page heading when it is gone/hidden
+      setTimeout(() => {
+        if (prevActive?.isConnected && prevActive.offsetParent !== null) prevActive.focus?.()
+        if (document.activeElement && document.activeElement !== document.body) return
+        const h = document.querySelector('main h1, h1')
+        if (h) { h.setAttribute('tabindex', '-1'); h.focus() }
+      })
     }
   }, [])
 
