@@ -6,7 +6,7 @@
 
 **Self-hosted training, body-weight and nutrition tracking that you own.**
 
-Plan routines, run guided workouts with automatic progressive overload, log meals by search or barcode, and track body weight, all in one app that runs on your own server.
+Plan routines, run guided workouts with automatic progressive overload, log meals by search or barcode, track body weight, and read your blood-test reports on your own device, all in one app that runs on your own server.
 
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-a3e635?style=flat-square)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/rupal2k/openfit?style=flat-square&label=release&color=22d3ee)](https://github.com/rupal2k/openfit/releases/latest)
@@ -14,7 +14,7 @@ Plan routines, run guided workouts with automatic progressive overload, log meal
 ![Self-hosted](https://img.shields.io/badge/self--hosted-docker-22d3ee?style=flat-square&logo=docker&logoColor=white)
 
 [![Download APK](https://img.shields.io/badge/Download-Android%20APK-3ddc84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/rupal2k/openfit/releases/latest/download/app-release.apk)
-[![Watch the video tour](https://img.shields.io/badge/Watch-7--episode%20tour-ff0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PLIlQz5UNxQ1c)
+[![Watch the video tour](https://img.shields.io/badge/Watch-8--episode%20tour-ff0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/playlist?list=PLIlQz5UNxQ1c)
 
 <br>
 
@@ -26,19 +26,19 @@ Plan routines, run guided workouts with automatic progressive overload, log meal
 
 ## Video tour
 
-Seven short comic-style episodes, one per module, about a minute and a half each.
+A short trailer and eight comic-style episodes, one per module, about a minute and a half each.
 
-<a href="https://www.youtube.com/playlist?list=PLIlQz5UNxQ1c"><img src="assets/video-tour.jpg" alt="OPENFIT video tour: the whole app in 7 episodes" width="640"></a>
+<a href="https://www.youtube.com/playlist?list=PLIlQz5UNxQ1c"><img src="assets/video-tour.jpg" alt="OPENFIT video tour: the whole app in 8 episodes" width="640"></a>
 
-[1. Today](https://www.youtube.com/watch?v=hB6LLFcCpPI&list=PLIlQz5UNxQ1c) · [2. Guided workouts](https://www.youtube.com/watch?v=LpxnzEjcCTc&list=PLIlQz5UNxQ1c) · [3. My Plan](https://www.youtube.com/watch?v=-yHLYWLfpzE&list=PLIlQz5UNxQ1c) · [4. My Meals](https://www.youtube.com/watch?v=w5pAtuHNU38&list=PLIlQz5UNxQ1c) · [5. My Stats](https://www.youtube.com/watch?v=JdfB-Oq2mR8&list=PLIlQz5UNxQ1c) · [6. Exercise library](https://www.youtube.com/watch?v=1WvinN-iHXM&list=PLIlQz5UNxQ1c) · [7. Settings & backups](https://www.youtube.com/watch?v=ZjggkLvZ_64&list=PLIlQz5UNxQ1c)
+[Trailer](https://www.youtube.com/watch?v=8bsf6MMnFoA&list=PLIlQz5UNxQ1c) · [1. Today](https://www.youtube.com/watch?v=hB6LLFcCpPI&list=PLIlQz5UNxQ1c) · [2. Guided workouts](https://www.youtube.com/watch?v=LpxnzEjcCTc&list=PLIlQz5UNxQ1c) · [3. My Plan](https://www.youtube.com/watch?v=-yHLYWLfpzE&list=PLIlQz5UNxQ1c) · [4. My Meals](https://www.youtube.com/watch?v=w5pAtuHNU38&list=PLIlQz5UNxQ1c) · [5. My Stats](https://www.youtube.com/watch?v=JdfB-Oq2mR8&list=PLIlQz5UNxQ1c) · [6. Exercise library](https://www.youtube.com/watch?v=1WvinN-iHXM&list=PLIlQz5UNxQ1c) · [7. Settings & backups](https://www.youtube.com/watch?v=ZjggkLvZ_64&list=PLIlQz5UNxQ1c) · [8. Blood tests](https://www.youtube.com/watch?v=fM3kZanQOA8&list=PLIlQz5UNxQ1c)
 
 ## Why OPENFIT
 
 Fitness apps tend to put your own training history behind a subscription, or lose it when the company changes direction. OPENFIT keeps the data with you:
 
 - **Self-hosted:** one Docker Compose stack on your server or home lab, with no external database.
-- **One app:** workouts, progressive overload, body weight and nutrition live in one place.
-- **Private by default:** passkey sign-in, no ads, no telemetry, and plain JSON files on disk.
+- **One app:** workouts, progressive overload, body weight, nutrition and blood tests live in one place.
+- **Private by default:** passkey sign-in, no ads, no telemetry, and plain JSON files on disk. Fonts and the OCR model ship with the app, so opening it or reading a blood test sends nothing to Google or anyone else.
 - **Works where you train:** an installable PWA and an Android app, with offline caching and wake-lock during sessions.
 - **No lock-in:** one-tap JSON backups, plus CSV and JSON import and export.
 
@@ -67,10 +67,11 @@ Fitness apps tend to put your own training history behind a subscription, or los
 ### Blood tests
 | | |
 |---|---|
-| **Lab report import** | Import a lab report PDF and OPENFIT reads it on your device, with no AI model and nothing uploaded. Check every value, unit and range before it is saved. |
-| **Photos and scans** | Photograph a printed report or import a scanned PDF: on-device OCR (Tesseract, bundled in the app, works offline) reads it, puts back decimal points OCR drops and flags every value it changed or was unsure of. |
+| **Lab report import** | Import a lab report PDF and OPENFIT reads it on your device in about a second, with no AI model and nothing uploaded (68 of 68 results on the [getbased](https://github.com/elkimek/get-based) reference report). The sample date is filled in when the report shows it. Check every value, unit and range before you save; Save stays on screen however long the list is. Files up to 25 MB, text PDFs up to 30 pages. |
+| **Photos and scans** | Photograph a printed report or import a scanned PDF: on-device OCR (Tesseract, bundled in the app, works offline) reads it, puts back decimal points OCR drops and flags every value it changed or was unsure of. Flagged rows start unticked, and OPENFIT asks for the sample date when the report has none. Photos up to 120 megapixels. |
 | **Trends** | Every marker gets a chart over time, with High and Low against the lab's own range, in SI or US units. |
-| **Published scores** | HOMA-IR, TG/HDL, ApoB/ApoA1, FIB-4, non-HDL cholesterol, homocysteine and Omega-3 Index, plus a PhenoAge biological-age estimate, each with its formula and source. Information, not medical advice. |
+| **Published scores** | HOMA-IR, TG/HDL, ApoB/ApoA1, FIB-4, non-HDL cholesterol, homocysteine and Omega-3 Index, plus a PhenoAge biological-age estimate, each with its formula and source. Scores use each marker's latest value from the last 120 days, so a partial follow-up report keeps them. Information, not medical advice. |
+| **Private by design** | Only the birth year and the import type (PDF, scan or photo) are stored with a report, never the file name or the full date of birth. On Android, your data is left out of Google's cloud backup. |
 
 ### Planning & data
 | | |
@@ -272,7 +273,7 @@ Paste the repo URL into Coolify's **New Resource → Docker Compose** flow. Copy
 
 **[⬇ Download the latest APK](https://github.com/rupal2k/openfit/releases/latest/download/app-release.apk)** (sideload: allow "Install unknown apps" for your browser or file manager). All releases: [Releases](https://github.com/rupal2k/openfit/releases).
 
-The Android build is a standalone Capacitor app. Data stays on the device, and food search calls Open Food Facts directly.
+The Android build is a standalone Capacitor app. Data stays on the device, and food search calls Open Food Facts directly. Your data is left out of Google's cloud backup: moving to a new phone (Android 12 or later) copies it across, and **Settings → Export backup** works on any version.
 
 ```bash
 cd frontend
@@ -302,6 +303,9 @@ OPENFIT builds on these open-source projects:
 - **[Open Food Facts](https://world.openfoodfacts.org)**: open food database (ODbL).
 - **[MuscleMap](https://github.com/melihcolpan/MuscleMap)** by Melih Colpan: anatomical outlines (MIT).
 - **[exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset)** by hasaneyldrm: exercise catalogue and animations.
+- **[getbased](https://github.com/elkimek/get-based)** by elkimek: blood-test markers, unit factors and the synthetic reference report used in tests (AGPL-3.0).
+- **[Tesseract.js](https://github.com/naptha/tesseract.js)** and **[pdf.js](https://github.com/mozilla/pdf.js)**: on-device OCR and PDF reading (Apache-2.0).
+- **[Poppins](https://github.com/itfoundry/Poppins)**: the interface font, bundled with the app (SIL OFL 1.1).
 
 Full notices are in [`NOTICE.md`](NOTICE.md).
 
