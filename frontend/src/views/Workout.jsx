@@ -256,7 +256,8 @@ function ActiveWorkout() {
       const A1 = same()
       if (!A1 || !A1.entries[idx]?.sets[i] || A1.entries[idx].sets[i].done) return
       // a hold logs what was held; an EMOM set is the minute, whenever you say it's done
-      if (A1.format !== 'emom') mutEntry(idx, en => { en.sets[i].sec = elapsed })
+      // a hold stopped short is logged as held, and marked so next time's target isn't cut to it
+      if (A1.format !== 'emom') mutEntry(idx, en => { const s = en.sets[i]; if (elapsed < s.sec) s.early = true; s.sec = elapsed })
       toggle(idx, i)
       const A2 = same()
       if (!A2 || !A2.entries[idx].sets[i].done) return       // not logged (a check stopped it)

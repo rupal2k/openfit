@@ -708,6 +708,8 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
   background:var(--surface-2);color:var(--acc-ink);font-size:14px;
   transition:background var(--fast),opacity var(--fast);
 }
+.setrow .setgo{position:relative}
+.setrow .setgo::before{content:'';position:absolute;inset:-7px}   /* 44 px hit area, like .chk */
 .setrow .setgo:disabled{opacity:.3;cursor:default}
 .setrow .setgo:not(:disabled):active{background:var(--surface-3)}
 /* exercise-config sheet: three steppers side by side on narrow phones */
@@ -1080,6 +1082,8 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 
 /* plan catalogue: Gym / Home / Home gym */
 .plan-where{margin-bottom:14px}
+.exmedia-off{min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;text-align:center;color:var(--label-2);background:var(--surface-2);border-radius:inherit;font-size:14px}
+.exmedia-off .icn{font-size:28px}
 .start-where{display:grid;gap:8px}
 .plan-where button{font-size:14px;line-height:1.15;padding-left:2px;padding-right:2px;overflow-wrap:normal}
 .lib-plans{margin:0 0 12px;display:grid;gap:6px}

@@ -190,7 +190,8 @@ export function buildSets(S, cfg) {
       // Only carry a previous value over when it came from a timed set — switching an
       // exercise from reps to time must not seed the duration from a rep count.
       const prev = prevAt(i)
-      const carried = prev && prev.sec > 0 ? prev : null
+      // ...nor from a hold stopped early: that was a short day, not a new target
+      const carried = prev && prev.sec > 0 && !prev.early ? prev : null
       sets.push({ sec: carried ? carried.sec : (cfg.sec || 45), w: carried ? (carried.w || 0) : (cfg.weight || 0), done: false })
     }
     return sets

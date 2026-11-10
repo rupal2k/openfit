@@ -42,3 +42,13 @@ describe('format rules', () => {
     expect([cleanCap(900), cleanCap(5), cleanCap(1e9), cleanCap('x')]).toEqual([900, 60, 3600, 0])
   })
 })
+
+import { buildSets } from './history.js'
+describe('a hold stopped early does not become the next target', () => {
+  const S = w => ({ exWeights: {}, workouts: [w], unit: 'kg' })
+  const cfg = { id: '3665', sets: 2, mode: 'time', sec: 40 }
+  it('early: back to the plan; full holds still carry over', () => {
+    const early = S({ d: '2026-11-10', entries: [{ id: '3665', sets: [{ sec: 4, early: true, done: true }, { sec: 45, done: true }] }] })
+    expect(buildSets(early, cfg).map(s => s.sec)).toEqual([40, 45])
+  })
+})

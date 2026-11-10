@@ -248,7 +248,9 @@ function FoodSearch({ iso, meal, close }) {
       <Button size="sm" variant="tinted" icon="plus" onClick={() => { close(); customFoodSheet(f => foodAmountSheet(iso, meal, f)) }}>{t('New food')}</Button>
     </div>
     {res.busy && <div className="small muted">{t('Searching…')}</div>}
-    {res.err && <div className="small" style={{ color: 'var(--red)' }}>{t('Search failed: {0}', res.err)}</div>}
+    {res.err && <div className="small" style={{ color: 'var(--red)' }}>{(typeof navigator !== 'undefined' && navigator.onLine === false) || /fetch|network/i.test(String(res.err))
+      ? t('You’re offline. Food search needs internet. You can still add a food by hand with New food.')
+      : t('Search failed: {0}', res.err)}</div>}
     {!!mine.length && <><h4 className="sec">{t('My foods')}</h4><div className="sect-b">{mine.map(row)}</div></>}
     {!!recent.length && <><h4 className="sec">{t('Recent')}</h4><div className="sect-b">{recent.map(row)}</div></>}
     {!!res.foods.length && <><h4 className="sec">{t('Open Food Facts')}</h4><div className="sect-b">{res.foods.map(row)}</div></>}
