@@ -7,7 +7,7 @@ import { lastEntryFor, bestWeightFor, buildSets, effectiveRoutineId, setsDone, s
 import { beep, vibrate } from './lib/sound.js'
 import { t, instrFor, getLang, INSTR_LANGS } from './lib/i18n.js'
 import { nav } from './lib/nav.js'
-import { starterRoutines, PLAN_TEMPLATES, instantiatePlan } from './lib/starter.js'
+import { starterRoutines, PLAN_TEMPLATES, PLAN_WHERE, instantiatePlan, templateEx } from './lib/starter.js'
 import Media, { Thumb } from './components/Media.jsx'
 import Stepper from './components/Stepper.jsx'
 import Icon from './components/Icon.jsx'
@@ -49,18 +49,22 @@ export function confirmSheet(opts) {
 export const planCatalogSheet = () => ui().openSheet(close => <PlanCatalog close={close} />)
 
 function PlanCatalog({ close }) {
+  const [where, setWhere] = useState('gym')
+  const shown = PLAN_TEMPLATES.filter(p => p.where === where)
   const [selectedId, setSelectedId] = useState(PLAN_TEMPLATES[0].id)
   const [applySchedule, setApplySchedule] = useState(true)
   const [expandedRoutine, setExpandedRoutine] = useState(null)
   const currentRoutinesCount = (useStore(s => s.S.routines) || []).length
 
-  const selectedPlan = PLAN_TEMPLATES.find(p => p.id === selectedId) || PLAN_TEMPLATES[0]
+  const selectedPlan = shown.find(p => p.id === selectedId) || shown[0]
+  // a plan with no days (an add-on like mobility) leaves the week alone
+  const hasSchedule = !!(selectedPlan.scheduleMap || selectedPlan.scheduleDays)
 
   const apply = () => {
     const { routines, week } = instantiatePlan(selectedPlan)
     update(st => {
       st.routines.push(...routines)
-      if (applySchedule) {
+      if (applySchedule && hasSchedule) {
         [1, 2, 3, 4, 5, 6, 0].forEach(d => { delete st.week[d] })
         Object.assign(st.week, week)
       }
@@ -76,8 +80,10 @@ function PlanCatalog({ close }) {
       {t('Choose a curated workout split to load into your plan.')}
     </div>
 
+    <Segmented className="plan-where" value={where} onChange={w => { setWhere(w); setSelectedId(PLAN_TEMPLATES.find(p => p.where === w).id); setExpandedRoutine(null) }}
+      options={PLAN_WHERE.map(([value, label]) => ({ value, label: t(label) }))} />
     <div className="list" style={{ marginBottom: 14, gap: 10 }}>
-      {PLAN_TEMPLATES.map(p => {
+      {shown.map(p => {
         const isSel = p.id === selectedId
         return (
           <div
@@ -99,11 +105,11 @@ function PlanCatalog({ close }) {
                 <span className="lrow-i"><Icon name={p.icon || 'barbell'} /></span>
                 <div>
                   <div className="tt" style={{ fontWeight: 600 }}>{p.name}</div>
-                  <div className="ss">{p.routines.length} {t('routines')} · {p.routines.reduce((acc, r) => acc + r.ex.length, 0)} {t('exercises')}</div>
+                  <div className="ss">{p.routines.length} {t(p.routines.length === 1 ? 'routine' : 'routines')} · {p.routines.reduce((acc, r) => acc + r.ex.length, 0)} {t('exercises')}</div>
                 </div>
               </div>
               <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-                <span className={'tag' + (isSel ? ' acc' : '')}>{p.badge}</span>
+                <span className={'tag nocap' + (isSel ? ' acc' : '')}>{p.badge}</span>
                 {isSel && <Icon name="check" className="accent" />}
               </div>
             </div>
@@ -138,12 +144,13 @@ function PlanCatalog({ close }) {
 
               {isExp && (
                 <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid var(--sep)', display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  {r.ex.map(([exId, sets, reps], eIdx) => {
+                  {r.ex.map((x, eIdx) => {
+                    const { id: exId, sets, reps, sec, side } = templateEx(x)
                     const exObj = EXIDX[exId]
                     return (
                       <div key={eIdx} className="row between small" style={{ color: 'var(--label-2)' }}>
                         <span>• {exObj ? exObj.n : exId}</span>
-                        <span className="dim">{sets} × {reps}</span>
+                        <span className="dim">{sets} × {sec ? sec + ' s' : side ? t('{0} per side', reps / 2) : reps}</span>
                       </div>
                     )
                   })}
@@ -155,7 +162,7 @@ function PlanCatalog({ close }) {
       </div>
     </div>
 
-    <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', borderBottom: '1px solid var(--sep)', marginBottom: 16, gap: 12 }}>
+    {hasSchedule && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', borderBottom: '1px solid var(--sep)', marginBottom: 16, gap: 12 }}>
       <div>
         <div className="tt" style={{ fontSize: 15 }}>{t('Assign to weekly schedule')}</div>
         <div className="small dim">
@@ -165,7 +172,7 @@ function PlanCatalog({ close }) {
         </div>
       </div>
       <Switch checked={applySchedule} onChange={setApplySchedule} aria-label={t('Assign to weekly schedule')} />
-    </div>
+    </div>}
 
     <Button variant="primary" icon="sparkles" onClick={apply}>
       {t('Load “{0}”', selectedPlan.name)}
@@ -1109,9 +1116,9 @@ export function beginWorkout(routineId, bw) {
     return { id: cfg.id, sg: cfg.sg, target: { ...cfg }, plan, sets: applyPrescription(buildSets(st, cfg), plan) }
   })
   update(s => {
-    s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries }
+    s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries, ...(r?.rest ? { rest: r.rest } : {}) }
   })
-  useUI.getState().stopRest()
+  useUI.getState().stopRest(); useUI.getState().stopWork()
   nav('/workout')
 }
 function TopWeight({ entryIdx, close }) {
@@ -1246,7 +1253,7 @@ function doFinishWorkout() {
   if (!A) return
   const { w, prs, e1prs } = finishSession(st, A)
   update(s => recordSession(s, w))
-  useUI.getState().stopRest()
+  useUI.getState().stopRest(); useUI.getState().stopWork()
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
   ui().openSheet(close => <FinishSummary w={w} prs={prs} e1prs={e1prs} close={close} />, { kind: 'center', locked: true })
 }

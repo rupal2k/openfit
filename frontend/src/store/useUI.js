@@ -16,6 +16,7 @@ let timerTick = null
 let workInt = null
 let workTick = null
 let workDone = null
+let restNext = null   // what starts when a rest runs out or is skipped (the next timed set of a circuit)
 
 let poppingDueToClose = false
 
@@ -86,8 +87,9 @@ export const useUI = create((set, get) => ({
     toastTm = setTimeout(() => set({ toastMsg: '', toastUndo: null }), duration)
   },
 
-  startRest(sec) {
+  startRest(sec, onEnd) {
     get().stopRest()
+    restNext = onEnd || null
     const endsAt = Date.now() + sec * 1000
     set({ timer: { left: sec, total: sec, endsAt } })
     pushRestTimer(sec)
@@ -99,7 +101,10 @@ export const useUI = create((set, get) => ({
       const snd = useStore.getState().S.sound
       if (left <= 0) {
         beep(snd, 880, 0.15); beep(snd, 880, 0.15, 0.25); beep(snd, 1320, 0.4, 0.5)
-        vibrate([200, 100, 200]); get().toast(t('Rest over — next set!')); get().stopRest(); return
+        vibrate([200, 100, 200]); get().toast(t('Rest over — next set!'))
+        // ran out while the app was in the background: don't drop you into a hold unannounced
+        if (Date.now() - tm.endsAt > 2000) get().stopRest(); else get().skipRest()
+        return
       }
       if (left <= 3) beep(snd, 660, 0.1)
       set({ timer: { ...tm, left } })
@@ -113,11 +118,20 @@ export const useUI = create((set, get) => ({
     const left = tm.left + sec
     // taking off more than is left means "I'm ready now" — same as skipping, and it keeps a
     // negative duration out of both the progress bar and the server-side push schedule
-    if (left <= 0) { get().stopRest(); return }
+    if (left <= 0) { get().skipRest(); return }
     set({ timer: { ...tm, left, total: tm.total + sec, endsAt: tm.endsAt + sec * 1000 } })
     pushRestTimer(left)
   },
+  // The running rest should lead into the next timed set when it ends.
+  onRestEnd(fn) { if (get().timer) restNext = fn },
+  // Rest is over (ran out, or "I'm ready now"): stop it and start whatever was queued.
+  skipRest() {
+    const next = restNext
+    get().stopRest()
+    if (next) next()
+  },
   stopRest() {
+    restNext = null
     if (timerInt) clearInterval(timerInt); timerInt = null
     if (timerTick) document.removeEventListener('visibilitychange', timerTick); timerTick = null
     if (get().timer) cancelPushRestTimer()
@@ -150,7 +164,7 @@ export const useUI = create((set, get) => ({
         vibrate([200, 100, 200])
         const done = workDone
         get().stopWork()
-        if (done) done(wk.total)
+        if (done) done(wk.total, Date.now() - wk.endsAt > 2000)
         return
       }
       if (left <= 3) beep(snd, 660, 0.1)

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
-import { effectiveRoutine, lastEntryFor, bestWeightFor, buildSets, setsDoneActive, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, sideReps, repStep, EFFORT, effortOf, stepEffort, capEffort } from '../lib/history.js'
+import { effectiveRoutine, lastEntryFor, bestWeightFor, buildSets, setsDoneActive, supersetUnits, nextInRound, unitOf, setLabel, modeOf, isBw, isPerSide, sideReps, repStep, EFFORT, effortOf, stepEffort, capEffort } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, exCount, DAYN } from '../lib/format.js'
 import { beep, vibrate } from '../lib/sound.js'
 import { t } from '../lib/i18n.js'
@@ -164,6 +164,7 @@ function ActiveWorkout() {
   const unit = A.entries.length ? unitOf(units, cur) : []
   const unitIdx = units.findIndex(u => u === unit)
   const isSuperset = unit.length > 1
+  const isCircuit = unit.length > 2
 
   const total = A.entries.reduce((n, e) => n + e.sets.length, 0)
   const done = setsDoneActive(A)
@@ -201,11 +202,38 @@ function ActiveWorkout() {
   // finish logs 0:38 of a 0:45 target rather than crediting the full prescription — and then
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
+  // A set finished on the timer leads straight into the next timed set of the round (HIIT,
+  // Tabata, a circuit): right away inside a round, after the rest between rounds. Ticking a
+  // box by hand or cancelling the timer ends the chain, so nothing starts on its own then.
   const startTimed = (idx, i) => {
-    const e = A.entries[idx]
-    useUI.getState().startWork(e.sets[i].sec || 45, exOr(e.id).n, elapsed => {
+    const A0 = useStore.getState().S.active
+    const e = A0.entries[idx]
+    const u = unitOf(supersetUnits(A0.entries), idx)
+    if (u.length > 1) {
+      const el = document.getElementById('ex-' + idx)
+      const smooth = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      el?.scrollIntoView?.({ behavior: smooth ? 'smooth' : 'auto', block: 'start' })
+    }
+    // still this workout and this set? (a discard, finish or new workout must not be written into)
+    const same = () => { const A1 = useStore.getState().S.active; return A1 && A1.id === A0.id ? A1 : null }
+    useUI.getState().startWork(e.sets[i].sec || 45, exOr(e.id).n, (elapsed, late) => {
+      const A1 = same()
+      if (!A1 || !A1.entries[idx]?.sets[i] || A1.entries[idx].sets[i].done) return
       mutEntry(idx, en => { en.sets[i].sec = elapsed })
-      if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i)
+      toggle(idx, i)
+      const A2 = same()
+      if (!A2 || !A2.entries[idx].sets[i].done) return       // not logged (a check stopped it)
+      // chains only inside a superset or circuit, and never into a hold you weren't watching
+      if (u.length < 2 || late) return
+      const nx = nextInRound(A2.entries, u, idx, i)
+      if (!nx || modeAt(nx.idx) !== 'time') return
+      const go = () => {
+        if (same()?.entries[nx.idx]?.sets[nx.i]?.done !== false) return
+        useUI.getState().toast(t('Next: {0}', exOr(A2.entries[nx.idx].id).n))
+        startTimed(nx.idx, nx.i)
+      }
+      if (useUI.getState().timer) useUI.getState().onRestEnd(go)
+      else go()
     })
   }
 
@@ -222,10 +250,14 @@ function ActiveWorkout() {
     }
     tick(idx, i)
   }
+  // Reads the store, not this render: a timed set ticks itself 20–60 s after the render
+  // whose closure started it, and a chained circuit can run several sets on from there.
   const tick = (idx, i) => {
+    const S = useStore.getState().S, A = S.active
     const m = modeAt(idx)
     const cardioEntry = m === 'cardio'
-    const isLastUnit = unitIdx >= units.length - 1
+    const us = supersetUnits(A.entries), unit = unitOf(us, idx)
+    const isLastUnit = us.indexOf(unit) >= us.length - 1
     let askTop = false, exJustDone = false, workoutDone = false
     mutEntry(idx, e => {
       e.sets[i].done = !e.sets[i].done
@@ -233,7 +265,7 @@ function ActiveWorkout() {
         beep(S.sound, 1040, 0.12); vibrate(30)
         const isLastExInUnit = idx === unit[unit.length - 1]
         const unitDone = unit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
-        if (isLastExInUnit && !unitDone) startRest(S.restSec)
+        if (isLastExInUnit && !unitDone) startRest(A.rest || S.restSec)
         else if (unitDone) stopRest()
         if (unitDone && isLastUnit) workoutDone = true      // last exercise's last set → done
         // Only loaded reps training has a "working weight" worth confirming — a bodyweight
@@ -280,18 +312,18 @@ function ActiveWorkout() {
 
   return <div className="narrow">
     <div className="hdr">
-      <button className="iconbtn" aria-label={t('Discard')} onClick={() => confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); nav('/home') } })}><Icon name="xmark" /></button>
+      <button className="iconbtn" aria-label={t('Discard')} onClick={() => confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); useUI.getState().stopWork(); nav('/home') } })}><Icon name="xmark" /></button>
       <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 600 }}>{A.name}</div><div className="sub"><Elapsed start={A.start} /> · {t('{0} sets', done + '/' + total)}</div></div>
       <button className="iconbtn" style={{ color: 'var(--acc)' }} aria-label={t('Finish')} onClick={() => finishWorkout()}><Icon name="check" /></button>
     </div>
     <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
 
     {A.entries.length ? <>
-      <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>
+      <div className="muted small" style={{ marginBottom: 6 }}>{isCircuit ? t('Circuit {0} / {1}', unitIdx + 1, units.length) : isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>
       {isSuperset ? (
         <div className="ss-card">
-          <div className="ss-hd"><Icon name="link" />{t('Superset · do these back-to-back, rest after both')}</div>
-          {unit.map((idx, k) => <div key={idx} className="ss-ex">
+          <div className="ss-hd"><Icon name="link" />{isCircuit ? t('Circuit · one set of each in order, rest after the round') : t('Superset · do these back-to-back, rest after both')}</div>
+          {unit.map((idx, k) => <div key={idx} id={'ex-' + idx} className="ss-ex">
             {k > 0 && <div className="ss-amp">+</div>}
             <ExerciseBlock entryIdx={idx} compact
               onToggle={i => toggle(idx, i)} onField={(i, f, v) => setField(idx, i, f, v)} onAddSet={() => addSet(idx)} onRemoveSet={() => removeSet(idx)} onStartTimed={i => startTimed(idx, i)} />

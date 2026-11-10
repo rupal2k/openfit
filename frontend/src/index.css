@@ -1060,6 +1060,9 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
 }
 
+/* plan catalogue: Gym / Home / Home gym */
+.plan-where{margin-bottom:14px}
+
 /* ---------- Labs (blood tests) ---------- */
 .lab-entry{display:flex;align-items:center;gap:12px;width:100%;text-align:left;color:var(--label)}
 .lab-entry>span:nth-child(2){flex:1}

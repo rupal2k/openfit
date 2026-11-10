@@ -12,7 +12,7 @@ const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '
 export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
-  const { addRest, stopRest, finishWorkEarly, stopWork } = useUI()
+  const { addRest, skipRest, finishWorkEarly, stopWork } = useUI()
   const on = work || timer
   // The bar is fixed above the tab bar and floats over whatever is beneath it — during a
   // rest that was the next set's row. Extra bottom padding lets the page scroll clear.
@@ -47,7 +47,7 @@ export default function RestTimer() {
       <div className="acts">
         <Button size="sm" icon="minus" onClick={() => addRest(-15)}>15s</Button>
         <Button size="sm" icon="plus" onClick={() => addRest(15)}>15s</Button>
-        <Button size="sm" variant="primary" className="skip" onClick={stopRest}>{t('Skip')}</Button>
+        <Button size="sm" variant="primary" className="skip" onClick={skipRest}>{t('Skip')}</Button>
       </div>
     </div>
   )
