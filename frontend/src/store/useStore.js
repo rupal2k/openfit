@@ -6,6 +6,8 @@ import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
 import { mergeState } from '../lib/sync.js'
 import { cleanReports } from '../lib/labs/reports.js'
+import { cleanRoutine, cleanWeek } from '../lib/clean.js'
+import { cleanRest } from '../lib/workout.js'
 
 const KEY = 'gym_state_v1'
 const BASE_KEY = 'gym_base'
@@ -33,6 +35,13 @@ export function normalizeState(raw) {
     days: s.nutrition?.days || {},
     foods: Array.isArray(s.nutrition?.foods) ? s.nutrition.foods : []
   }
+  // routines and the week reach every screen: a bad value from a backup or an old build must
+  // not crash one on open (no other fields are dropped)
+  s.routines = (Array.isArray(s.routines) ? s.routines : []).map(r => cleanRoutine(r, { unit: s.unit })).filter(Boolean)
+  const rids = new Set(s.routines.map(r => r.id))
+  s.week = cleanWeek(s.week, id => rids.has(id))
+  if (s.active && (typeof s.active !== 'object' || !Array.isArray(s.active.entries))) s.active = null
+  if (s.active) { s.active.rest = cleanRest(s.active.rest) || undefined; if (!s.active.rest) delete s.active.rest }
   s.labs = {
     reports: cleanReports(s.labs?.reports),
     units: s.labs?.units === 'us' || s.labs?.units === 'si' ? s.labs.units : null
@@ -57,6 +66,17 @@ function loadState() {
   return clone(DEF)
 }
 
+// localStorage refused the write (full): the change is still in memory and, in the app, in the
+// state file. Say so once a minute rather than on every keystroke.
+let storageWarned = 0
+function warnStorageFull() {
+  if (Date.now() - storageWarned < 60000) return
+  storageWarned = Date.now()
+  import('./useUI.js').then(({ useUI }) => useUI.getState().toast(MOBILE
+    ? 'Browser storage is full. Your data is kept in the app file; export a backup to be safe.'
+    : 'Storage is full: this change may not survive a reload. Export a backup now.', { duration: 6000 })).catch(() => {})
+}
+
 const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length
   || Object.keys(st.nutrition?.days || {}).length || (st.labs?.reports || []).length)
 
@@ -74,9 +94,11 @@ export const useStore = create((set, get) => {
   const persist = (S, push = true) => {
     S._ts = Date.now()
     registerCustom(S.customEx)
-    localStorage.setItem(KEY, JSON.stringify(S))
+    let stored = true
+    try { localStorage.setItem(KEY, JSON.stringify(S)) } catch { stored = false }
     set({ S })
     if (MOBILE) nativePersist()
+    if (!stored) warnStorageFull()
     if (push && get().user) {
       clearTimeout(pushTm)
       pushTm = setTimeout(() => get().pushState(), 1500)

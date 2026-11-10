@@ -9,10 +9,11 @@
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
 import { EXIDX, isBodyweightEq } from './exercises.js'
-import { modeOf, fmtSec, isBw, isPerSide, sideReps, cleanFormat, cleanCap } from './history.js'
+import { modeOf, fmtSec, isBw, isPerSide, sideReps } from './history.js'
 import { uid, todayISO, DAYN, fmtNum, exCount } from './format.js'
 import { t } from './i18n.js'
-import { cleanConfig, cleanRest } from './workout.js'
+
+import { cleanRoutine, cleanWeek, isKnownEx } from './clean.js'
 
 const PLAN_FMT = 1
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]   // Mon-first, matching the Plan screen
@@ -78,21 +79,23 @@ export function parsePlan(raw) {
   if (!data || !data.opengym_plan || !Array.isArray(data.routines)) {
     throw new Error(t('this isn’t an OPENFIT plan file'))
   }
-  const customEx = (Array.isArray(data.customEx) ? data.customEx : []).filter(c => c && c.id)
+  const customEx = (Array.isArray(data.customEx) ? data.customEx : [])
+    .filter(c => c && typeof c.id === 'string' && typeof c.n === 'string' && c.n.trim())
+    .map(c => ({ id: c.id, n: c.n.slice(0, 80), bp: typeof c.bp === 'string' ? c.bp.slice(0, 40) : '', ...(typeof c.desc === 'string' ? { desc: c.desc.slice(0, 500) } : {}) }))
   const known = new Set(customEx.map(c => c.id))
   let dropped = 0
-  const routines = data.routines.filter(r => r && Array.isArray(r.ex)).map(r => ({
+  const routines = data.routines.filter(r => r && typeof r === 'object' && Array.isArray(r.ex)).map(r => ({
     ...r,
     ex: r.ex.filter(e => {
-      const ok = !!e && (known.has(e.id) || !!EXIDX[e.id])
+      const ok = !!e && typeof e === 'object' && isKnownEx(e.id, known)
       if (!ok) dropped++
       return ok
     })
   }))
   return {
-    name: (data.name || '').trim(),
+    name: (typeof data.name === 'string' ? data.name : '').trim().slice(0, 80),
     routines,
-    week: data.week || {},
+    week: cleanWeek(data.week),
     customEx,
     dropped,
     routineCount: routines.length,
@@ -110,7 +113,7 @@ export function parsePlan(raw) {
  */
 export function mergePlan(s, bundle, { schedule } = {}) {
   s.customEx = s.customEx || []
-  const exIdMap = {}
+  const exIdMap = Object.create(null)
   bundle.customEx.forEach(c => {
     const same = s.customEx.find(x => (x.n || '').toLowerCase() === (c.n || '').toLowerCase() && x.bp === c.bp)
     if (same) { exIdMap[c.id] = same.id; return }
@@ -118,24 +121,16 @@ export function mergePlan(s, bundle, { schedule } = {}) {
     exIdMap[c.id] = nid
     s.customEx.push({ id: nid, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) })
   })
-  const ridMap = {}
+  const ridMap = Object.create(null)
   bundle.routines.forEach(r => {
-    const nid = uid()
-    ridMap[r.id] = nid
-    s.routines.push({
-      id: nid,
-      name: r.name || t('Shared routine'),
-      emoji: r.emoji,
-      ...(r.prog ? { prog: r.prog } : {}),
-      ...(cleanRest(r.rest) ? { rest: cleanRest(r.rest) } : {}),
-      ...(cleanFormat(r.format) ? { format: cleanFormat(r.format) } : {}),
-      ...(cleanFormat(r.format) === 'amrap' && cleanCap(r.cap) ? { cap: cleanCap(r.cap) } : {}),
-      ex: (r.ex || []).map(e => cleanConfig({ ...e, id: exIdMap[e.id] || e.id }, s.unit))
-    })
+    const c = cleanRoutine(r, { unit: s.unit, strict: true, keepId: false, mapId: id => (typeof id === 'string' && exIdMap[id]) || id })
+    if (!c) return
+    if (typeof r.id === 'string') ridMap[r.id] = c.id
+    s.routines.push({ ...c, name: c.name || t('Shared routine') })
   })
   if (schedule) {
     WEEK_ORDER.forEach(d => { delete s.week[d] })
-    Object.entries(bundle.week || {}).forEach(([d, oldId]) => {
+    Object.entries(cleanWeek(bundle.week)).forEach(([d, oldId]) => {
       if (ridMap[oldId]) s.week[d] = ridMap[oldId]
     })
   }

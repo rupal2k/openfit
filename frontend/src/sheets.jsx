@@ -21,7 +21,7 @@ import { parseAnyPlan, downloadSampleCSV, downloadSampleJSON } from './lib/plan-
 import { estimate1RM, best1RM, REP_CAP } from './lib/onerm.js'
 import { finishSession, recordSession, invalidDoneSets, doubtfulDoneSets, cleanConfig } from './lib/workout.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
-import { MOBILE, shareExport } from './lib/mobile.js'
+import { MOBILE, shareExport, tooBig } from './lib/mobile.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -371,6 +371,7 @@ function ImportSummary({ parsed, close }) {
 
 /** Read a CSV/XML export, then show what it would do. */
 export function importFromApp(file, onDone) {
+  if (tooBig(file)) { toast(t('This file is too large to import.')); return }
   const rd = new FileReader()
   rd.onload = () => {
     let parsed
@@ -807,6 +808,7 @@ function PlanTools({ close }) {
   }
   const pickFile = ev => {
     const f = ev.target.files[0]; ev.target.value = ''; if (!f) return
+    if (tooBig(f)) { toast(t('This file is too large to import.')); return }
     const rd = new FileReader()
     rd.onload = () => {
       try { const bundle = parsePlan(rd.result); close(); planImportSheet(bundle) }
@@ -884,6 +886,7 @@ function PlanUpload({ close }) {
       setErrorMsg(t('Excel .xlsx files must be saved as CSV (.csv). In Excel: click File → Save As → CSV (Comma delimited).'))
       return
     }
+    if (tooBig(file)) { setErrorMsg(t('This file is too large to import.')); return }
 
     const rd = new FileReader()
     rd.onload = () => {
