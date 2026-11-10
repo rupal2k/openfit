@@ -225,6 +225,22 @@ export const lastBW = S => (S.bodyweight.length ? S.bodyweight[S.bodyweight.leng
 
 // Group consecutive items sharing a superset id (sg) into "units" of indices.
 // items may be routine exercises ({sg}) or active-workout entries ({sg}).
+// How a routine runs. Standard: rest after each round of a superset/circuit. Tabata: a short
+// rest after every interval, and the timer runs the whole block. EMOM: each timed set is the
+// minute, so the next starts at once. AMRAP: one clock for the block, no rest, rounds counted.
+export const FORMATS = ['tabata', 'emom', 'amrap']
+export const cleanFormat = f => (FORMATS.includes(f) ? f : '')
+// AMRAP time cap, seconds (1–60 min); 0 when not set
+export const cleanCap = v => (Number.isFinite(+v) && +v > 0 ? Math.min(3600, Math.max(60, Math.round(+v))) : 0)
+// Does ticking this set start a rest?
+export function restAfter(format, isLastExInUnit, unitDone) {
+  if (unitDone || format === 'emom' || format === 'amrap') return false
+  return format === 'tabata' || isLastExInUnit
+}
+// Does a set finished on the timer start the next one? A lone hold doesn't (you may need to
+// switch sides), unless the routine is an interval format the timer is meant to run.
+export const chains = (format, unitLen) => format === 'tabata' || format === 'emom' || unitLen > 1
+
 // The set after (idx, i) in a unit when it is done round by round: set i of every exercise,
 // then set i+1 of the first. Done sets are skipped; null when the unit is finished.
 export function nextInRound(entries, unit, idx, i) {

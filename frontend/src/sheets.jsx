@@ -46,12 +46,12 @@ export function confirmSheet(opts) {
 }
 
 /* ============================ plan templates catalog ============================ */
-export const planCatalogSheet = () => ui().openSheet(close => <PlanCatalog close={close} />)
+export const planCatalogSheet = (start = 'gym') => ui().openSheet(close => <PlanCatalog close={close} start={start} />)
 
-function PlanCatalog({ close }) {
-  const [where, setWhere] = useState('gym')
+function PlanCatalog({ close, start }) {
+  const [where, setWhere] = useState(start)
   const shown = PLAN_TEMPLATES.filter(p => p.where === where)
-  const [selectedId, setSelectedId] = useState(PLAN_TEMPLATES[0].id)
+  const [selectedId, setSelectedId] = useState(shown[0].id)
   const [applySchedule, setApplySchedule] = useState(true)
   const [expandedRoutine, setExpandedRoutine] = useState(null)
   const currentRoutinesCount = (useStore(s => s.S.routines) || []).length
@@ -1116,7 +1116,7 @@ export function beginWorkout(routineId, bw) {
     return { id: cfg.id, sg: cfg.sg, target: { ...cfg }, plan, sets: applyPrescription(buildSets(st, cfg), plan) }
   })
   update(s => {
-    s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries, ...(r?.rest ? { rest: r.rest } : {}) }
+    s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries, ...(r?.rest ? { rest: r.rest } : {}), ...(r?.format ? { format: r.format } : {}), ...(r?.cap ? { cap: r.cap } : {}) }
   })
   useUI.getState().stopRest(); useUI.getState().stopWork()
   nav('/workout')

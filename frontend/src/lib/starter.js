@@ -6,9 +6,11 @@ import { uid } from './format.js'
 const T = { time: true }
 // [id, sets, reps, SIDE]: one leg or arm at a time; reps count both sides (24 = 12 each)
 const SIDE = { side: true }
-export const templateEx = ([id, sets, n, o]) => (o && o.time ? { id, sets, mode: 'time', sec: n, weight: 0 } : { id, sets, reps: n, weight: 0, ...(o && o.side ? { side: true } : {}) })
+// [id, sets, 60, M(10)]: an EMOM minute, 10 reps then rest until the next beep
+const M = reps => ({ time: true, reps })
+export const templateEx = ([id, sets, n, o]) => (o && o.time ? { id, sets, mode: 'time', sec: n, weight: 0, ...(o.reps ? { reps: o.reps } : {}) } : { id, sets, reps: n, weight: 0, ...(o && o.side ? { side: true } : {}) })
 // Where a plan is meant to be done: the catalogue filters on it.
-export const PLAN_WHERE = [['gym', 'Gym'], ['home', 'Home'], ['homegym', 'Home gym']]
+export const PLAN_WHERE = [['gym', 'Gym'], ['home', 'Home'], ['homegym', 'Home gym'], ['intervals', 'Intervals']]
 
 const SPEC = [
   ['Push Day', 'barbell', [['0025', 4, 8], ['0047', 3, 10], ['0426', 3, 10], ['0334', 3, 12], ['0241', 3, 12], ['0251', 3, 10]]],
@@ -239,8 +241,71 @@ export const PLAN_TEMPLATES = [
       { name: 'Kettlebell & Band', emoji: 'kettlebell', rest: 60,
         ex: [['0549', 4, 15], ['0534', 3, 12], ['0541', 3, 20, SIDE], ['0997', 3, 12], ['1022', 3, 15], ['1009', 3, 12], ['0550', 3, 10]] }
     ]
+  },
+  // ---- interval formats: the timer runs Tabata and EMOM; AMRAP has one clock for the block ----
+  {
+    id: 'tabata-express',
+    where: 'intervals',
+    name: 'Tabata Express',
+    badge: 'Tabata',
+    daysPerWeek: 0,
+    icon: 'bolt',
+    desc: 'Four 4-minute Tabata blocks with no equipment: 20 s all-out, 10 s rest, 8 intervals alternating two moves. Start the first interval and the timer runs the block. Take a minute between blocks. About 20 min. Doesn’t change your weekly schedule.',
+    routines: [
+      { name: 'Tabata Express', emoji: 'bolt', rest: 10, format: 'tabata', circuit: 2,
+        ex: [['0514', 4, 20, T], ['0662', 4, 20, T], ['0630', 4, 20, T], ['3582', 4, 20, T],
+          ['3223', 4, 20, T], ['3665', 4, 20, T], ['3361', 4, 20, T], ['0687', 4, 20, T]] }
+    ]
+  },
+  {
+    id: 'emom-20',
+    where: 'intervals',
+    name: 'EMOM 20',
+    badge: 'EMOM',
+    daysPerWeek: 0,
+    icon: 'timer',
+    desc: 'Every minute on the minute for 20 minutes, no equipment: push-ups, squats, reverse crunches and burpees in turn, 5 rounds. Do the reps when the minute starts and rest until the beep. Too easy? Add reps. Doesn’t change your weekly schedule.',
+    routines: [
+      { name: 'EMOM 20', emoji: 'timer', format: 'emom', circuit: true,
+        ex: [['0662', 5, 60, M(10)], ['1685', 5, 60, M(15)], ['0872', 5, 60, M(12)], ['1160', 5, 60, M(8)]] }
+    ]
+  },
+  {
+    id: 'amrap-15',
+    where: 'intervals',
+    name: 'AMRAP 15',
+    badge: 'AMRAP',
+    daysPerWeek: 0,
+    icon: 'flame',
+    desc: 'As many rounds as you can in 15 minutes, no equipment: 10 push-ups, 15 squats, 20 walking lunges and 15 reverse crunches. Start the clock, tick each set as you finish it, and beat your round count next time. Doesn’t change your weekly schedule.',
+    routines: [
+      { name: 'AMRAP 15', emoji: 'flame', format: 'amrap', cap: 900, circuit: true,
+        ex: [['0662', 10, 10], ['1685', 10, 15], ['1460', 10, 20, SIDE], ['0872', 10, 15]] }
+    ]
+  },
+  {
+    id: 'kb-emom-16',
+    where: 'intervals',
+    name: 'Kettlebell EMOM 16',
+    badge: 'EMOM',
+    daysPerWeek: 0,
+    icon: 'kettlebell',
+    desc: 'One kettlebell, 16 minutes: 15 swings on odd minutes, 10 goblet squats on even minutes. Rest whatever is left of each minute. Doesn’t change your weekly schedule.',
+    routines: [
+      { name: 'Kettlebell EMOM 16', emoji: 'kettlebell', format: 'emom', circuit: true,
+        ex: [['0549', 8, 60, M(15)], ['0534', 8, 60, M(10)]] }
+    ]
   }
 ]
+
+function groupEx(r) {
+  const n = r.circuit === true ? r.ex.length : r.circuit > 1 ? r.circuit : 1
+  let sg = null
+  return r.ex.map((x, i) => {
+    if (i % n === 0) sg = n > 1 ? 'sg' + uid() : null
+    return { ...templateEx(x), ...(sg ? { sg } : {}) }
+  })
+}
 
 export function instantiatePlan(template) {
   const createdRoutines = template.routines.map(r => ({
@@ -248,8 +313,10 @@ export function instantiatePlan(template) {
     name: r.name,
     emoji: r.emoji,
     ...(r.rest ? { rest: r.rest } : {}),
-    // a circuit is one superset over the whole routine: rest comes after the round
-    ex: (sg => r.ex.map(x => ({ ...templateEx(x), ...(sg ? { sg } : {}) })))(r.circuit ? 'sg' + uid() : null)
+    ...(r.format ? { format: r.format } : {}),
+    ...(r.cap ? { cap: r.cap } : {}),
+    // circuit: true links the whole routine into one block; a number links that many at a time
+    ex: groupEx(r)
   }))
 
   const weekAssignments = {}

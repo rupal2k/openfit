@@ -1062,6 +1062,10 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 
 /* plan catalogue: Gym / Home / Home gym */
 .plan-where{margin-bottom:14px}
+.plan-where button{white-space:nowrap;font-size:14px;padding-left:2px;padding-right:2px}
+.lib-plans{margin:0 0 12px;display:grid;gap:6px}
+.lib-plans-row{display:flex;flex-wrap:wrap;gap:8px}
+.lib-plans-row .chip{display:inline-flex;align-items:center;gap:6px;min-height:40px}
 
 /* ---------- Labs (blood tests) ---------- */
 .lab-entry{display:flex;align-items:center;gap:12px;width:100%;text-align:left;color:var(--label)}

@@ -9,7 +9,7 @@
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
 import { EXIDX, isBodyweightEq } from './exercises.js'
-import { modeOf, fmtSec, isBw, isPerSide, sideReps } from './history.js'
+import { modeOf, fmtSec, isBw, isPerSide, sideReps, cleanFormat, cleanCap } from './history.js'
 import { uid, todayISO, DAYN, fmtNum, exCount } from './format.js'
 import { t } from './i18n.js'
 import { cleanConfig, cleanRest } from './workout.js'
@@ -29,6 +29,7 @@ function cleanEx(e) {
     // dropped the mode would turn a 45-second plank into a 45-rep one at the other end.
     o.mode = 'time'
     if (e.sec != null) o.sec = e.sec
+    if (e.reps != null) o.reps = e.reps   // an EMOM minute's rep target
     if (e.weight) o.weight = e.weight
   } else {
     if (e.reps != null) o.reps = e.reps
@@ -52,7 +53,7 @@ function cleanEx(e) {
 /** Build the shareable bundle: every routine, the week schedule, referenced customs. */
 export function buildPlanBundle(S, name) {
   const routines = (S.routines || []).map(r => ({
-    id: r.id, name: r.name, emoji: r.emoji, ...(r.prog ? { prog: r.prog } : {}), ...(r.rest ? { rest: r.rest } : {}), ex: (r.ex || []).map(cleanEx)
+    id: r.id, name: r.name, emoji: r.emoji, ...(r.prog ? { prog: r.prog } : {}), ...(r.rest ? { rest: r.rest } : {}), ...(r.format ? { format: r.format } : {}), ...(r.cap ? { cap: r.cap } : {}), ex: (r.ex || []).map(cleanEx)
   }))
   const usedIds = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
   const customEx = (S.customEx || [])
@@ -127,6 +128,8 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       emoji: r.emoji,
       ...(r.prog ? { prog: r.prog } : {}),
       ...(cleanRest(r.rest) ? { rest: cleanRest(r.rest) } : {}),
+      ...(cleanFormat(r.format) ? { format: cleanFormat(r.format) } : {}),
+      ...(cleanFormat(r.format) === 'amrap' && cleanCap(r.cap) ? { cap: cleanCap(r.cap) } : {}),
       ex: (r.ex || []).map(e => cleanConfig({ ...e, id: exIdMap[e.id] || e.id }, s.unit))
     })
   })

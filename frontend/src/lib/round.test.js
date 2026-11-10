@@ -26,3 +26,19 @@ describe('nextInRound: a circuit goes set 1 of each, then set 2 of each', () => 
     expect(nextInRound(en, [1], 1, 0)).toBe(null)
   })
 })
+
+import { restAfter, chains, cleanCap, cleanFormat } from './history.js'
+describe('format rules', () => {
+  it('rest: standard after the round, Tabata after every interval, EMOM and AMRAP never', () => {
+    expect([restAfter('', false, false), restAfter('', true, false), restAfter('', true, true)]).toEqual([false, true, false])
+    expect([restAfter('tabata', false, false), restAfter('tabata', true, true)]).toEqual([true, false])
+    expect([restAfter('emom', true, false), restAfter('amrap', true, false)]).toEqual([false, false])
+  })
+  it('chaining: circuits, and Tabata/EMOM even for one exercise; never a lone standard hold', () => {
+    expect([chains('', 1), chains('', 2), chains('tabata', 1), chains('emom', 1)]).toEqual([false, true, true, true])
+  })
+  it('cleans format and cap', () => {
+    expect([cleanFormat('emom'), cleanFormat('x'), cleanFormat(undefined)]).toEqual(['emom', '', ''])
+    expect([cleanCap(900), cleanCap(5), cleanCap(1e9), cleanCap('x')]).toEqual([900, 60, 3600, 0])
+  })
+})

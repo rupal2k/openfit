@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
-import { effectiveRoutine, lastEntryFor, bestWeightFor, buildSets, setsDoneActive, supersetUnits, nextInRound, unitOf, setLabel, modeOf, isBw, isPerSide, sideReps, repStep, EFFORT, effortOf, stepEffort, capEffort } from '../lib/history.js'
+import { effectiveRoutine, lastEntryFor, bestWeightFor, buildSets, setsDoneActive, supersetUnits, nextInRound, restAfter, chains, unitOf, fmtSec, setLabel, modeOf, isBw, isPerSide, sideReps, repStep, EFFORT, effortOf, stepEffort, capEffort } from '../lib/history.js'
 import { fmtNum, fmtDate, todayISO, exCount, DAYN } from '../lib/format.js'
 import { beep, vibrate } from '../lib/sound.js'
 import { t } from '../lib/i18n.js'
@@ -119,6 +119,7 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemov
       {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
       {/* You log the total; this is the split, so the set in front of you is unambiguous
           without the rep count having to mean two different things (issue #31). */}
+      {timed && S.active.format === 'emom' && cfg.reps > 0 && <span className="tag acc nocap"><Icon name="timer" />{t('{0} reps this minute', cfg.reps)}</span>}
       {!cardio && !timed && isPerSide(cfg) && <span className="tag acc nocap"><Icon name="shuffle" />{t('{0} per side', fmtNum(sideReps(entry.sets.find(s => !s.done)?.r ?? entry.sets[0]?.r)))}</span>}
       {(ex.tg || ex.bp) && <span className="tag">{t(ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
@@ -158,6 +159,7 @@ function ActiveWorkout() {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const { startRest, stopRest } = useUI()
+  const working = useUI(s => s.work)
   const A = S.active
   const units = supersetUnits(A.entries)
   const cur = Math.min(A.cur, Math.max(0, A.entries.length - 1))
@@ -165,6 +167,26 @@ function ActiveWorkout() {
   const unitIdx = units.findIndex(u => u === unit)
   const isSuperset = unit.length > 1
   const isCircuit = unit.length > 2
+  const fmt = A.format
+  const head = fmt === 'tabata' ? t('Tabata · {0} s on, {1} s off. Start the first one, the timer runs the rest', A.entries[unit[0]]?.sets[0]?.sec || 20, A.rest || S.restSec)
+    : fmt === 'emom' ? t('EMOM · each minute starts on the beep: do the reps, rest until the next')
+    : fmt === 'amrap' ? t('AMRAP · as many rounds as you can in {0}. Tick each set as you finish it', fmtSec(A.cap || 600))
+    : isCircuit ? t('Circuit · one set of each in order, rest after the round') : t('Superset · do these back-to-back, rest after both')
+
+  // AMRAP: one clock for the block. When it runs out, the rounds you didn't reach are dropped
+  // so the log holds what you did, and the round count is what you get told.
+  const startAmrap = () => {
+    const A0 = useStore.getState().S.active, u = unit
+    useUI.getState().startWork(A0.cap || 600, t('AMRAP'), () => {
+      const A1 = useStore.getState().S.active
+      if (!A1 || A1.id !== A0.id) return
+      const rounds = Math.min(...u.map(ix => A1.entries[ix].sets.filter(s => s.done).length))
+      update(s => { u.forEach(ix => { const e = s.active.entries[ix]; const kept = e.sets.filter(x => x.done); e.sets = kept.length ? kept : e.sets.slice(0, 1) }) }, true)
+      useUI.getState().toast(t(rounds === 1 ? 'Time! 1 round' : 'Time! {0} rounds', rounds))
+      const A2 = useStore.getState().S.active
+      if (A2.entries.every(e => e.sets.every(x => x.done))) workoutCompleteSheet()
+    })
+  }
 
   const total = A.entries.reduce((n, e) => n + e.sets.length, 0)
   const done = setsDoneActive(A)
@@ -224,7 +246,7 @@ function ActiveWorkout() {
       const A2 = same()
       if (!A2 || !A2.entries[idx].sets[i].done) return       // not logged (a check stopped it)
       // chains only inside a superset or circuit, and never into a hold you weren't watching
-      if (u.length < 2 || late) return
+      if (!chains(A2.format, u.length) || late) return
       const nx = nextInRound(A2.entries, u, idx, i)
       if (!nx || modeAt(nx.idx) !== 'time') return
       const go = () => {
@@ -265,8 +287,8 @@ function ActiveWorkout() {
         beep(S.sound, 1040, 0.12); vibrate(30)
         const isLastExInUnit = idx === unit[unit.length - 1]
         const unitDone = unit.every(ui => (ui === idx ? e : A.entries[ui]).sets.every(x => x.done))
-        if (isLastExInUnit && !unitDone) startRest(A.rest || S.restSec)
-        else if (unitDone) stopRest()
+        if (restAfter(A.format, isLastExInUnit, unitDone)) startRest(A.rest || S.restSec)
+        else if (unitDone) { stopRest(); if (A.format === 'amrap') useUI.getState().stopWork() }
         if (unitDone && isLastUnit) workoutDone = true      // last exercise's last set → done
         // Only loaded reps training has a "working weight" worth confirming — a bodyweight
         // plank has nothing to put in that slider, and neither does a set of push-ups
@@ -319,10 +341,11 @@ function ActiveWorkout() {
     <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
 
     {A.entries.length ? <>
-      <div className="muted small" style={{ marginBottom: 6 }}>{isCircuit ? t('Circuit {0} / {1}', unitIdx + 1, units.length) : isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>
+      <div className="muted small" style={{ marginBottom: 6 }}>{fmt ? t('Block {0} / {1}', unitIdx + 1, units.length) : isCircuit ? t('Circuit {0} / {1}', unitIdx + 1, units.length) : isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>
       {isSuperset ? (
         <div className="ss-card">
-          <div className="ss-hd"><Icon name="link" />{isCircuit ? t('Circuit · one set of each in order, rest after the round') : t('Superset · do these back-to-back, rest after both')}</div>
+          <div className="ss-hd"><Icon name={fmt ? 'timer' : 'link'} />{head}</div>
+          {fmt === 'amrap' && !working && <Button variant="primary" icon="play" onClick={startAmrap}>{t('Start the {0} clock', fmtSec(A.cap || 600))}</Button>}
           {unit.map((idx, k) => <div key={idx} id={'ex-' + idx} className="ss-ex">
             {k > 0 && <div className="ss-amp">+</div>}
             <ExerciseBlock entryIdx={idx} compact
