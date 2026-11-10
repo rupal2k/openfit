@@ -4,7 +4,9 @@ import { uid } from './format.js'
 
 // A template exercise is [id, sets, reps] or, for a timed hold, [id, sets, seconds, T].
 const T = { time: true }
-export const templateEx = ([id, sets, n, o]) => (o && o.time ? { id, sets, mode: 'time', sec: n, weight: 0 } : { id, sets, reps: n, weight: 0 })
+// [id, sets, reps, SIDE]: one leg or arm at a time; reps count both sides (24 = 12 each)
+const SIDE = { side: true }
+export const templateEx = ([id, sets, n, o]) => (o && o.time ? { id, sets, mode: 'time', sec: n, weight: 0 } : { id, sets, reps: n, weight: 0, ...(o && o.side ? { side: true } : {}) })
 // Where a plan is meant to be done: the catalogue filters on it.
 export const PLAN_WHERE = [['gym', 'Gym'], ['home', 'Home'], ['homegym', 'Home gym']]
 
@@ -171,11 +173,11 @@ export const PLAN_TEMPLATES = [
     scheduleMap: { 1: 0, 3: 1, 5: 2 },
     routines: [
       { name: 'Bodyweight A', emoji: 'figureStrength', rest: 60,
-        ex: [['1685', 3, 15], ['0662', 3, 10], ['1460', 3, 12], ['3013', 3, 15], ['3167', 3, 12], ['3665', 3, 30, T]] },
+        ex: [['1685', 3, 15], ['0662', 3, 10], ['1460', 3, 24, SIDE], ['3013', 3, 15], ['3167', 3, 12], ['3665', 3, 30, T]] },
       { name: 'Bodyweight B', emoji: 'legs', rest: 60,
-        ex: [['2368', 3, 10], ['0493', 3, 12], ['0129', 3, 12], ['3561', 3, 12], ['0276', 3, 12], ['0705', 2, 30, T]] },
+        ex: [['2368', 3, 20, SIDE], ['0493', 3, 12], ['0129', 3, 12], ['3561', 3, 12], ['0276', 3, 12], ['0705', 2, 30, T]] },
       { name: 'Bodyweight C', emoji: 'abs', rest: 60,
-        ex: [['3769', 3, 12], ['0283', 3, 8], ['1373', 3, 20], ['3167', 3, 12], ['0872', 3, 15], ['0630', 3, 40, T]] }
+        ex: [['3769', 3, 24, SIDE], ['0283', 3, 8], ['1373', 3, 20], ['3167', 3, 12], ['0872', 3, 15], ['0630', 3, 40, T]] }
     ]
   },
   {
@@ -221,7 +223,7 @@ export const PLAN_TEMPLATES = [
       { name: 'Dumbbell A', emoji: 'dumbbell', rest: 90,
         ex: [['1760', 4, 10], ['0289', 4, 8], ['0293', 4, 10], ['0405', 3, 10], ['1459', 3, 10], ['0294', 3, 12]] },
       { name: 'Dumbbell B', emoji: 'figureStrength', rest: 90,
-        ex: [['0381', 3, 10], ['0314', 3, 10], ['1330', 3, 10], ['0334', 3, 12], ['0431', 3, 10], ['0333', 3, 12], ['3665', 3, 40, T]] }
+        ex: [['0381', 3, 20, SIDE], ['0314', 3, 10], ['1330', 3, 20, SIDE], ['0334', 3, 12], ['0431', 3, 20, SIDE], ['0333', 3, 12], ['3665', 3, 40, T]] }
     ]
   },
   {
@@ -235,7 +237,7 @@ export const PLAN_TEMPLATES = [
     scheduleMap: { 1: 0, 3: 0, 5: 0 },
     routines: [
       { name: 'Kettlebell & Band', emoji: 'kettlebell', rest: 60,
-        ex: [['0549', 4, 15], ['0534', 3, 12], ['0541', 3, 10], ['0997', 3, 12], ['1022', 3, 15], ['1009', 3, 12], ['0550', 3, 10]] }
+        ex: [['0549', 4, 15], ['0534', 3, 12], ['0541', 3, 20, SIDE], ['0997', 3, 12], ['1022', 3, 15], ['1009', 3, 12], ['0550', 3, 10]] }
     ]
   }
 ]

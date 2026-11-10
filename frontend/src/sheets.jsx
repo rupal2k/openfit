@@ -80,7 +80,7 @@ function PlanCatalog({ close }) {
       {t('Choose a curated workout split to load into your plan.')}
     </div>
 
-    <Segmented className="lab-units" value={where} onChange={w => { setWhere(w); setSelectedId(PLAN_TEMPLATES.find(p => p.where === w).id); setExpandedRoutine(null) }}
+    <Segmented className="plan-where" value={where} onChange={w => { setWhere(w); setSelectedId(PLAN_TEMPLATES.find(p => p.where === w).id); setExpandedRoutine(null) }}
       options={PLAN_WHERE.map(([value, label]) => ({ value, label: t(label) }))} />
     <div className="list" style={{ marginBottom: 14, gap: 10 }}>
       {shown.map(p => {
@@ -105,11 +105,11 @@ function PlanCatalog({ close }) {
                 <span className="lrow-i"><Icon name={p.icon || 'barbell'} /></span>
                 <div>
                   <div className="tt" style={{ fontWeight: 600 }}>{p.name}</div>
-                  <div className="ss">{p.routines.length} {t('routines')} · {p.routines.reduce((acc, r) => acc + r.ex.length, 0)} {t('exercises')}</div>
+                  <div className="ss">{p.routines.length} {t(p.routines.length === 1 ? 'routine' : 'routines')} · {p.routines.reduce((acc, r) => acc + r.ex.length, 0)} {t('exercises')}</div>
                 </div>
               </div>
               <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-                <span className={'tag' + (isSel ? ' acc' : '')}>{p.badge}</span>
+                <span className={'tag nocap' + (isSel ? ' acc' : '')}>{p.badge}</span>
                 {isSel && <Icon name="check" className="accent" />}
               </div>
             </div>
@@ -145,12 +145,12 @@ function PlanCatalog({ close }) {
               {isExp && (
                 <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid var(--sep)', display: 'flex', flexDirection: 'column', gap: 5 }}>
                   {r.ex.map((x, eIdx) => {
-                    const { id: exId, sets, reps, sec } = templateEx(x)
+                    const { id: exId, sets, reps, sec, side } = templateEx(x)
                     const exObj = EXIDX[exId]
                     return (
                       <div key={eIdx} className="row between small" style={{ color: 'var(--label-2)' }}>
                         <span>• {exObj ? exObj.n : exId}</span>
-                        <span className="dim">{sets} × {sec ? sec + ' s' : reps}</span>
+                        <span className="dim">{sets} × {sec ? sec + ' s' : side ? t('{0} per side', reps / 2) : reps}</span>
                       </div>
                     )
                   })}
@@ -1118,7 +1118,7 @@ export function beginWorkout(routineId, bw) {
   update(s => {
     s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries, ...(r?.rest ? { rest: r.rest } : {}) }
   })
-  useUI.getState().stopRest()
+  useUI.getState().stopRest(); useUI.getState().stopWork()
   nav('/workout')
 }
 function TopWeight({ entryIdx, close }) {
@@ -1253,7 +1253,7 @@ function doFinishWorkout() {
   if (!A) return
   const { w, prs, e1prs } = finishSession(st, A)
   update(s => recordSession(s, w))
-  useUI.getState().stopRest()
+  useUI.getState().stopRest(); useUI.getState().stopWork()
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
   ui().openSheet(close => <FinishSummary w={w} prs={prs} e1prs={e1prs} close={close} />, { kind: 'center', locked: true })
 }

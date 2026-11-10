@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { exOr } from '../lib/exercises.js'
 import { uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
-import { supersetUnits, cleanupSg, exLine } from '../lib/history.js'
+import { supersetUnits, cleanupSg, exLine, modeOf } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
 import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -47,18 +47,19 @@ export default function RoutineEdit() {
       <button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>
     </div>
 
-    <div className="sect-b" style={{ marginBottom: 16 }}>
+    {/* the routine-wide rule only reaches rep sets; a routine of holds and cardio has none */}
+    {(!r.ex.length || r.ex.some(e => modeOf(e) === 'reps')) && <><div className="sect-b" style={{ marginBottom: 16 }}>
       <SelectRow icon="chartLine" title={t('Progression')} sheetTitle={t('Progression')}
         value={r.prog || 'linear'} onChange={v => update(s => { s.routines.find(x => x.id === id).prog = v })}
         options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
     </div>
     <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
       {t('Applies to every exercise in this routine that does not set its own rule.')}
-    </div>
+    </div></>}
     <div className="sect-b" style={{ marginBottom: 16 }}>
       <SelectRow icon="timer" iconTint="var(--orange)" title={t('Rest timer')} sheetTitle={t('Rest timer')}
         value={r.rest || 0} onChange={v => update(s => { const x = s.routines.find(y => y.id === id); if (v) x.rest = v; else delete x.rest })}
-        options={[{ value: 0, label: t('Default ({0})', S.restSec + 's') }, ...[10, 15, 20, 30, 45, 60, 90, 120, 180].map(v => ({ value: v, label: v + 's' }))]} />
+        options={[{ value: 0, label: t('Default ({0})', S.restSec + 's') }, ...[...new Set([10, 15, 20, 30, 45, 60, 90, 120, 180, r.rest || 10])].sort((a, b) => a - b).map(v => ({ value: v, label: v + 's' }))]} />
     </div>
 
     {r.ex.length ? <div className="list">{r.ex.map((e, i) => {
@@ -67,7 +68,7 @@ export default function RoutineEdit() {
       const ex = exOr(e.id)
       const linkedPrev = i > 0 && e.sg && r.ex[i - 1].sg === e.sg
       return <div key={i}>
-        {unitFirst.has(i) && <div className="ss-label"><Icon name="link" />{t('Superset')}</div>}
+        {unitFirst.has(i) && <div className="ss-label"><Icon name="link" />{t(units.find(u => u[0] === i).length > 2 ? 'Circuit' : 'Superset')}</div>}
         <div className={'item' + (inSS.has(i) ? ' in-ss' : '')} onClick={() => {
           exConfigSheet(ex, e, cfg => edit(x => { x[i] = { id: x[i].id, sg: x[i].sg, ...cfg } }), () => edit(x => { x.splice(i, 1); cleanupSg(x) }), r)
         }}>

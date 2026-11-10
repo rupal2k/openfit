@@ -51,3 +51,10 @@ describe('routine rest', () => {
     expect(s.routines[0].rest).toBe(600)
   })
 })
+
+describe('one-side moves', () => {
+  it('load as per-side rep work, reps counting both sides', () => {
+    const b = instantiatePlan(PLAN_TEMPLATES.find(p => p.id === 'home-bw-3')).routines[0]
+    expect(b.ex.find(e => e.id === '1460')).toMatchObject({ reps: 24, side: true })
+  })
+})

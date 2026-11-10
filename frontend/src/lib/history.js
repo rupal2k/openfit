@@ -225,6 +225,20 @@ export const lastBW = S => (S.bodyweight.length ? S.bodyweight[S.bodyweight.leng
 
 // Group consecutive items sharing a superset id (sg) into "units" of indices.
 // items may be routine exercises ({sg}) or active-workout entries ({sg}).
+// The set after (idx, i) in a unit when it is done round by round: set i of every exercise,
+// then set i+1 of the first. Done sets are skipped; null when the unit is finished.
+export function nextInRound(entries, unit, idx, i) {
+  const rounds = Math.max(...unit.map(u => entries[u].sets.length))
+  let k = unit.indexOf(idx), r = i
+  for (let n = 0; n < unit.length * rounds; n++) {
+    k++
+    if (k >= unit.length) { k = 0; r++ }
+    if (r >= rounds) return null
+    const s = entries[unit[k]].sets[r]
+    if (s && !s.done) return { idx: unit[k], i: r }
+  }
+  return null
+}
 export function supersetUnits(items) {
   const units = []
   items.forEach((e, i) => {
