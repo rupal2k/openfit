@@ -135,9 +135,10 @@ export default function Home() {
         <div>
           <div className="row" style={{ gap: 7, fontSize: 22, fontWeight: 600, letterSpacing: '-.021em' }}>
             <Icon name="flame" style={{ color: 'var(--orange)' }} />
-            {t('{0} week streak', streakWeeks(S))}
+            {S.workouts.length ? t('{0} week streak', streakWeeks(S)) : t('Your streak starts here')}
           </div>
-          <div className="muted small" style={{ marginTop: 2 }}>{wThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}</div>
+          {!S.workouts.length ? <div className="muted small" style={{ marginTop: 2 }}>{t('Finish one workout this week to start it. Any workout counts.')}</div> :
+          <div className="muted small" style={{ marginTop: 2 }}>{wThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}</div>}
         </div>
         <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
       </div>

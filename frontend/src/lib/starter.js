@@ -46,7 +46,7 @@ export const PLAN_TEMPLATES = [
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'barbell',
-    desc: 'Classic 3-day split: Push (chest, shoulders, triceps), Pull (back, biceps), and Legs. Great for muscle building and recovery.',
+    desc: 'Three workouts a week, each for different muscles: Push (chest, shoulders, back of the arms), Pull (back, front of the arms) and Legs. Good for building muscle once the basics feel easy.',
     scheduleDays: [1, 3, 5],
     routines: [
       {
@@ -73,7 +73,7 @@ export const PLAN_TEMPLATES = [
     badge: '4 days/wk',
     daysPerWeek: 4,
     icon: 'figureStrength',
-    desc: 'Balanced 4-day split training every muscle group twice a week. Mon Upper A, Tue Lower A, Thu Upper B, Fri Lower B.',
+    desc: 'Four workouts a week, upper body and lower body on alternate days, so every muscle gets trained twice. Mon Upper A, Tue Lower A, Thu Upper B, Fri Lower B.',
     scheduleDays: [1, 2, 4, 5],
     routines: [
       {
@@ -105,7 +105,7 @@ export const PLAN_TEMPLATES = [
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'dumbbell',
-    desc: 'High-frequency whole body training across Mon, Wed, and Fri. Ideal for building solid foundations and busy lifestyles.',
+    desc: 'The whole body in every workout, Mon, Wed and Fri, with barbell lifts. A good next step after the beginner plan, and easy to fit into a busy week.',
     scheduleDays: [1, 3, 5],
     routines: [
       {
@@ -132,7 +132,7 @@ export const PLAN_TEMPLATES = [
     badge: '6 days/wk',
     daysPerWeek: 6,
     icon: 'barbell',
-    desc: 'High-frequency 6-day split repeating Push, Pull, and Legs twice a week. Mon–Sat with Sunday rest.',
+    desc: 'For experienced lifters: Push, Pull and Legs twice a week, Mon to Sat, Sunday off.',
     scheduleMap: { 1: 0, 2: 1, 3: 2, 4: 0, 5: 1, 6: 2 },
     routines: [
       {
@@ -159,7 +159,7 @@ export const PLAN_TEMPLATES = [
     badge: '6 days/wk',
     daysPerWeek: 6,
     icon: 'bolt',
-    desc: 'Classic 6-day split pairing antagonist muscle groups: Chest & Back, Shoulders & Arms, Legs — performed twice a week.',
+    desc: 'For experienced lifters: chest & back, shoulders & arms, and legs, each twice a week over six days.',
     scheduleMap: { 1: 0, 2: 1, 3: 2, 4: 0, 5: 1, 6: 2 },
     routines: [
       {
@@ -187,7 +187,7 @@ export const PLAN_TEMPLATES = [
     badge: 'Beginner',
     daysPerWeek: 3,
     icon: 'figureStrength',
-    desc: 'Calisthenics strength with no equipment: squats, push-ups, lunges, towel rows and core. A chair and a towel are all you need. Make it harder by adding reps or slowing the lowering phase.',
+    desc: 'Strength with your own body weight, no equipment: squats, push-ups, lunges, towel rows and core. A chair and a towel are all you need. Make it harder by adding reps or slowing the lowering phase.',
     scheduleMap: { 1: 0, 3: 1, 5: 2 },
     routines: [
       { name: 'Bodyweight A', emoji: 'figureStrength', rest: 60,
@@ -205,7 +205,7 @@ export const PLAN_TEMPLATES = [
     badge: '~25 min',
     daysPerWeek: 3,
     icon: 'flame',
-    desc: 'Metabolic circuits with no equipment. Do every move for 40 s back to back, rest 60 s after the round, 4 rounds. Builds stamina and burns a lot in little time.',
+    desc: 'Fast circuits with no equipment. Do every move for 40 s back to back, rest 60 s after the round, 4 rounds. Builds stamina and burns a lot in little time.',
     scheduleMap: { 2: 0, 4: 1, 6: 0 },
     routines: [
       { name: 'HIIT Circuit A', emoji: 'flame', rest: 60, circuit: true,
@@ -235,7 +235,7 @@ export const PLAN_TEMPLATES = [
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'dumbbell',
-    desc: 'Muscle building with a pair of dumbbells and a flat or incline bench. 3–4 sets of 8–12 reps. Alternates A and B through the week.',
+    desc: 'Build muscle with a pair of dumbbells and a bench. 3–4 sets of 8–12 reps. Alternates A and B through the week.',
     scheduleMap: { 1: 0, 3: 1, 5: 0 },
     routines: [
       { name: 'Dumbbell A', emoji: 'dumbbell', rest: 90,
@@ -251,7 +251,7 @@ export const PLAN_TEMPLATES = [
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'kettlebell',
-    desc: 'Functional strength and conditioning with one kettlebell and a resistance band: swings, goblet squats, thrusters, presses and rows. Shorter rests keep the heart rate up.',
+    desc: 'Everyday strength and fitness with one kettlebell and a resistance band: swings, goblet squats, thrusters, presses and rows. Shorter rests keep the heart rate up.',
     scheduleMap: { 1: 0, 3: 0, 5: 0 },
     routines: [
       { name: 'Kettlebell & Band', emoji: 'kettlebell', rest: 60,

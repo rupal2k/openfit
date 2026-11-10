@@ -267,8 +267,9 @@ function BwSheet({ required, onDone, close }) {
     <div className="muted small">{required ? t('Slide or tap to set your weight — tracked before every workout so your curve stays honest.') : t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
     <WeightInput value={v} setValue={setV} unit={unit} />
     <div style={{ height: 14 }} />
-    {!touched && <div className="small dim" style={{ marginBottom: 8 }}>{t('Set your weight first. Or skip it, you can log it any time on Home.')}</div>}
-    <Button variant="primary" onClick={save} disabled={!touched}>{required ? t('Save & start workout') : t('Save')}</Button>
+    {/* first weigh-in: the slider starts at 70, so the button names the number it will save */}
+    <Button variant="primary" onClick={save}>{!touched ? t('Save {0} {1}', fmtNum(v), unit) + (required ? ' · ' + t('start') : '') : required ? t('Save & start workout') : t('Save')}</Button>
+    {!touched && <div className="small dim" style={{ marginTop: 6 }}>{t('Not your weight? Set it above, or skip it below.')}</div>}
     {required && <>
       <div style={{ height: 8 }} /><Button variant="ghost" className="dim" onClick={() => { close(); onDone && onDone(null) }}>{t('Start without weighing in')}</Button>
       <div style={{ height: 2 }} /><Button variant="ghost" className="dim" icon="reset" onClick={() => { close(); nav('/workout') }}>{t('Choose a different workout')}</Button>
@@ -932,7 +933,7 @@ function PlanUpload({ close }) {
       }}
       onClick={() => fileRef.current?.click()}
     >
-      <div className="ico" style={{ fontSize: 32, marginBottom: 8, color: 'var(--acc)' }}><Icon name="upload" /></div>
+      <div className="ico" style={{ fontSize: 32, marginBottom: 8, color: 'var(--acc-ink)' }}><Icon name="upload" /></div>
       <div className="tt" style={{ fontSize: 16, fontWeight: 600 }}>{t('Choose or drop plan file')}</div>
       <div className="dim small" style={{ marginTop: 4 }}>{t('Accepts .csv, .json')}</div>
     </div>
@@ -1173,7 +1174,7 @@ function TopWeight({ entryIdx, close }) {
     } else toast(t('Tracked — next time starts at {0}', fmtNum(Math.max(n, (st.exWeights[entry.id] || {}).w || 0)) + ' ' + st.unit))
   }
   return <>
-    <h3 className="capitalize row" style={{ gap: 8 }}><Icon name="checkCircle" style={{ color: 'var(--acc)' }} />{t('{0} done', ex.n)}</h3>
+    <h3 className="capitalize row" style={{ gap: 8 }}><Icon name="checkCircle" style={{ color: 'var(--acc-ink)' }} />{t('{0} done', ex.n)}</h3>
     <div className="muted small">{t('Confirm the weight you worked with — your highest becomes the default next time.')}{!unitDone && unit.length > 1 ? ' ' + t('Then finish the superset partner.') : ''}</div>
     <WeightInput value={v} setValue={setV} unit={st.unit} hi={st.unit === 'lb' ? Math.max(1100, Math.ceil(maxSet || 0)) : Math.max(500, Math.ceil(maxSet || 0))} />
     <div style={{ height: 10 }} />
@@ -1195,7 +1196,7 @@ export const topWeightSheet = entryIdx => ui().openSheet(close => <TopWeight ent
 // Shown when the last exercise's last set is checked — finish, or keep going.
 function WorkoutComplete({ close }) {
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="checkCircle" /></div>
+    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="checkCircle" /></div>
     <h3 style={{ margin: '8px 0' }}>{t("That's the whole workout!")}</h3>
     <div className="muted small" style={{ marginBottom: 16 }}>{t('Every exercise done — great work. Finish up, or keep going and add another exercise.')}</div>
     <Button variant="primary" icon="flag" onClick={() => { close(); finishWorkout() }}>{t('Finish workout')}</Button>
@@ -1208,7 +1209,7 @@ export const workoutCompleteSheet = () => ui().openSheet(close => <WorkoutComple
 function FinishSummary({ w, prs, e1prs = [], close }) {
   const st = useStore(s => s.S)
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="trophy" /></div>
+    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="trophy" /></div>
     <h3 style={{ margin: '8px 0' }}>{t('Workout complete!')}</h3>
     <div className="tiles" style={{ textAlign: 'left' }}>
       <div className="tile"><div className="l">{t('Duration')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{fmtDur(w.end - w.start)}</div></div>
