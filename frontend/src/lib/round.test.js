@@ -52,3 +52,14 @@ describe('a hold stopped early does not become the next target', () => {
     expect(buildSets(early, cfg).map(s => s.sec)).toEqual([40, 45])
   })
 })
+
+import { sessionSets } from './history.js'
+describe('interval formats keep their own timing', () => {
+  const S = { exWeights: {}, unit: 'kg', workouts: [{ d: '2026-11-10', entries: [{ id: '0662', sets: [{ sec: 40, done: true }] }] }] }
+  const cfg = { id: '0662', sets: 2, mode: 'time', sec: 20 }
+  it('a 40 s hold elsewhere carries into a standard routine but not into Tabata or EMOM', () => {
+    expect(sessionSets(S, cfg, '').map(s => s.sec)).toEqual([40, 40])
+    expect(sessionSets(S, cfg, 'tabata').map(s => s.sec)).toEqual([20, 20])
+    expect(sessionSets(S, { ...cfg, sec: 60 }, 'emom').map(s => s.sec)).toEqual([60, 60])
+  })
+})

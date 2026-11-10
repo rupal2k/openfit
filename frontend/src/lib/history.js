@@ -205,6 +205,12 @@ export function buildSets(S, cfg) {
   }
   return sets
 }
+// Sets for a routine's session. In Tabata and EMOM the interval IS the format (20 s on,
+// a 60 s minute), so a longer hold of the same exercise in another routine never carries over.
+export function sessionSets(S, cfg, format) {
+  const sets = buildSets(S, cfg)
+  return (format === 'tabata' || format === 'emom') && cfg.sec > 0 ? sets.map(s => (s.sec != null ? { ...s, sec: cfg.sec } : s)) : sets
+}
 export function workoutVolume(w) {
   let v = 0
   // No special case for unilateral work: a per-side set logs its total, so both sides are
