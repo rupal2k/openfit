@@ -55,6 +55,11 @@ export default function RoutineEdit() {
     <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
       {t('Applies to every exercise in this routine that does not set its own rule.')}
     </div>
+    <div className="sect-b" style={{ marginBottom: 16 }}>
+      <SelectRow icon="timer" iconTint="var(--orange)" title={t('Rest timer')} sheetTitle={t('Rest timer')}
+        value={r.rest || 0} onChange={v => update(s => { const x = s.routines.find(y => y.id === id); if (v) x.rest = v; else delete x.rest })}
+        options={[{ value: 0, label: t('Default ({0})', S.restSec + 's') }, ...[10, 15, 20, 30, 45, 60, 90, 120, 180].map(v => ({ value: v, label: v + 's' }))]} />
+    </div>
 
     {r.ex.length ? <div className="list">{r.ex.map((e, i) => {
       // An unresolvable id is shown rather than skipped — hiding it left an entry you
