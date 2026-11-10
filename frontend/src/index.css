@@ -1081,7 +1081,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 /* plan catalogue: Gym / Home / Home gym */
 .plan-where{margin-bottom:14px}
 .start-where{display:grid;gap:8px}
-.plan-where button{white-space:nowrap;font-size:14px;padding-left:2px;padding-right:2px}
+.plan-where button{font-size:14px;line-height:1.15;padding-left:2px;padding-right:2px;overflow-wrap:normal}
 .lib-plans{margin:0 0 12px;display:grid;gap:6px}
 .lib-plans-row{display:flex;flex-wrap:wrap;gap:8px}
 .lib-plans-row .chip{display:inline-flex;align-items:center;gap:6px;min-height:40px}

@@ -171,11 +171,19 @@ function ActiveWorkout() {
   const fmt = A.format
   const head = fmt === 'tabata' ? t('Tabata · {0} s on, {1} s off. Start the first one, the timer runs the rest', A.entries[unit[0]]?.sets[0]?.sec || 20, A.rest || S.restSec)
     : fmt === 'emom' ? t('EMOM · each minute starts on the beep: do the reps, rest until the next')
-    : fmt === 'amrap' ? t('AMRAP · as many rounds as you can in {0}. Tick each set as you finish it', fmtSec(A.cap || 600))
+    : fmt === 'amrap' ? t('AMRAP · as many rounds as you can in {0}. Tap Round done after each round', fmtSec(A.cap || 600))
     : isCircuit ? t('Circuit · one set of each in order, rest after the round') : t('Superset · do these back-to-back, rest after both')
 
   // AMRAP: one clock for the block. When it runs out, the rounds you didn't reach are dropped
   // so the log holds what you did, and the round count is what you get told.
+  // AMRAP: one tap ticks the next set of every exercise in the block (a round)
+  const roundDone = () => {
+    for (const ix of unit) {
+      const e = useStore.getState().S.active.entries[ix]
+      const i = e.sets.findIndex(s => !s.done)
+      if (i >= 0) toggle(ix, i)
+    }
+  }
   const startAmrap = () => {
     const A0 = useStore.getState().S.active, u = unit
     useUI.getState().startWork(A0.cap || 600, t('AMRAP'), () => {
@@ -188,6 +196,11 @@ function ActiveWorkout() {
       if (A2.entries.every(e => e.sets.every(x => x.done))) workoutCompleteSheet()
     })
   }
+  const unitFinished = unit.every(ix => A.entries[ix].sets.every(s => s.done))
+  const amrapBar = fmt === 'amrap' && !unitFinished && <div className="row" style={{ gap: 8, marginBottom: 10 }}>
+    {!working && <Button variant="primary" icon="play" onClick={startAmrap}>{t('Start the {0} clock', fmtSec(A.cap || 600))}</Button>}
+    {working && <Button variant="primary" icon="check" onClick={roundDone}>{t('Round done')}</Button>}
+  </div>
 
   const total = A.entries.reduce((n, e) => n + e.sets.length, 0)
   const done = setsDoneActive(A)
@@ -242,7 +255,8 @@ function ActiveWorkout() {
     useUI.getState().startWork(e.sets[i].sec || 45, exOr(e.id).n, (elapsed, late) => {
       const A1 = same()
       if (!A1 || !A1.entries[idx]?.sets[i] || A1.entries[idx].sets[i].done) return
-      mutEntry(idx, en => { en.sets[i].sec = elapsed })
+      // a hold logs what was held; an EMOM set is the minute, whenever you say it's done
+      if (A1.format !== 'emom') mutEntry(idx, en => { en.sets[i].sec = elapsed })
       toggle(idx, i)
       const A2 = same()
       if (!A2 || !A2.entries[idx].sets[i].done) return       // not logged (a check stopped it)
@@ -348,7 +362,7 @@ function ActiveWorkout() {
       {isSuperset ? (
         <div className="ss-card">
           <div className="ss-hd"><Icon name={fmt ? 'timer' : 'link'} />{head}</div>
-          {fmt === 'amrap' && !working && <Button variant="primary" icon="play" onClick={startAmrap}>{t('Start the {0} clock', fmtSec(A.cap || 600))}</Button>}
+          {amrapBar}
           {unit.map((idx, k) => <div key={idx} id={'ex-' + idx} className="ss-ex">
             {k > 0 && <div className="ss-amp">+</div>}
             <ExerciseBlock entryIdx={idx} compact
@@ -357,7 +371,7 @@ function ActiveWorkout() {
         </div>
       ) : (<>
         {fmt && <div className="ss-hd" style={{ marginBottom: 8 }}><Icon name="timer" />{head}</div>}
-        {fmt === 'amrap' && !working && <><Button variant="primary" icon="play" onClick={startAmrap}>{t('Start the {0} clock', fmtSec(A.cap || 600))}</Button><div style={{ height: 10 }} /></>}
+        {amrapBar}
         <ExerciseBlock entryIdx={cur} onToggle={i => toggle(cur, i)} onField={(i, f, v) => setField(cur, i, f, v)} onAddSet={() => addSet(cur)} onRemoveSet={() => removeSet(cur)} onStartTimed={i => startTimed(cur, i)} />
       </>)}
     </> : <div className="empty"><div className="ico"><Icon name="shuffle" /></div>{t('Freestyle workout — add your first exercise.')}</div>}

@@ -34,7 +34,7 @@ function ConfirmDialog({ title, message, confirmText, cancelText, danger, onConf
   return <div style={{ textAlign: 'center', padding: '4px 0' }}>
     {title && <h3 style={{ marginBottom: 8 }}>{title}</h3>}
     <div className="muted" style={{ marginBottom: 18, lineHeight: 1.5 }}>{message}</div>
-    <button className={'btn ' + (danger ? 'danger' : 'primary')} onClick={() => { close(); onConfirm && onConfirm() }}>{confirmText || t('Confirm')}</button>
+    <button className={'btn ' + (danger ? 'danger' : 'primary')} onClick={() => { close(); if (onConfirm) ui().afterClose(onConfirm) }}>{confirmText || t('Confirm')}</button>
     {/* cancelText: false makes it a one-button notice */}
     {cancelText !== false && <><div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{cancelText || t('Cancel')}</Button></>}
@@ -247,7 +247,7 @@ function BwSheet({ required, onDone, close }) {
       s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
     })
     close()
-    if (onDone) onDone(n); else toast(t('Weight saved'))
+    if (onDone) ui().afterClose(() => onDone(n)); else toast(t('Weight saved'))
   }
   const recent = [...st.bodyweight].reverse().slice(0, 3)
   const delEntry = d => {
@@ -271,8 +271,8 @@ function BwSheet({ required, onDone, close }) {
     <Button variant="primary" onClick={save}>{!touched ? t('Save {0} {1}', fmtNum(v), unit) + (required ? ' · ' + t('start') : '') : required ? t('Save & start workout') : t('Save')}</Button>
     {!touched && <div className="small dim" style={{ marginTop: 6 }}>{t('Not your weight? Set it above, or skip it below.')}</div>}
     {required && <>
-      <div style={{ height: 8 }} /><Button variant="ghost" className="dim" onClick={() => { close(); onDone && onDone(null) }}>{t('Start without weighing in')}</Button>
-      <div style={{ height: 2 }} /><Button variant="ghost" className="dim" icon="reset" onClick={() => { close(); nav('/workout') }}>{t('Choose a different workout')}</Button>
+      <div style={{ height: 8 }} /><Button variant="ghost" className="dim" onClick={() => { close(); if (onDone) ui().afterClose(() => onDone(null)) }}>{t('Start without weighing in')}</Button>
+      <div style={{ height: 2 }} /><Button variant="ghost" className="dim" icon="reset" onClick={() => { close(); ui().afterClose(() => nav('/workout')) }}>{t('Choose a different workout')}</Button>
     </>}
     {!required && recent.length > 0 && <>
       <h4 className="sec">{t('Recent weigh-ins')}</h4>
@@ -1224,7 +1224,7 @@ function FinishSummary({ w, prs, e1prs = [], close }) {
     <h4 className="sec" style={{ textAlign: 'left' }}>{t('What you just trained')}</h4>
     <BodyMap load={loadOfWorkouts([w])} body={st.body} />
     <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={() => { close(); nav('/home') }}>{t('Nice!')}</Button>
+    <Button variant="primary" onClick={() => { close(); ui().afterClose(() => nav('/home')) }}>{t('Nice!')}</Button>
   </div>
 }
 export function finishWorkout(sure) {

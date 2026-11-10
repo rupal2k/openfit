@@ -19,11 +19,15 @@ let workDone = null
 let restNext = null   // what starts when a rest runs out or is skipped (the next timed set of a circuit)
 
 let poppingDueToClose = false
+// what to run once the history.back() of a sheet close has landed (see afterClose)
+let afterPop = null
 
 if (typeof window !== 'undefined') {
   window.addEventListener('popstate', () => {
     if (poppingDueToClose) {
       poppingDueToClose = false
+      const fn = afterPop; afterPop = null
+      if (fn) fn()
       return
     }
     const sheets = useUI.getState().sheets
@@ -58,6 +62,12 @@ export const useUI = create((set, get) => ({
     set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, pushedHistory: pushed }] }))
     const close = () => get().closeSheet(id)
     return { id, close, lock: v => set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, locked: v } : x) })) }
+  },
+  // Run fn after a sheet that was just closed has finished popping its history entry. Closing
+  // calls history.back(), which lands later: a nav() made right after close() was undone by it.
+  afterClose(fn) {
+    if (poppingDueToClose) afterPop = fn
+    else fn()
   },
   closeSheet(id) {
     const list = get().sheets
