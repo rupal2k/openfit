@@ -132,6 +132,7 @@ function ValueInput({ value, onValue }) {
 
 // What needs a look, as a short tag; the sheet explains the tags once at the top.
 const TAGS = { unitOk: 'Pick unit', fixed: 'Decimal added', unitGuessed: 'Unit filled in', unsure: 'Unclear', dup: 'Duplicate' }
+const LEGEND = { fixed: 'Decimal added: the number as read was not possible.', unitGuessed: 'Unit filled in: missing or unreadable.', unsure: 'Unclear: OCR was unsure.', unitOk: 'Pick unit: not a unit we know for this test.' }
 const tagsOf = r => [r.key && !r.unitOk && 'unitOk', r.fixed && 'fixed', r.unitGuessed && 'unitGuessed', r.unsure && !r.fixed && 'unsure', r.dup && 'dup'].filter(Boolean)
 
 function ReviewSheet({ parsed, kind, ocr = false, close }) {
@@ -152,6 +153,7 @@ function ReviewSheet({ parsed, kind, ocr = false, close }) {
   const other = rows.map((r, i) => [r, i]).filter(([r]) => !r.key)
   const count = rows.filter(r => r.include).length
   const flagged = matched.filter(([r]) => tagsOf(r).length).length
+  const present = Object.keys(LEGEND).filter(k => matched.some(([r]) => tagsOf(r).includes(k)))   // explain only the tags on screen
 
   const save = () => {
     const rep = buildReport(rows, { date, src: kind, dob: parsed.dob })
@@ -194,8 +196,10 @@ function ReviewSheet({ parsed, kind, ocr = false, close }) {
   return <>
     <h3>{t('Check the results')}</h3>
     <p className="muted small">{t('Read on this device. Nothing was uploaded. Fix anything that looks wrong before saving.')}</p>
-    {ocr && <p className="lab-warn small">{t('Read from an image with OCR: compare every value with the report before saving.')}</p>}
-    {flagged > 0 && <p className="small lab-legend">{t('{0} rows need a look and are listed first, unticked. Decimal added: the number as read was not possible. Unit filled in: it was missing or unreadable. Unclear: OCR was unsure. Pick unit: the unit isn’t one we know for this test.', flagged)}</p>}
+    {(ocr || flagged > 0) && <p className="small lab-legend">
+      {ocr && <span className="lab-warn">{t('Read with OCR: compare every value with the report.')} </span>}
+      {flagged > 0 && <>{t('{0} rows need a look and are listed first, unticked.', flagged)} {present.map(k => t(LEGEND[k])).join(' ')}</>}
+    </p>}
     <label className="lab-date">{t('Sample date')}<input type="date" value={date} max={todayISO()} required onChange={e => setDate(e.target.value)} /></label>
     {!parsed.date && <p className="lab-warn small">{t('The sample date wasn’t found on the report. Set the date the blood was taken.')}</p>}
     <div className="lab-list">{matched.map(line)}</div>

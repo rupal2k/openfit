@@ -1068,7 +1068,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 .lab-empty h2{text-transform:none;letter-spacing:0;font-size:19px;margin:10px 0 6px;color:var(--label)}
 .lab-empty p{margin:0 0 16px}
 .lab-st{font-size:12px;font-weight:650;padding:2px 7px;border-radius:999px;margin-left:4px;white-space:nowrap}
-.lab-st.high{color:var(--red);background:color-mix(in srgb,var(--red) 14%,transparent)}
+.lab-st.high{color:#FF7A70;/* dark: 5:1 on the tinted pill, --red was 4.2; light overrides below */background:color-mix(in srgb,var(--red) 14%,transparent)}
 .lab-st.low{color:var(--orange);background:color-mix(in srgb,var(--orange) 16%,transparent)}
 .lab-band{font-size:12px;font-weight:600}
 .lab-band.good{color:var(--green)} .lab-band.mid{color:var(--orange)} .lab-band.high{color:var(--red)}
