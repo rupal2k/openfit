@@ -91,9 +91,12 @@ export default function Home() {
           <span className="lrow-i"><Icon name="sparkles" /></span>
           <div className="big" style={{ fontSize: 22 }}>{t('Welcome!')}</div>
         </div>
-        <div className="muted small" style={{ marginBottom: 12 }}>{t('Set up your weekly routine to get going — or choose from ready-made workout plans.')}</div>
-        <Button variant="primary" icon="sparkles" onClick={planCatalogSheet}>{t('Choose a workout plan')}</Button>
-        <div style={{ height: 8 }} /><Button onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
+        <div className="muted small" style={{ marginBottom: 12 }}>{t('Where will you train? Pick one and we’ll show plans that fit. Beginner plans come first.')}</div>
+        <div className="start-where">
+          {[['gym', 'barbell', 'At a gym'], ['home', 'figureStrength', 'At home, no equipment'], ['homegym', 'dumbbell', 'Home gym']].map(([w, ic, label]) =>
+            <Button key={w} variant={w === 'home' ? 'primary' : 'tinted'} icon={ic} onClick={() => planCatalogSheet(w)}>{t(label)}</Button>)}
+        </div>
+        <div style={{ height: 8 }} /><Button variant="ghost" onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
       </div>
     )}
 

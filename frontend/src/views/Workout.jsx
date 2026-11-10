@@ -9,7 +9,7 @@ import { beep, vibrate } from '../lib/sound.js'
 import { t } from '../lib/i18n.js'
 import { api } from '../lib/api.js'
 import Media from '../components/Media.jsx'
-import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, topWeightSheet, finishWorkout, workoutCompleteSheet, confirmSheet } from '../sheets.jsx'
+import { startFlow, planCatalogSheet, exercisePicker, exConfigSheet, exerciseDetailSheet, topWeightSheet, finishWorkout, workoutCompleteSheet, confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { nextPrescription, applyPrescription } from '../lib/progression.js'
@@ -40,7 +40,8 @@ function StartChooser() {
         <span className="tag acc">{t('Start')}</span></button>)}</div></>}
     <div style={{ height: 14 }} />
     <Button icon="shuffle" onClick={() => startFlow(null)}>{t('Freestyle workout (pick as you go)')}</Button>
-    {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" onClick={() => nav('/plan')}>{t('Build a plan first')}</Button></>}
+    {!S.routines.length && <><div style={{ height: 10 }} /><Button variant="primary" icon="sparkles" onClick={() => planCatalogSheet()}>{t('Pick a ready-made plan')}</Button>
+      <div style={{ height: 8 }} /><Button variant="ghost" onClick={() => nav('/plan')}>{t('Build my own plan')}</Button></>}
   </div>
 }
 
@@ -267,7 +268,9 @@ function ActiveWorkout() {
     const e = st.active.entries[idx]
     if (!e.sets[i].done && !sure) {
       const { errors, warns } = check(st, e, e.sets[i])
-      if (errors.length) return confirmSheet({ title: t('Set {0} not logged', i + 1), message: errors.map(a => t(...a)).join(' · '), confirmText: t('Fix it'), cancelText: false })
+      // a first-timer doesn't know what weight to put in: say how to pick one
+      const firstLoad = errors.some(a => a[0] === 'Enter the weight ({0})') && !lastEntryFor(st, e.id)
+      if (errors.length) return confirmSheet({ title: t('Set {0} not logged', i + 1), message: errors.map(a => t(...a)).join(' · ') + (firstLoad ? '. ' + t('New to this exercise? Pick a weight you can lift for every rep with good form. You can change it next time.') : ''), confirmText: t('Fix it'), cancelText: false })
       if (warns.length) return confirmSheet({ title: t('Check set {0}', i + 1), message: warns.map(a => t(...a)).join(' · '), confirmText: t('Log anyway'), cancelText: t('Fix it'), onConfirm: () => toggle(idx, i, true) })
     }
     tick(idx, i)

@@ -46,7 +46,8 @@ export function confirmSheet(opts) {
 }
 
 /* ============================ plan templates catalog ============================ */
-export const planCatalogSheet = (start = 'gym') => ui().openSheet(close => <PlanCatalog close={close} start={start} />)
+// start: a PLAN_WHERE tab. Buttons pass their click event straight in, so anything else is the default.
+export const planCatalogSheet = start => ui().openSheet(close => <PlanCatalog close={close} start={PLAN_WHERE.some(([w]) => w === start) ? start : 'gym'} />)
 
 function PlanCatalog({ close, start }) {
   const [where, setWhere] = useState(start)
@@ -232,7 +233,10 @@ function BwSheet({ required, onDone, close }) {
   const st = useStore(s => s.S)
   const unit = st.unit
   const bw = lastBW(st)
-  const [v, setV] = useState(bw ? bw.w : 70)
+  const [v, setV0] = useState(bw ? bw.w : 70)
+  // No weigh-in yet: 70 is only where the slider starts, so it can't be saved untouched.
+  const [touched, setTouched] = useState(!!bw)
+  const setV = x => { setTouched(true); setV0(typeof x === 'function' ? x(v) : x) }
   const save = () => {
     const n = Math.round((v || 0) * 10) / 10
     if (!n || n <= 0) { toast(t('Enter a valid weight')); return }
@@ -263,7 +267,8 @@ function BwSheet({ required, onDone, close }) {
     <div className="muted small">{required ? t('Slide or tap to set your weight — tracked before every workout so your curve stays honest.') : t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
     <WeightInput value={v} setValue={setV} unit={unit} />
     <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={save}>{required ? t('Save & start workout') : t('Save')}</Button>
+    {!touched && <div className="small dim" style={{ marginBottom: 8 }}>{t('Set your weight first. Or skip it, you can log it any time on Home.')}</div>}
+    <Button variant="primary" onClick={save} disabled={!touched}>{required ? t('Save & start workout') : t('Save')}</Button>
     {required && <>
       <div style={{ height: 8 }} /><Button variant="ghost" className="dim" onClick={() => { close(); onDone && onDone(null) }}>{t('Start without weighing in')}</Button>
       <div style={{ height: 2 }} /><Button variant="ghost" className="dim" icon="reset" onClick={() => { close(); nav('/workout') }}>{t('Choose a different workout')}</Button>

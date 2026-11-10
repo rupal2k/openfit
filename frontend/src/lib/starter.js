@@ -24,6 +24,22 @@ export const starterRoutines = () =>
 
 export const PLAN_TEMPLATES = [
   {
+    id: 'beginner-gym-3',
+    where: 'gym',
+    name: 'Beginner Full Body (3‑day)',
+    badge: 'Beginner',
+    daysPerWeek: 3,
+    icon: 'figureStrength',
+    desc: 'New to the gym? Machines and dumbbells only, no barbell technique to learn. Two short workouts, A and B, three days a week. Pick weights you can lift for every rep with good form, and add a little when it feels easy.',
+    scheduleMap: { 1: 0, 3: 1, 5: 0 },
+    routines: [
+      { name: 'Beginner A', emoji: 'figureStrength', rest: 90,
+        ex: [['0739', 3, 12], ['0289', 3, 10], ['2330', 3, 12], ['0405', 3, 10], ['0586', 3, 12], ['3665', 2, 30, T]] },
+      { name: 'Beginner B', emoji: 'dumbbell', rest: 90,
+        ex: [['1760', 3, 10], ['1323', 3, 12], ['0493', 3, 10], ['1459', 3, 10], ['0585', 3, 12], ['0276', 2, 10]] }
+    ]
+  },
+  {
     id: 'ppl-3',
     name: 'Push / Pull / Legs (3‑day)',
     where: 'gym',
@@ -168,18 +184,18 @@ export const PLAN_TEMPLATES = [
     id: 'home-bw-3',
     where: 'home',
     name: 'Home Bodyweight Full Body (3‑day)',
-    badge: '3 days/wk',
+    badge: 'Beginner',
     daysPerWeek: 3,
     icon: 'figureStrength',
     desc: 'Calisthenics strength with no equipment: squats, push-ups, lunges, towel rows and core. A chair and a towel are all you need. Make it harder by adding reps or slowing the lowering phase.',
     scheduleMap: { 1: 0, 3: 1, 5: 2 },
     routines: [
       { name: 'Bodyweight A', emoji: 'figureStrength', rest: 60,
-        ex: [['1685', 3, 15], ['0662', 3, 10], ['1460', 3, 24, SIDE], ['3013', 3, 15], ['3167', 3, 12], ['3665', 3, 30, T]] },
+        ex: [['1685', 3, 15], ['0493', 3, 10], ['1460', 3, 24, SIDE], ['3013', 3, 15], ['3167', 3, 12], ['3665', 3, 30, T]] },
       { name: 'Bodyweight B', emoji: 'legs', rest: 60,
         ex: [['2368', 3, 20, SIDE], ['0493', 3, 12], ['0129', 3, 12], ['3561', 3, 12], ['0276', 3, 12], ['0705', 2, 30, T]] },
       { name: 'Bodyweight C', emoji: 'abs', rest: 60,
-        ex: [['3769', 3, 24, SIDE], ['0283', 3, 8], ['1373', 3, 20], ['3167', 3, 12], ['0872', 3, 15], ['0630', 3, 40, T]] }
+        ex: [['3769', 3, 24, SIDE], ['0662', 3, 8], ['1373', 3, 20], ['3167', 3, 12], ['0872', 3, 15], ['0630', 3, 40, T]] }
     ]
   },
   {
