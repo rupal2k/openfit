@@ -19,3 +19,13 @@ graphify-out/
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
+
+# local AI-assistant and notes tooling (machine-specific, never part of the app)
+.agents/
+.claude/
+.claude-flow/
+.swarm/
+.obsidian/
+.mcp.json
+HANDOFF-labs.md
+INDEX.md
