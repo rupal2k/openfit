@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Camera capture: Capacitor's file chooser writes the photo to getExternalFilesDir(Pictures).
+         Without this root, "Take photo" can't create its file and silently opens the gallery. -->
+    <external-files-path name="my_images" path="Pictures/" />
     <cache-path name="my_cache_images" path="." />
 </paths>

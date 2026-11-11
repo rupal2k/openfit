@@ -91,7 +91,8 @@ export function parsePlan(raw) {
       if (!ok) dropped++
       return ok
     })
-  }))
+  })).filter(r => r.ex.length)   // a routine with nothing we can use is not offered (the week links by id, not position)
+  if (!routines.length) throw new Error(t('Nothing to import from that file'))
   return {
     name: (typeof data.name === 'string' ? data.name : '').trim().slice(0, 80),
     routines,
@@ -115,16 +116,20 @@ export function mergePlan(s, bundle, { schedule } = {}) {
   s.customEx = s.customEx || []
   const exIdMap = Object.create(null)
   bundle.customEx.forEach(c => {
+    // the simplified plan format copies customEx raw (plan-upload.js): type-check before use
+    if (!c || typeof c.id !== 'string' || typeof c.n !== 'string' || !c.n.trim()) return
     const same = s.customEx.find(x => (x.n || '').toLowerCase() === (c.n || '').toLowerCase() && x.bp === c.bp)
     if (same) { exIdMap[c.id] = same.id; return }
     const nid = uid()
     exIdMap[c.id] = nid
-    s.customEx.push({ id: nid, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) })
+    s.customEx.push({ id: nid, n: c.n.slice(0, 80), bp: typeof c.bp === 'string' ? c.bp.slice(0, 40) : '', ...(typeof c.desc === 'string' && c.desc ? { desc: c.desc.slice(0, 1000) } : {}) })
   })
   const ridMap = Object.create(null)
+  let added = 0
   bundle.routines.forEach(r => {
     const c = cleanRoutine(r, { unit: s.unit, strict: true, keepId: false, mapId: id => (typeof id === 'string' && exIdMap[id]) || id })
     if (!c) return
+    added++
     if (typeof r.id === 'string') ridMap[r.id] = c.id
     s.routines.push({ ...c, name: c.name || t('Shared routine') })
   })
@@ -134,7 +139,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       if (ridMap[oldId]) s.week[d] = ridMap[oldId]
     })
   }
-  return { routines: bundle.routines.length }
+  return { routines: added }   // what was actually added, not what the file listed
 }
 
 /* ------------------------------- printable PDF ------------------------------- */

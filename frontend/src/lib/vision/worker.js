@@ -20,8 +20,34 @@ let cur = null
 const fail = (kind, message) => Object.assign(new Error(message), { kind })
 const NETWORK = /fetch|network|HTTP|404|Failed to load|Could not locate/i
 
+// The weights are checked against their pinned size and hash BEFORE the model engine parses
+// them (security audit 1.6.2): from_pretrained used to download and load a file, and only then
+// was it hashed. A missing file is fetched here into a buffer of the pinned size, verified, and
+// put in the cache transformers.js reads, so from_pretrained only ever sees verified bytes.
+async function prefetchVerified(m, device, rid) {
+  const c = await caches.open('transformers-cache')
+  for (const f of deviceFiles(m, device)) {
+    const url = fileUrl(m, f.path)
+    if (await c.match(url)) continue
+    const r = await fetch(url)
+    if (!r.ok || !r.body) throw fail('DOWNLOAD', `HTTP ${r.status} ${f.path}`)
+    const buf = new Uint8Array(f.bytes), reader = r.body.getReader()
+    let loaded = 0
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      if (loaded + value.length > f.bytes) { reader.cancel().catch(() => {}); throw fail('VERIFY', 'size ' + f.path) }
+      buf.set(value, loaded); loaded += value.length
+      postMessage({ rid, type: 'progress', file: f.path, loaded, total: f.bytes })
+    }
+    try { await verifyBuffer(loaded === f.bytes ? buf.buffer : buf.buffer.slice(0, loaded), f) } catch (e) { throw fail('VERIFY', e.detail || e.message) }
+    await c.put(url, new Response(buf, { headers: { 'content-type': 'application/octet-stream', 'content-length': String(loaded) } }))
+  }
+}
+
 async function load(id, device, rid) {
   if (cur && cur.id === id && cur.device === device) return cur
+  await prefetchVerified(MODELS[id], device, rid)
   const m = MODELS[id]
   const progress_callback = p => {
     if (p.status === 'progress') postMessage({ rid, type: 'progress', file: p.file, loaded: p.loaded, total: p.total })

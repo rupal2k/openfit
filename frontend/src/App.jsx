@@ -9,7 +9,8 @@ import { saveMedia, routineExIds } from './lib/media-cache.js'
 import { setLang, useLang } from './lib/i18n.js'
 import { setNav } from './lib/nav.js'
 import { useWakeLock } from './lib/wakelock.js'
-import { startFlow } from './sheets.jsx'
+import { startFlow, runUpdateCheck } from './sheets.jsx'
+import { dueForCheck } from './lib/updates.js'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -59,6 +60,15 @@ function Shell() {
     return () => { clearTimeout(tm); window.removeEventListener('online', run) }
   }, [planIds])
   useEffect(() => { setLang(S.lang || 'en') }, [S.lang])
+  // opt-in: at most once a day, a few seconds after start so it never competes with the first screen
+  useEffect(() => {
+    if (!MOBILE || !S.updateCheck) return
+    let last = 0
+    try { last = +localStorage.getItem('openfit_update_check') || 0 } catch { /* private mode */ }
+    if (!dueForCheck(last)) return
+    const tm = setTimeout(() => runUpdateCheck(false), 5000)
+    return () => clearTimeout(tm)
+  }, [S.updateCheck])
   useEffect(() => { document.documentElement.lang = S.lang || 'en' }, [langV, S.lang])
   // every tab/route change starts at the top of the page
   useEffect(() => { window.scrollTo(0, 0) }, [loc.pathname])
@@ -78,7 +88,7 @@ function Shell() {
     <>
       {/* keyed on the route: a view that throws is contained, and switching tabs
           re-mounts the boundary, so the tab bar is always a way out */}
-      <div id="app" className="vfade" key={loc.pathname}>
+      <main id="app" className="vfade" key={loc.pathname}>
         <ErrorBoundary>
           {!authed ? <Login /> : (
             <Routes>
@@ -97,7 +107,7 @@ function Shell() {
             </Routes>
           )}
         </ErrorBoundary>
-      </div>
+      </main>
       <TabBar onStart={startFlow} />
       <RestTimer />
       <Modals />

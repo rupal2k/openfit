@@ -9,8 +9,10 @@ import { pushSupported, enablePush, disablePush, sendTestPush } from '../lib/pus
 import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
-import { MOBILE, shareExport, syncReminder, tooBig } from '../lib/mobile.js'
-import { loadStarterPlan, confirmSheet, importFromApp, planCatalogSheet, planUploadSheet } from '../sheets.jsx'
+import { MOBILE, shareExport, syncReminder, tooBig, clearExports, notificationsAllowed } from '../lib/mobile.js'
+import { convertWeights, hasWeights } from '../lib/units-convert.js'
+import { nutritionProfileSheet } from '../nutrition-sheets.jsx'
+import { loadStarterPlan, confirmSheet, importFromApp, planCatalogSheet, planUploadSheet, runUpdateCheck } from '../sheets.jsx'
 import { VisionSettings } from '../vision-sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField } from '../components/ui.jsx'
@@ -37,16 +39,32 @@ export default function Settings() {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
     toast(t('Backup exported'))
   }
+  // kg <-> lb: with logged weights, ask whether to convert them or only relabel
+  const switchUnit = to => {
+    const from = S.unit
+    if (to === from) return
+    if (!hasWeights(S)) { update(s => { s.unit = to }); return }
+    confirmSheet({
+      title: t('Convert your logged weights?'),
+      message: t('Your workouts, weigh-ins and working weights are in {0}. Convert them to {1}, or only change the label?', from, to),
+      confirmText: t('Convert to {0}', to), cancelText: t('Only change the label'),
+      onConfirm: () => { update(s => { convertWeights(s, from, to) }); toast(t('Weights converted to {0}', to)) },
+      onCancel: () => update(s => { s.unit = to })
+    })
+  }
   const doImport = ev => {
     const f = ev.target.files[0]; if (!f) return
     if (tooBig(f)) { toast(t('This file is too large to import.')); return }
+    const input = ev.target
     const rd = new FileReader()
+    rd.onloadend = () => { input.value = '' }   // after the read: clearing first revokes an Android pick
+    rd.onerror = () => toast(t('Could not read that file'))
     rd.onload = () => {
       try {
         const data = JSON.parse(rd.result)
-        if (!data.workouts && !data.routines && !data.nutrition) throw new Error('not an OPENFIT backup')
+        if (!data || (!data.workouts && !data.routines && !data.nutrition)) throw new Error('not an OPENFIT backup')
         confirmSheet({ title: t('Import backup?'), message: t('This replaces all current data with the backup file.'), confirmText: t('Import'), danger: true, onConfirm: () => { replaceState(normalizeState(data), true); toast(t('Backup imported')) } })
-      } catch (e) { toast(t('Import failed: {0}', e.message)) }
+      } catch { toast(t('Import failed: {0}', t('That file isn’t an OPENFIT backup.'))) }   // not the parser's message: it quotes the file
     }
     rd.readAsText(f)
   }
@@ -101,7 +119,7 @@ export default function Settings() {
     {!user && !DEMO && !MOBILE && <p className="sect-f" style={{ marginTop: -18, marginBottom: 22 }}>{t('Guest mode — data lives only in this browser.')}</p>}
 
     {/* ---------- general ---------- */}
-    <Section title={t('General')} footer={t('Note: switching units only changes the label — logged numbers are not converted.')}>
+    <Section title={t('General')} footer={t('Switching units offers to convert the weights you have logged.')}>
       <SelectRow
         icon="globe" iconTint="var(--blue)" title={t('Language')}
         value={S.lang || 'en'} onChange={v => update(s => { s.lang = v })}
@@ -113,8 +131,11 @@ export default function Settings() {
       <Row icon="scale" iconTint="var(--teal)" title={t('Weight unit')}>
         <Segmented className="seg-inline"
           options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]}
-          value={S.unit} onChange={v => update(s => { s.unit = v })} />
+          value={S.unit} onChange={switchUnit} />
       </Row>
+      {(S.lang || 'en') !== 'en' && <Row icon="globe" iconTint="var(--grey)" title={t('Report a translation error')} subtitle={t('Translations are new and not yet checked by native speakers.')} accessory="chevron"
+        onClick={() => window.open(REPO + '/issues/new?labels=translation&title=' + encodeURIComponent('Translation (' + S.lang + '): '), '_blank', 'noopener')} />}
+      <Row icon="person" iconTint="var(--indigo)" title={t('Your profile')} subtitle={t('Sex, birth year and height, for calorie targets and blood test scores')} accessory="chevron" onClick={nutritionProfileSheet} />
     </Section>
     <VisionSettings />
 
@@ -126,12 +147,15 @@ export default function Settings() {
       {(wakeOK || !MOBILE) && (
         <Row icon="sun" iconTint="var(--yellow)" title={t('Keep screen awake')}
           subtitle={wakeOK ? null : t('Not supported in this browser.')}>
-          <Switch checked={wakeOK && S.keepAwake !== false} disabled={!wakeOK}
+          <Switch aria-label={t('Keep screen awake')} checked={wakeOK && S.keepAwake !== false} disabled={!wakeOK}
             onChange={v => update(s => { s.keepAwake = v })} />
         </Row>
       )}
+      <Row icon="scale" iconTint="var(--teal)" title={t('Weigh in before workouts')}>
+        <Switch aria-label={t('Weigh in before workouts')} checked={S.askWeight !== false} onChange={v => update(s => { s.askWeight = v })} />
+      </Row>
       <Row icon="bell" iconTint="var(--pink)" title={t('Sounds')}>
-        <Switch checked={!!S.sound} onChange={v => update(s => { s.sound = v })} />
+        <Switch aria-label={t('Sounds')} checked={!!S.sound} onChange={v => update(s => { s.sound = v })} />
       </Row>
       {/* Two names for the same judgement, so the column asks in the scale you already think in.
           The (i) sits before the control — you read it on the way to the choice, not after it. */}
@@ -183,13 +207,19 @@ export default function Settings() {
         subtitle={t('FitNotes, Strong, Hevy — or body weight from Apple Health')}
         accessory="chevron" onClick={() => importRef.current.click()} />
       <Row icon="upload" iconTint="var(--blue)" title={t('Import backup')} accessory="chevron" onClick={() => fileRef.current.click()} />
-      <Row icon="download" iconTint="var(--blue)" title={t('Export backup (JSON)')} accessory="chevron" onClick={doExport} />
-      <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={() => confirmSheet({ title: t('Reset everything?'), message: t('Deletes your plan, workouts and body weight on this device. This cannot be undone.'), confirmText: t('Delete everything'), danger: true, onConfirm: () => { replaceState(JSON.parse(JSON.stringify(DEF)), true); nav('/home'); toast(t('All data reset')) } })} />
+      <Row icon="download" iconTint="var(--blue)" title={t('Export backup (JSON)')} subtitle={t('Includes your blood test results. Keep the file private.')} accessory="chevron" onClick={doExport} />
+      {MOBILE && <>
+        <Row icon="download" iconTint="var(--teal)" title={t('Check for updates')} subtitle={t('Asks GitHub for the latest version. Nothing about you is sent.')} accessory="chevron" onClick={() => runUpdateCheck(true)} />
+        <Row icon="bell" iconTint="var(--teal)" title={t('Tell me about new versions')}>
+          <Switch aria-label={t('Tell me about new versions')} checked={!!S.updateCheck} onChange={v => update(s => { s.updateCheck = v })} />
+        </Row>
+      </>}
+      <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={() => confirmSheet({ title: t('Reset everything?'), message: t('Deletes everything on this device: plan, workouts, body weight, meals and foods, blood tests and settings. This cannot be undone.'), confirmText: t('Delete everything'), danger: true, onConfirm: () => { replaceState(JSON.parse(JSON.stringify(DEF)), true); clearExports(); nav('/home'); toast(t('All data reset')) } })} />
     </Section>
     <input ref={fileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} aria-label={t('Import backup file')} onChange={doImport} />
     {/* Reset after reading so picking the same file twice still fires onChange. */}
     <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }} aria-label={t('Import from another app')}
-      onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
+      onChange={ev => { const input = ev.target, f = input.files[0]; if (f) importFromApp(f, null, () => { input.value = '' }) }} />
 
     {/* "Add to Home screen" makes no sense inside the native app */}
     {!MOBILE && <Section title={t('Tip')}>
@@ -200,7 +230,7 @@ export default function Settings() {
 
     <div className="dim small" style={{ textAlign: 'center', marginTop: 4, lineHeight: 1.6 }}>
       OPENFIT {__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
-      <a href="https://github.com/rupal2k/openfit" target="_blank" rel="noopener">source code</a> · exercise data: hasaneyldrm/exercises-dataset (CC)
+      <a href="https://github.com/rupal2k/openfit" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>source code</a> · exercise data: hasaneyldrm/exercises-dataset (CC)
     </div>
   </div>
 }
@@ -251,6 +281,13 @@ function NotificationsCard({ S, update, toast }) {
 // this card only owns the OS permission prompt when the switch turns on.
 function MobileReminderCard({ S, update, toast }) {
   const setReminder = patch => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), ...patch, tz: localTZ() } })
+  // the switch can say 'on' while Android has notifications off: check on open and on return
+  const [allowed, setAllowed] = useState(true)
+  useEffect(() => {
+    const check = () => { if (document.visibilityState === 'visible') notificationsAllowed().then(setAllowed) }
+    check(); document.addEventListener('visibilitychange', check)
+    return () => document.removeEventListener('visibilitychange', check)
+  }, [])
   const toggle = async () => {
     const on = !S.reminder?.on
     if (on) {
@@ -263,11 +300,14 @@ function MobileReminderCard({ S, update, toast }) {
     <Section title={t('Notifications')}
       footer={S.reminder?.on ? t('Reminds you at this time on days that have a routine planned.') : null}>
       <Row icon="calendar" iconTint="var(--orange)" title={t('Workout day reminder')}>
-        <Switch checked={!!S.reminder?.on} onChange={toggle} />
+        <Switch aria-label={t('Workout day reminder')} checked={!!S.reminder?.on} onChange={toggle} />
       </Row>
+      {S.reminder?.on && !allowed && (
+        <Row icon="bell" iconTint="var(--red)" title={t('Notifications are off for OPENFIT')} subtitle={t('Allow them in Android settings, or no reminder will arrive.')} />
+      )}
       {S.reminder?.on && (
         <Row icon="clock" iconTint="var(--purple)" title={t('Reminder time')}>
-          <input type="time" className="timef" value={S.reminder?.time || DEF.reminder.time}
+          <input type="time" className="timef" aria-label={t('Reminder time')} value={S.reminder?.time || DEF.reminder.time}
             onChange={e => setReminder({ time: e.target.value })} />
         </Row>
       )}
@@ -313,11 +353,11 @@ function PushCard({ S, update, toast }) {
         : null}
     >
       <Row icon="bell" iconTint="var(--red)" title={t('Push notifications')} subtitle={t('Rest-timer alerts, even if OPENFIT is closed.')}>
-        <Switch checked={on} disabled={busy} onChange={toggle} />
+        <Switch aria-label={t('Push notifications')} checked={on} disabled={busy} onChange={toggle} />
       </Row>
       {on && (
         <Row icon="calendar" iconTint="var(--orange)" title={t('Workout day reminder')}>
-          <Switch checked={!!S.reminder?.on} onChange={() => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), on: !s.reminder?.on, tz: localTZ() } })} />
+          <Switch aria-label={t('Workout day reminder')} checked={!!S.reminder?.on} onChange={() => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), on: !s.reminder?.on, tz: localTZ() } })} />
         </Row>
       )}
       {on && S.reminder?.on && (

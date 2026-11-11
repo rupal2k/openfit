@@ -1,6 +1,7 @@
 // Workout plan templates & starter routines. Shared by the "Load plan" catalog
 // and by the demo build, which seeds a history on top of the PPL starter routines.
 import { uid } from './format.js'
+import { t } from './i18n.js'
 
 // A template exercise is [id, sets, reps] or, for a timed hold, [id, sets, seconds, T].
 const T = { time: true }
@@ -10,7 +11,8 @@ const SIDE = { side: true }
 const M = reps => ({ time: true, reps })
 export const templateEx = ([id, sets, n, o]) => (o && o.time ? { id, sets, mode: 'time', sec: n, weight: 0, ...(o.reps ? { reps: o.reps } : {}) } : { id, sets, reps: n, weight: 0, ...(o && o.side ? { side: true } : {}) })
 // Where a plan is meant to be done: the catalogue filters on it.
-export const PLAN_WHERE = [['gym', 'Gym'], ['home', 'Home'], ['homegym', 'Home gym'], ['intervals', 'Intervals']]
+// 'At home', not 'Home': that key is the Home tab, which most languages translate as "start page"
+export const PLAN_WHERE = [['gym', 'Gym'], ['home', 'At home'], ['homegym', 'Home gym'], ['intervals', 'Intervals']]
 
 const SPEC = [
   ['Push Day', 'barbell', [['0025', 4, 8], ['0047', 3, 10], ['0426', 3, 10], ['0334', 3, 12], ['0241', 3, 12], ['0251', 3, 10]]],
@@ -326,7 +328,7 @@ function groupEx(r) {
 export function instantiatePlan(template) {
   const createdRoutines = template.routines.map(r => ({
     id: uid(),
-    name: r.name,
+    name: t(r.name),   // the copy is the user's own routine, named in the language they loaded it in
     emoji: r.emoji,
     ...(r.rest ? { rest: r.rest } : {}),
     ...(r.format ? { format: r.format } : {}),

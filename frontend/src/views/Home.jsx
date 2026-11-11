@@ -7,7 +7,8 @@ import { t, dateLocale } from '../lib/i18n.js'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, loadStarterPlan, planCatalogSheet, bwDeltaColor } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
-import { Button } from '../components/ui.jsx'
+import { Button, Segmented } from '../components/ui.jsx'
+import { hasWeights } from '../lib/units-convert.js'
 import { glyphOf } from '../lib/glyphs.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
@@ -78,9 +79,9 @@ export default function Home() {
 
     <div className="card">
       <div className="row between" style={{ marginBottom: 8 }}>
-        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w - 1)} aria-label="Previous week"><Icon name="chevronLeft" /></button>
+        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w - 1)} aria-label={t('Previous week')}><Icon name="chevronLeft" /></button>
         <div className="small muted" style={{ fontWeight: 500 }}>{wkLabel}</div>
-        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w + 1)} aria-label="Next week"><Icon name="chevronRight" /></button>
+        <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w + 1)} aria-label={t('Next week')}><Icon name="chevronRight" /></button>
       </div>
       <div className="week">{strip}</div>
     </div>
@@ -95,6 +96,11 @@ export default function Home() {
         <div className="start-where">
           {[['gym', 'barbell', 'At a gym'], ['home', 'figureStrength', 'At home, no equipment'], ['homegym', 'dumbbell', 'Home gym']].map(([w, ic, label]) =>
             <Button key={w} variant={w === 'home' ? 'primary' : 'tinted'} icon={ic} onClick={() => planCatalogSheet(w)}>{t(label)}</Button>)}
+        </div>
+        <div className="row between" style={{ marginTop: 12, gap: 10 }}>
+          <span className="small muted">{t('Weights in')}</span>
+          <Segmented className="seg-inline" options={[{ value: 'kg', label: 'kg' }, { value: 'lb', label: 'lb' }]}
+            value={S.unit} onChange={v => useStore.getState().update(s => { if (!hasWeights(s)) s.unit = v })} />
         </div>
         <div style={{ height: 8 }} /><Button variant="ghost" onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
       </div>

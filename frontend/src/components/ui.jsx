@@ -65,9 +65,10 @@ export function SearchField({ value, onChange, onClear, ...rest }) {
   return (
     <div className="searchf">
       <Icon name="magnifier" className="lead" />
-      <input className="field" value={value} onChange={onChange} {...rest} />
+      {/* the placeholder doubles as the name, or screen readers hear an unnamed text box */}
+      <input className="field" value={value} onChange={onChange} aria-label={rest.placeholder} {...rest} />
       {!!value && (
-        <button className="clear" onClick={onClear} aria-label="Clear">
+        <button className="clear" onClick={onClear} aria-label={t('Clear')}>
           <Icon name="xmark" />
         </button>
       )}

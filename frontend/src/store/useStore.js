@@ -3,7 +3,7 @@ import { api } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
 import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
-import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
+import { MOBILE, nativeLoad, nativeSave, syncReminder, clearCaptures } from '../lib/mobile.js'
 import { mergeState } from '../lib/sync.js'
 import { cleanReports } from '../lib/labs/reports.js'
 import { cleanRoutine, cleanWeek } from '../lib/clean.js'
@@ -21,6 +21,10 @@ export const DEF = {
   // server pull, backup import) still falls back to the `showRir` boolean this replaced and
   // keeps the column it had. See effortOf.
   reminder: { on: false, time: '08:00', tz: null }, effort: null,
+  // ask for a weigh-in before each workout (Settings → During a workout)
+  askWeight: true,
+  // opt-in daily check for a newer release on GitHub (Settings → Data)
+  updateCheck: false,
   // food diary — see lib/nutrition.js for the shapes
   nutrition: { profile: null, days: {}, foods: [] },
   // blood test reports — see lib/labs/reports.js for the shapes; units: 'si' | 'us' | null (not chosen yet)
@@ -30,11 +34,21 @@ const clone = o => JSON.parse(JSON.stringify(o))
 
 export function normalizeState(raw) {
   const s = Object.assign(clone(DEF), raw || {})
+  const plain = o => o && typeof o === 'object' && !Array.isArray(o)
   s.nutrition = {
-    profile: s.nutrition?.profile || null,
-    days: s.nutrition?.days || {},
-    foods: Array.isArray(s.nutrition?.foods) ? s.nutrition.foods : []
+    profile: plain(s.nutrition?.profile) ? s.nutrition.profile : null,
+    days: plain(s.nutrition?.days) ? s.nutrition.days : {},
+    foods: (Array.isArray(s.nutrition?.foods) ? s.nutrition.foods : []).filter(plain)
   }
+  // A backup is untrusted input like a plan file (security audit 1.6.2): only shapes the
+  // screens can render are kept. Custom exercise ids key EXIDX, so prototype names are refused.
+  const BAD_ID = new Set(['__proto__', 'constructor', 'prototype'])
+  s.customEx = (Array.isArray(s.customEx) ? s.customEx : [])
+    .filter(c => plain(c) && typeof c.id === 'string' && c.id && !BAD_ID.has(c.id) && typeof c.n === 'string' && c.n.trim())
+    .map(c => ({ ...c, n: c.n.slice(0, 80), bp: typeof c.bp === 'string' ? c.bp.slice(0, 40) : '', ...(typeof c.desc === 'string' ? { desc: c.desc.slice(0, 1000) } : { desc: undefined }) }))
+  s.workouts = (Array.isArray(s.workouts) ? s.workouts : []).filter(w => plain(w) && Array.isArray(w.entries))
+  s.bodyweight = (Array.isArray(s.bodyweight) ? s.bodyweight : []).filter(b => plain(b) && typeof b.d === 'string' && Number.isFinite(+b.w))
+  if (!plain(s.exWeights)) s.exWeights = {}
   // routines and the week reach every screen: a bad value from a backup or an old build must
   // not crash one on open (no other fields are dropped)
   s.routines = (Array.isArray(s.routines) ? s.routines : []).map(r => cleanRoutine(r, { unit: s.unit })).filter(Boolean)
@@ -82,23 +96,43 @@ const hasData = st => !!((st.workouts || []).length || (st.routines || []).lengt
 
 export const useStore = create((set, get) => {
   let pushTm = null
+  let inflight = null, pushAgain = false   // pushState: one upload at a time
   let saveTm = null
 
   // Mobile build: mirror the state into a file in the app's data directory (survives WebView
   // storage eviction) and keep the native reminder schedule in step with the weekly plan.
+  // the reminder schedule only depends on these; rescheduling 7 native alarms on every set edit
+  // was wasted bridge traffic (performance audit 1.6.2)
+  let reminderKey = null
+  const reminderInputs = S => JSON.stringify([S.reminder, S.week, (S.routines || []).map(r => [r.id, r.name])])
   const nativePersist = () => {
     clearTimeout(saveTm)
-    saveTm = setTimeout(() => { saveTm = null; nativeSave(get().S); syncReminder(get().S) }, 800)
+    saveTm = setTimeout(() => {
+      saveTm = null
+      const S = get().S
+      nativeSave(S)
+      const k = reminderInputs(S)
+      if (k !== reminderKey) { reminderKey = k; syncReminder(S) }
+    }, 800)
   }
+
+  // localStorage: one write per 300 ms instead of one per keystroke (a whole-state stringify,
+  // 14 ms+ with two years of history on a desktop, more on a phone). Flushed when the app is
+  // hidden or the page goes away, so nothing set right before leaving is lost.
+  let lsTm = null
+  const flushLocal = () => {
+    clearTimeout(lsTm); lsTm = null
+    try { localStorage.setItem(KEY, JSON.stringify(get().S)) } catch { warnStorageFull() }
+  }
+  if (typeof window !== 'undefined') window.addEventListener('pagehide', () => { if (lsTm) flushLocal() })
 
   const persist = (S, push = true) => {
     S._ts = Date.now()
     registerCustom(S.customEx)
-    let stored = true
-    try { localStorage.setItem(KEY, JSON.stringify(S)) } catch { stored = false }
     set({ S })
+    clearTimeout(lsTm)
+    lsTm = setTimeout(flushLocal, 300)
     if (MOBILE) nativePersist()
-    if (!stored) warnStorageFull()
     if (push && get().user) {
       clearTimeout(pushTm)
       pushTm = setTimeout(() => get().pushState(), 1500)
@@ -111,6 +145,7 @@ export const useStore = create((set, get) => {
   // kills the app.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'hidden') return
+    if (lsTm) flushLocal()
     if (MOBILE && saveTm) {
       clearTimeout(saveTm)
       saveTm = null
@@ -170,23 +205,34 @@ export const useStore = create((set, get) => {
       set({ user: u })
     },
 
-    async pushState() {
-      if (!get().user) return
+    // One upload at a time (correctness audit 1.6.2): two overlapping PUTs both carried the old
+    // base, so the second got a 409 whose "other device" copy was this device's own earlier
+    // save, and the merge brought back whatever had been deleted in between. A push asked for
+    // while one is in flight runs again right after it, on the new base.
+    pushState() {
+      if (!get().user) return Promise.resolve()
       clearTimeout(pushTm)
+      if (inflight) { pushAgain = true; return inflight }
       const put = async () => {
         const r = await api('/api/data', { method: 'PUT', body: JSON.stringify({ state: get().S, base: getBase() }) })
         setBase(r.ts)
       }
-      try {
-        try { await put() }
-        catch (e) {
-          if (e.status !== 409) throw e
-          // Another device saved since our last sync: fold its copy in, then save on top of it.
-          adoptMerged(e.data.state)
-          await put()
-        }
-        localStorage.removeItem('gym_dirty')
-      } catch (e) { localStorage.setItem('gym_dirty', '1') }
+      inflight = (async () => {
+        do {
+          pushAgain = false
+          try {
+            try { await put() }
+            catch (e) {
+              if (e.status !== 409) throw e
+              // Another device saved since our last sync: fold its copy in, then save on top of it.
+              adoptMerged(e.data.state)
+              await put()
+            }
+            localStorage.removeItem('gym_dirty')
+          } catch (e) { localStorage.setItem('gym_dirty', '1'); pushAgain = false }
+        } while (pushAgain)
+      })().finally(() => { inflight = null })
+      return inflight
     },
     async pullState() {
       try {
@@ -242,6 +288,7 @@ export const useStore = create((set, get) => {
         }
         get().setGuest(true)
         syncReminder(get().S)
+        clearCaptures()   // camera photos left by a cancelled or killed capture
         set({ ready: true })
         return
       }

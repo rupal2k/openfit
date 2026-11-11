@@ -1,5 +1,5 @@
 # Every push and PR: unit suite, web build, API syntax check.
-# On main: also builds a debug Android APK and attaches it to a GitHub release.
+# On main: also builds a debug Android APK as a workflow artifact (never a release asset).
 name: CI
 on:
   push:
@@ -43,7 +43,7 @@ jobs:
     needs: [test-api, test-build]
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -67,17 +67,11 @@ jobs:
           mv frontend/android/app/build/outputs/apk/debug/app-debug.apk \
              OPENFIT-android-${SHORT_SHA}.apk
           echo "APK_NAME=OPENFIT-android-${SHORT_SHA}.apk" >> $GITHUB_ENV
+      # A CI artifact only. A debug build is WebView-debuggable, so it must never sit next to
+      # the signed app-release.apk on a public release (it used to be attached to the latest one).
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: openfit-apk
+          name: openfit-apk-debug
           path: ${{ env.APK_NAME }}
           retention-days: 30
-      - name: Attach APK to latest release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          LATEST=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
-          if [ -n "$LATEST" ]; then
-            gh release upload "$LATEST" "${{ env.APK_NAME }}" --clobber
-          fi

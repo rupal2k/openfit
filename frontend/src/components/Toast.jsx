@@ -2,7 +2,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 
 export default function Toast() {
-  const { toastMsg, toastUndo, toast } = useUI()
+  const toastMsg = useUI(s => s.toastMsg), toastUndo = useUI(s => s.toastUndo), toast = useUI(s => s.toast)
   return (
     <div id="toast" role="status" aria-live="polite" className={toastMsg ? 'show' : ''}>
       <span>{toastMsg}</span>

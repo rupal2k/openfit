@@ -9,7 +9,7 @@ import { parseLabText } from '../lib/labs/parse.js'
 import { reviewRows, buildReport, recentValues, recentReports, status, markerSeries, latestByMarker, ageAt, sexOf, guessUnits, byDate } from '../lib/labs/reports.js'
 import { labScores } from '../lib/labs/scores.js'
 import { confirmSheet } from '../sheets.jsx'
-import { privacyScreen } from '../lib/mobile.js'
+import { privacyScreen, readOnce, clearCaptures } from '../lib/mobile.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented, Section, Row, Check } from '../components/ui.jsx'
@@ -37,9 +37,10 @@ const rangeText = (key, m, sys) => {
 // A PDF with a text layer is read directly. A scanned PDF (no usable text) and a photo go through
 // on-device OCR, which takes a few seconds, so a progress sheet stays up while it runs.
 const MAX_FILE = 25 * 1024 * 1024   // a lab report is well under this; bigger files would stall a phone
-function importFile(file) {
+async function importFile(file) {
   const isPdf = /pdf$/i.test(file.type) || /\.pdf$/i.test(file.name)
   if (file.size > MAX_FILE) { toast(t('That file is too large for a lab report (over 25 MB).')); return }
+  try { file = await readOnce(file) } catch { toast(isPdf ? t('Couldn’t read that PDF.') : t('Couldn’t read that photo.')); return } finally { clearCaptures() }
   ui().openSheet(close => <ReadingSheet file={file} isPdf={isPdf} close={close} />, { locked: true })
 }
 
@@ -77,6 +78,8 @@ function ReadingSheet({ file, isPdf, close }) {
         if (!live.current) return
         text = await ocrText(img, progress, unsure); ocr = true
       }
+      // free the Tesseract worker (WASM heap + model) once the reading is done; it was kept for the session
+      if (ocr) import('../lib/labs/ocr.js').then(m => m.cancelOcr()).catch(() => {})
       const parsed = parseLabText(text, { mdy, ocr })
       if (ocr) {
         const shaky = new Set([...unsure].map(l => l.replace(/\t/g, '  ')))   // same form as row.raw
@@ -264,6 +267,7 @@ function ScoreRow({ s, sys }) {
 export default function Labs() {
   useEffect(() => { privacyScreen(true); return () => privacyScreen(false) }, [])   // results stay out of screenshots and recents
   const S = useStore(s => s.S)
+  const user = useStore(s => s.user)   // signed in to a self-hosted server: reports sync there
   const fileRef = useRef(null)
   const reports = byDate(S.labs?.reports || [])
   const sys = S.labs?.units || 'si'
@@ -278,7 +282,8 @@ export default function Labs() {
   const photoRef = useRef(null)
   const pick = () => fileRef.current?.click()
   const pickPhoto = () => photoRef.current?.click()
-  const onFile = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) importFile(f) }
+  // read before clearing the input: on Android clearing it revokes access to a picked file
+  const onFile = async e => { const input = e.target, f = input.files?.[0]; if (f) await importFile(f); input.value = '' }
   const del = r => confirmSheet({
     title: t('Delete this report?'), message: t('{0} results from {1} will be removed.', r.markers.length, fmtDate(r.d, true)),
     confirmText: t('Delete'), danger: true,
@@ -287,7 +292,7 @@ export default function Labs() {
 
   return <div className="narrow">
     <div className="hdr">
-      <div><h1>{t('Blood tests')}</h1><div className="sub">{t('Read on this device. Never uploaded.')}</div></div>
+      <div><h1>{t('Blood tests')}</h1><div className="sub">{user ? t('Read on this device. Synced only to your own server.') : t('Read on this device. Never uploaded.')}</div></div>
       <div className="row" style={{ gap: 6 }}>
         <button className="iconbtn" onClick={pickPhoto} aria-label={t('Photograph a lab report')}><Icon name="camera" /></button>
         <button className="iconbtn" onClick={pick} aria-label={t('Import a lab report PDF')}><Icon name="upload" /></button>
@@ -314,7 +319,7 @@ export default function Labs() {
         footer={t('Published formulas, for information only. Not medical advice: talk to your doctor about your results.')}>
         {scores.map(s => <ScoreRow key={s.id} s={s} sys={sys} />)}
       </Section>}
-      {latestReport && !Number.isFinite(age) && <p className="dim small">{t('Set your birth year in My Meals to see FIB-4 and biological age.')}</p>}
+      {latestReport && !Number.isFinite(age) && <p className="dim small">{t('Set your birth year in Settings → Your profile to see FIB-4 and biological age.')}</p>}
 
       {Object.entries(CATEGORIES).map(([c, label]) => {
         const items = latest.filter(x => MARKERS[x.key].cat === c)

@@ -12,7 +12,7 @@ import Media from '../components/Media.jsx'
 import { startFlow, planCatalogSheet, exercisePicker, exConfigSheet, exerciseDetailSheet, topWeightSheet, finishWorkout, workoutCompleteSheet, confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
-import { nextPrescription, applyPrescription } from '../lib/progression.js'
+import { nextPrescription, applyPrescription, sessionTarget } from '../lib/progression.js'
 import { validateSet } from '../lib/workout.js'
 import { glyphOf } from '../lib/glyphs.js'
 
@@ -101,15 +101,17 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemov
   }
   // Uses the shared stepper markup so a set row picks up the same control styling
   // as every other +/- field in the app.
-  const cell = (s, i, col, cls) => (
-    <div className={'stp ' + cls}>
-      <button aria-label="Decrease" onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>
+  // screen readers hear "Reps, set 2" rather than an unnamed number between two "Decrease"s
+  const cell = (s, i, col, cls) => {
+    const name = `${col.hd}, ${t('set {0}', i + 1)}`
+    return <div className={'stp ' + cls}>
+      <button aria-label={`${t('Decrease')} ${name}`} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>
       {/* a typed effort is capped — there is no RPE 12, and 12 reps in reserve is a warm-up */}
-      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={s[col.f] ?? ''}
+      <span className="val"><NumberField aria-label={name} decimal={col.dec} nullable={col.opt} value={s[col.f] ?? ''}
         onChange={v => onField(i, col.f, col.eff ? capEffort(col.eff, v) : v)} /></span>
-      <button aria-label="Increase" onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>
+      <button aria-label={`${t('Increase')} ${name}`} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>
     </div>
-  )
+  }
   return <>
     <Media ex={ex} key={entry.id} compact={compact} minimizable />
     <div className="row between" style={{ marginBottom: 6 }}>
@@ -159,7 +161,8 @@ function ActiveWorkout() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
-  const { startRest, stopRest } = useUI()
+  // actions only: subscribing to the whole UI store re-rendered this screen every second of a rest
+  const startRest = useUI(s => s.startRest), stopRest = useUI(s => s.stopRest)
   const working = useUI(s => s.work)
   const A = S.active
   const units = supersetUnits(A.entries)
@@ -270,7 +273,10 @@ function ActiveWorkout() {
         useUI.getState().toast(t('Next: {0}', exOr(A2.entries[nx.idx].id).n))
         startTimed(nx.idx, nx.i)
       }
-      if (useUI.getState().timer) useUI.getState().onRestEnd(go)
+      // EMOM: done before the minute is up means rest out the minute; the next starts on its beep
+      const rest = A2.format === 'emom' ? Math.round((A2.entries[idx].sets[i].sec || 60) - elapsed) : 0
+      if (rest > 0) startRest(rest, go)
+      else if (useUI.getState().timer) useUI.getState().onRestEnd(go)
       else go()
     })
   }
@@ -285,8 +291,16 @@ function ActiveWorkout() {
       const { errors, warns } = check(st, e, e.sets[i])
       // a first-timer doesn't know what weight to put in: say how to pick one
       const firstLoad = errors.some(a => a[0] === 'Enter the weight ({0})') && !lastEntryFor(st, e.id)
-      if (errors.length) return confirmSheet({ title: t('Set {0} not logged', i + 1), message: errors.map(a => t(...a)).join(' · ') + (firstLoad ? '. ' + t('New to this exercise? Pick a weight you can lift for every rep with good form. You can change it next time.') : ''), confirmText: t('Fix it'), cancelText: false })
-      if (warns.length) return confirmSheet({ title: t('Check set {0}', i + 1), message: warns.map(a => t(...a)).join(' · '), confirmText: t('Log anyway'), cancelText: t('Fix it'), onConfirm: () => toggle(idx, i, true) })
+      // "Fix it" lands in the field to fix (the empty or 0 one in that row), after the sheet
+      // has handed focus back to the checkbox that opened it
+      const opener = document.activeElement
+      const fixIt = () => setTimeout(() => {
+        const row = opener?.closest?.('.setrow'), inputs = row ? [...row.querySelectorAll('input')] : []
+        const inp = inputs.find(x => x.value === '' || +x.value === 0) || inputs[0]
+        if (inp) { inp.focus(); inp.select?.() }
+      })
+      if (errors.length) return confirmSheet({ title: t('Set {0} not logged', i + 1), message: errors.map(a => t(...a)).join(' · ') + (firstLoad ? '. ' + t('New to this exercise? Pick a weight you can lift for every rep with good form. You can change it next time.') : ''), confirmText: t('Fix it'), cancelText: false, onConfirm: fixIt })
+      if (warns.length) return confirmSheet({ title: t('Check set {0}', i + 1), message: warns.map(a => t(...a)).join(' · '), confirmText: t('Log anyway'), cancelText: t('Fix it'), onCancel: fixIt, onConfirm: () => toggle(idx, i, true) })
     }
     tick(idx, i)
   }
@@ -353,7 +367,7 @@ function ActiveWorkout() {
   return <div className="narrow">
     <div className="hdr">
       <button className="iconbtn" aria-label={t('Discard')} onClick={() => confirmSheet({ title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true, onConfirm: () => { update(s => { s.active = null }); stopRest(); useUI.getState().stopWork(); nav('/home') } })}><Icon name="xmark" /></button>
-      <div style={{ textAlign: 'center' }}><div style={{ fontWeight: 600 }}>{A.name}</div><div className="sub"><Elapsed start={A.start} /> · {t('{0} sets', done + '/' + total)}</div></div>
+      <div style={{ textAlign: 'center' }}><h1 style={{ fontWeight: 600, fontSize: 'inherit', lineHeight: 'inherit', letterSpacing: 'inherit', margin: 0 }}>{A.name}</h1><div className="sub"><Elapsed start={A.start} /> · {t('{0} sets', done + '/' + total)}</div></div>
       <button className="iconbtn" style={{ color: 'var(--acc-ink)' }} aria-label={t('Finish')} onClick={() => finishWorkout()}><Icon name="check" /></button>
     </div>
     <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
@@ -386,7 +400,7 @@ function ActiveWorkout() {
     <Button onClick={() => exercisePicker(ex => exConfigSheet(ex, null, cfg => update(s => {
       const full = { ...cfg, id: ex.id }
       const plan = nextPrescription(s, full, s.routines.find(r => r.id === s.active.routineId))
-      s.active.entries.push({ id: ex.id, target: { ...cfg }, plan, sets: applyPrescription(buildSets(s, full), plan) })
+      s.active.entries.push({ id: ex.id, target: sessionTarget(cfg, plan), plan, sets: applyPrescription(buildSets(s, full), plan) })
       s.active.cur = s.active.entries.length - 1
     }), null, S.routines.find(r => r.id === A.routineId)))} icon="plus">{t('Add exercise')}</Button>
     <div style={{ height: 10 }} />

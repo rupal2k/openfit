@@ -29,3 +29,6 @@ graphify-out/
 .mcp.json
 HANDOFF-labs.md
 INDEX.md
+
+# on-device smoke test failure screenshot (frontend/e2e/smoke.sh)
+smoke-fail.png

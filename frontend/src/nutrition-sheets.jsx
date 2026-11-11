@@ -5,7 +5,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { t } from './lib/i18n.js'
 import { fmtNum, uid } from './lib/format.js'
-import { targets, bodyKg, entryTotals, addEntry, updateEntry, removeEntry, recentFoods, MEALS, UNITS, toGrams, fromGrams } from './lib/nutrition.js'
+import { targets, bodyKg, entryTotals, addEntry, updateEntry, removeEntry, recentFoods, MEALS, UNITS, toGrams, fromGrams, ADULT_AGE } from './lib/nutrition.js'
 import { searchFoods, lookupBarcode, SEARCH_OK } from './lib/food.js'
 import { bwSheet } from './sheets.jsx'
 import { MOBILE } from './lib/mobile.js'
@@ -29,7 +29,7 @@ function NutritionProfile({ close }) {
   const preview = targets({ ...S, nutrition: { ...S.nutrition, profile: p } })
   const w = bodyKg(S)
   const curYear = new Date().getFullYear()
-  const validBirth = !p.birthYear || (p.birthYear >= 1900 && p.birthYear <= curYear - 10)
+  const validBirth = !p.birthYear || (p.birthYear >= 1900 && p.birthYear <= curYear - ADULT_AGE)
   const validHeight = !p.heightCm || (p.heightCm >= 50 && p.heightCm <= 280)
   const validKcal = !p.kcal || (p.kcal >= 500 && p.kcal <= 10000)
   const valid = validBirth && validHeight && validKcal
@@ -49,7 +49,7 @@ function NutritionProfile({ close }) {
     <Row title={t('Sex')}><Segmented className="seg-inline" value={p.sex} onChange={set('sex')}
       options={[{ value: 'male', label: t('Male') }, { value: 'female', label: t('Female') }, { value: 'other', label: t('Other') }]} /></Row>
     <Row title={t('Birth year')}><NumberField decimal={false} nullable value={p.birthYear} onChange={set('birthYear')} placeholder="1990" aria-label={t('Birth year')} /></Row>
-    {!validBirth && <div className="small" style={{ color: 'var(--red)', marginTop: -6, marginBottom: 6 }}>{t('Enter a 4-digit birth year between 1900 and {0}', curYear - 10)}</div>}
+    {!validBirth && <div className="small" style={{ color: 'var(--red)', marginTop: -6, marginBottom: 6 }}>{t('Enter a 4-digit birth year between 1900 and {0}', curYear - ADULT_AGE)}</div>}
     <Row title={t('Height (cm)')}><NumberField decimal={false} nullable value={p.heightCm} onChange={set('heightCm')} placeholder="175" aria-label={t('Height (cm)')} /></Row>
     {!validHeight && <div className="small" style={{ color: 'var(--red)', marginTop: -6, marginBottom: 6 }}>{t('Height must be between 50 and 280 cm')}</div>}
     <Row title={t('Body weight')} value={w ? fmtNum(w) + ' kg' : t('Not logged')} accessory="chevron" onClick={() => bwSheet()} />
@@ -71,6 +71,7 @@ function NutritionProfile({ close }) {
     </div>
     <Button variant="primary" disabled={!valid || !preview} onClick={save}>{t('Save')}</Button>
     <div className="small dim" style={{ marginTop: 8 }}>{t('Estimate from the IOM 2005 equations, as used by OpenNutriTracker. Protein: 1.6 g per kg body weight.')}</div>
+    <div className="small dim" style={{ marginTop: 6 }}>{t('An estimate for adults, not medical advice. Pregnant, under 18 or managing a health condition? Ask a doctor or dietitian.')}</div>
   </>
 }
 
@@ -335,7 +336,7 @@ function Barcode({ iso, meal, close }) {
       </>
       : <div className="small muted" style={{ marginBottom: 12 }}>{t('Automatic scanning isn’t supported here — type the number under the barcode.')}</div>}
     <div className="row" style={{ gap: 8, marginTop: 10 }}>
-      <TextField inputMode="numeric" placeholder={t('Enter barcode (e.g. 3017624010701)')} value={code} onChange={e => setCode(e.target.value)} style={{ flex: 1 }} autoFocus={!('BarcodeDetector' in window)} />
+      <TextField inputMode="numeric" placeholder={t('Enter barcode (e.g. 3017624010701)')} value={code} onChange={e => setCode(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') find(code) }} aria-label={t('Barcode')} enterKeyHint="search" style={{ flex: 1 }} autoFocus={!('BarcodeDetector' in window)} />
       <Button size="sm" variant="tinted" onClick={() => find(code)}>{t('Look up')}</Button>
     </div>
     {msg && <div className="small muted" style={{ marginTop: 8 }}>{msg}</div>}

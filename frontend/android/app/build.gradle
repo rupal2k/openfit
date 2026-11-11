@@ -16,8 +16,8 @@ android {
         applicationId "com.rupal2k.openfit"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 17
-        versionName "1.6.1"
+        versionCode 18
+        versionName "1.6.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -36,6 +36,10 @@ android {
         }
     }
     buildTypes {
+        // debug installs next to the release app (own id and data) so it can be inspected on the phone
+        debug {
+            applicationIdSuffix ".dbg"
+        }
         release {
             if (ksFile.exists()) signingConfig signingConfigs.release
             minifyEnabled false

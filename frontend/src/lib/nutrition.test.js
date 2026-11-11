@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tdee, targets, ageFrom, bodyKg, entryTotals, dayTotals, addEntry, updateEntry, removeEntry, recentFoods } from './nutrition.js'
+import { tdee, targets, ageFrom, bodyKg, entryTotals, dayTotals, addEntry, updateEntry, removeEntry, recentFoods, KCAL_FLOOR, ADULT_AGE } from './nutrition.js'
 
 const NOW = new Date('2026-06-01T12:00:00')
 const S = (over = {}) => ({
@@ -129,5 +129,29 @@ describe('portion units', () => {
     const drink = { serving: 100, servingUnit: 'ml' }
     expect(fmtAmount({ g: 100, u: 'serving', food: drink })).toBe('1 serving (100 ml)')
     expect(fmtAmount({ g: 250, u: 'serving', food: drink })).toBe('2.5 servings (250 ml)')
+  })
+})
+
+describe('target safety (PM audit 1.6.2)', () => {
+  it('a calculated "lose" goal never drops below the floor for the sex', () => {
+    // small, sedentary woman: IOM minus 500 would be well under 1200 kcal
+    const s = S({ bodyweight: [{ d: '2026-05-30', w: 45 }], nutrition: { profile: { sex: 'female', birthYear: 1990, heightCm: 150, pal: 'sedentary', goal: 'lose', kcal: null }, days: {}, foods: [] } })
+    expect(targets(s, NOW).kcal).toBe(KCAL_FLOOR.female)
+  })
+  it('a typed override is the person\'s choice and is not raised', () => {
+    const s = S({ nutrition: { profile: { sex: 'female', birthYear: 1990, heightCm: 150, pal: 'sedentary', goal: 'lose', kcal: 900 }, days: {}, foods: [] } })
+    expect(targets(s, NOW).kcal).toBe(900)
+  })
+  it('the sheet only takes adult birth years', () => expect(ADULT_AGE).toBe(18))
+})
+
+describe('adults only, inside targets() (correctness audit 1.6.2)', () => {
+  it('a profile saved under the old rule (age 12) gets no calculated target', () => {
+    const s = S({ nutrition: { profile: { sex: 'male', birthYear: 2014, heightCm: 150, pal: 'active', goal: 'maintain', kcal: null }, days: {}, foods: [] } })
+    expect(targets(s, NOW)).toBeNull()
+  })
+  it('a typed override still applies (it is the person\'s own number)', () => {
+    const s = S({ nutrition: { profile: { sex: 'male', birthYear: 2014, heightCm: 150, pal: 'active', goal: 'maintain', kcal: 2000 }, days: {}, foods: [] } })
+    expect(targets(s, NOW).kcal).toBe(2000)
   })
 })

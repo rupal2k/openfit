@@ -40,6 +40,14 @@ export async function nativeSave(state) {
 // routine in the weekly plan. Cheap enough to run after any state change — the plan or the
 // reminder time may just have been edited. `interactive` gates the OS permission prompt to
 // the Settings toggle; a background resync never pops a dialog.
+// Is OPENFIT allowed to show notifications? (revoked in Android settings = reminders never arrive)
+export async function notificationsAllowed() {
+  if (!MOBILE) return true
+  try {
+    const { LocalNotifications } = await import('@capacitor/local-notifications')
+    return (await LocalNotifications.checkPermissions()).display === 'granted'
+  } catch { return true }
+}
 export async function syncReminder(S, interactive = false) {
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
@@ -78,10 +86,48 @@ export function privacyScreen(on) {
 export const MAX_IMPORT_BYTES = 20 * 1024 * 1024
 export const tooBig = f => !!f && f.size > MAX_IMPORT_BYTES
 
+// Android WebView + system photo picker: a picked File reads once as a whole, then every later
+// read (blob: URL, <img>, createImageBitmap, FileReader, slice) fails with NotReadableError /
+// ERR_UPLOAD_FILE_CHANGED. Copy it into memory on the first read; work only on the copy.
+// Check the size before calling this.
+export async function readOnce(f) {
+  return new File([await f.arrayBuffer()], f.name, { type: f.type, lastModified: f.lastModified })
+}
+
 // The backup goes to the share sheet from a cache file. The receiving app may read it after
 // Share resolves, so it can't be deleted then; the previous export is removed instead, so at
 // most one copy of the health data sits in the cache.
 let lastExport = null
+// Reset everything: no backup or plan file with health data may stay in the app cache.
+// The camera hands its photo back as a full-size JPEG in the app's external files dir
+// (Capacitor's file chooser, getExternalFilesDir(Pictures)); nothing removed it, and on older
+// Android, USB or adb it can be read there: a lab report photo carries name, birth date and
+// results. Delete every capture once its bytes are in memory, on boot (cancelled or killed
+// captures) and on Reset.
+export async function clearCaptures() {
+  if (!MOBILE) return
+  try {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    const { files } = await Filesystem.readdir({ path: 'Pictures', directory: Directory.External })
+    for (const f of files) if (/^JPEG_.*\.jpg$/i.test(f.name)) await Filesystem.deleteFile({ path: 'Pictures/' + f.name, directory: Directory.External }).catch(() => {})
+  } catch { /* no captures yet */ }
+  // picked files are copied into cache/picks by the native chooser (PickCopyChromeClient)
+  try {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    const { files } = await Filesystem.readdir({ path: 'picks', directory: Directory.Cache })
+    for (const f of files) await Filesystem.deleteFile({ path: 'picks/' + f.name, directory: Directory.Cache }).catch(() => {})
+  } catch { /* no picks yet */ }
+}
+export async function clearExports() {
+  if (!MOBILE) return
+  try {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    const { files } = await Filesystem.readdir({ path: '', directory: Directory.Cache })
+    for (const f of files) if (/^openfit-(backup|plan)-.*\.json$/.test(f.name)) await Filesystem.deleteFile({ path: f.name, directory: Directory.Cache }).catch(() => {})
+  } catch { /* nothing cached */ }
+  lastExport = null
+  await clearCaptures()
+}
 export async function shareExport(json, filename) {
   const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
   const { Share } = await import('@capacitor/share')

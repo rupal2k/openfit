@@ -52,20 +52,58 @@ There is no database with row-level security. All access control is **code-enfor
 
 | Enforcement point | Location | What it guards |
 |------------------|----------|----------------|
-| `readSession(req)` | `server.js:172` | validates cookie signature, expiry, version, disabled flag |
-| `requireAdmin(req, res)` | `server.js:192` | wraps `readSession` + `isAdmin` for all `/api/admin/*` |
-| `stateFile(uid)` path sanitization | `server.js:50` | strips non-alphanumeric chars from uid to prevent path traversal |
-| invite re-check at verify | `server.js:313` | prevents TOCTOU: invite is re-verified at `register/verify`, not just `register/options` |
-| admin-on-admin disable guard | `server.js:529` | prevents admin from disabling another admin |
-| `delete body.state.active` | `server.js:397` | prevents server from persisting in-progress workout |
+| `readSession(req)` | `server.js:214` | validates cookie signature, expiry, version, disabled flag |
+| `requireAdmin(req, res)` | `server.js:237` | wraps `readSession` + `isAdmin` for all `/api/admin/*` |
+| `stateFile(uid)` path sanitization | `server.js:82` | strips non-alphanumeric chars from uid to prevent path traversal |
+| invite re-check at verify | `server.js:365` | prevents TOCTOU: invite is re-verified at `register/verify`, not just `register/options` |
+| admin-on-admin disable guard | `server.js:601` | prevents admin from disabling another admin |
+| `delete body.state.active` | `server.js:463` | prevents server from persisting in-progress workout |
 
 ---
 
 ## What the API does NOT check
 
-- **Rate limiting** — explicitly delegated to the reverse proxy (nginx / Caddy). No built-in rate limiting.
+- **Rate limiting** — the reverse proxy is expected to do it. The API has only an in-process fallback on the auth endpoints (`checkRateLimit`, `server.js:45`, `RATE_LIMIT_MAX` per IP per 60 s).
 - **CSRF** — not applicable: the API is cookie-based with `SameSite=Lax`; state-changing calls are POST/PUT (not GET); the app makes no CORS cross-origin requests.
-- **Content-Security-Policy** — served by nginx, not the API.
+- **Content-Security-Policy** — not sent by the API or by nginx. The app ships its own CSP as a `<meta>` tag in `frontend/index.html` (see ARCHITECTURE.md §4).
+- **Content of the synced state** — `PUT /api/data` stores whatever state the signed-in user sends (≤ 5 MB), only `active` is stripped. Repair happens in the app (`normalizeState`) on load, not on the server.
+
+### Who can see a user's health data on a self-host server
+
+| Data in `state-<uid>.json` | Owner (`GET /api/data`) | Admin API (`GET /api/admin/user`) | Server operator (disk) |
+|---|---|---|---|
+| workouts, bodyweight | ✅ | ✅ (workouts paginated, bodyweight in full) | ✅ |
+| routines | ✅ | names, emoji and exercise count only | ✅ |
+| nutrition diary, lab reports | ✅ | ❌ not returned | ✅ (plain JSON) |
+
+---
+
+## Android app (standalone build)
+
+No accounts and no roles: the person holding the unlocked phone owns all data. Access control is the Android sandbox plus the settings below.
+
+### Manifest permissions (`frontend/android/app/src/main/AndroidManifest.xml`)
+
+| Permission / declaration | Why (code) | When the user is asked |
+|---|---|---|
+| `INTERNET` | Open Food Facts, jsDelivr media + ONNX runtime, Hugging Face model | never (normal permission) |
+| `VIBRATE` | timers (`lib/sound.js`) | never |
+| `SCHEDULE_EXACT_ALARM` | workout-day reminder to the minute | Android grants or the user toggles it in system settings; the app never prompts |
+| `CAMERA` + `uses-feature camera required=false` | barcode scan via `getUserMedia` in the WebView | on first scan; deny → type the code |
+| `<queries>` `IMAGE_CAPTURE` | "Take photo" must see the phone's camera app on Android 11+ | — |
+| Notifications (runtime, via `@capacitor/local-notifications`) | reminder | only from the Settings reminder toggle (`syncReminder(…, true)`) |
+
+Not requested: storage/media read permissions (pickers return content URIs), location, contacts, accounts.
+
+### Native surfaces
+
+| Surface | Setting | Effect |
+|---|---|---|
+| `FileProvider` `${applicationId}.fileprovider` | `exported=false`, `grantUriPermissions=true`; `file_paths.xml`: `external-files-path Pictures/` and `cache-path .` | camera capture file and share-sheet export only; removing `Pictures/` makes Take photo silently open the gallery (commit 6646c16) |
+| Backup | `allowBackup=true`; `backup_rules.xml` (Android 6–11) excludes everything; `data_extraction_rules.xml` (12+) excludes everything from cloud backup, keeps default device-to-device transfer | no health data in Google cloud backup |
+| `PrivacyScreen` plugin (`PrivacyScreenPlugin.java`) | `set({on})` adds/clears `FLAG_SECURE` | on while `views/Labs.jsx` is mounted |
+| `MainActivity` | `singleTask`, exported launcher only; Back → WebView history, then exit | — |
+| WebView | `allowMixedContent: false`; `CapacitorHttp` enabled | see ARCHITECTURE.md §6 on CSP |
 
 ---
 
@@ -74,3 +112,4 @@ There is no database with row-level security. All access control is **code-enfor
 - [FLOWS.md](FLOWS.md) — step-by-step auth journeys
 - [ARCHITECTURE.md](ARCHITECTURE.md) — system overview and trust boundaries
 - [VARIABLES.md](VARIABLES.md) — config that grants admin privileges (`ADMIN_UIDS`)
+- [MOBILE.md](MOBILE.md) — Android build and native config

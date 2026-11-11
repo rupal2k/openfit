@@ -303,6 +303,9 @@ export function parseWorkoutCSV(text, { unit = 'kg' } = {}) {
   if (rows.length < 2) return { error: 'empty' }
   const map = mapHeader(rows[0])
   const source = detectSource(rows[0])
+  // Strong's Duration is the whole workout's ("1h 2m"), not the set's: read as a set time it
+  // turned every 0-rep row into a cardio set as long as the workout.
+  if (source === 'Strong') delete map.time
   const dateCol = map.date !== undefined ? 'date' : map.startTime !== undefined ? 'startTime' : null
   if (!dateCol || map.exercise === undefined) return { error: 'unrecognised' }
 

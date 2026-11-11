@@ -1,6 +1,58 @@
 # Changelog
 
-## Unreleased (1.4.0)
+## Unreleased (1.6.2)
+
+Photos work again, every language is complete, and a full accessibility pass.
+
+- 📷 **Take photo opens the camera again** (food photos and blood-test photos). Since 1.6.0 it opened the gallery. It now opens the phone's own camera app on any brand.
+- 🖼️ **Choose photo works:** a gallery pick shows its preview and is recognised (it failed with "Couldn't read that photo" or did nothing).
+- ↩️ **Back button:** after a photo is recognised, Back closes the result and stays on My Meals (it also jumped to Home).
+- 🌍 **All 11 languages complete:** ~600 strings, screens, lab markers, scores, dishes, meals and workout plans were still in English, including three tab names. Tests now fail the build if a string is missing.
+- ♿ **Accessibility:** a clean axe-core (WCAG 2.2 AA) run on every screen in dark and light; every control has a name; better contrast for red buttons and secondary text; works at 200% font size.
+- 🍎 **Calorie targets** are for adults (18+), never calculated below a safe minimum, and say they are an estimate, not medical advice.
+- 🗑️ **Reset everything** lists what it deletes and also removes cached backup files; **Export** warns that the file contains blood test results.
+- 🛠️ CI no longer attaches a debug APK to public releases.
+- 📈 **Progression fix:** holds ("add time") and bodyweight reps kept the same target after the first step up; they now keep climbing session after session.
+- 🧹 **Camera photos are deleted** as soon as the app has read them (they stayed in the app's storage folder, including photos of lab reports).
+- 🛡️ Backups and plan files from someone else are checked more strictly, so a broken file can't break a screen.
+- ⚡ The workout screen no longer redraws every second while the rest timer runs; the OCR engine is freed after a blood-test import.
+- 🧭 Loading or importing a plan now takes you to My Plan; a fast language switch can't load the wrong language.
+- 🔔 **Know about updates:** Settings → Check for updates, or turn on "Tell me about new versions" (off by default; it only asks GitHub for the latest version number).
+- ⚖️ **kg or lb from the start:** pick it on the welcome card. Switching later offers to convert every weight you've logged.
+- 🙋 **Your profile** in Settings (sex, birth year, height). **Weigh-ins before workouts can be turned off.**
+- 📵 The reminder card tells you when Android has notifications off for OPENFIT.
+- 🐞 After a crash you can share an error report (the error and app version only).
+- 🗣️ Report a translation error from Settings; a privacy policy (PRIVACY.md).
+- 🚀 Faster start (exercise instructions load when you open an exercise); the food model is checked before it is loaded; sync uploads one at a time.
+- 📥 **Strong import fix:** an unfinished set (0 reps) no longer turns into a cardio set as long as the whole workout; it's dropped and counted.
+- 🧾 A file that isn't an OPENFIT backup gets a plain message instead of a parser error; "Sled 45°" exercise names display correctly; "Added 1 routine" reads right.
+- 🖼️ **PNG photos from the gallery work** (on Samsung, Choose photo with a PNG failed with a "could not be read" error). Picked files are copied into the app first, and the copies are deleted once read.
+- ⏱️ **EMOM:** tapping Done before the minute is up now rests out the minute; the next exercise starts on the minute's beep instead of straight away.
+
+## v1.6.1 — 2026-11-11
+
+- 📴 **Planned workouts work offline:** pictures for every exercise in your routines are saved while online.
+- 🔒 **Blood tests stay private:** blocked from screenshots, screen recordings and the recent-apps preview.
+- ✅ Food recognition's runtime is checked against a hash fixed into the release; a Content-Security-Policy limits what the app loads and talks to.
+- 👆 Taller weight and reps buttons in a set.
+
+## v1.6.0 — 2026-11-11
+
+- ⏱️ **Interval workouts:** Tabata, EMOM and AMRAP plans and a Format setting in the routine editor; the timer runs the block.
+- 👋 **Easier start:** the welcome card asks where you train and shows plans that fit; a Beginner Full Body plan.
+- 🔧 Light-theme contrast, vibration, early holds, offline placeholders, large-text labels; version number in Settings; Capacitor security update.
+
+## v1.5.0 — 2026-11-10
+
+- 🏠 **Train at home:** Gym / Home / Home gym plans, five new home plans.
+- 🔁 **Circuits run themselves**, rest timer per routine, one-side moves count both sides.
+
+## v1.4.0 — 2026-11-05
+
+- 🩸 **Blood tests:** import a lab report PDF, scan or photo, read on the phone with no AI service and nothing uploaded; review before saving, charts in SI or US units, published scores (HOMA-IR, FIB-4, PhenoAge and more), for information only.
+- 🔐 **Privacy:** data left out of Google cloud backup, bundled fonts, birth year only.
+
+### Also in 1.4.0
 
 - 🎨 **New app icon.** A new OPENFIT logo on the Android launcher (square, round and adaptive), splash screens, iOS icon, PWA and website icons, favicon and the in-app header. The adaptive Android icon now shows the whole logo instead of cropping its edges.
 - 🖼️ Fresh screenshots and carousel from the current app.

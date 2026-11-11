@@ -5,7 +5,7 @@ import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipme
 import { fmtDate, fmtNum, fmtVol, fmtDur, durPart, todayISO, uid, exCount, DAYN, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, buildSets, sessionSets, effectiveRoutineId, setsDone, setsDoneActive, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, isBw, isPerSide, sideReps } from './lib/history.js'
 import { beep, vibrate } from './lib/sound.js'
-import { t, instrFor, getLang, INSTR_LANGS } from './lib/i18n.js'
+import { t, instrFor, loadInstr, getLang, INSTR_LANGS } from './lib/i18n.js'
 import { nav } from './lib/nav.js'
 import { starterRoutines, PLAN_TEMPLATES, PLAN_WHERE, instantiatePlan, templateEx } from './lib/starter.js'
 import Media, { Thumb } from './components/Media.jsx'
@@ -20,7 +20,8 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-sha
 import { parseAnyPlan, downloadSampleCSV, downloadSampleJSON } from './lib/plan-upload.js'
 import { estimate1RM, best1RM, REP_CAP } from './lib/onerm.js'
 import { finishSession, recordSession, invalidDoneSets, doubtfulDoneSets, cleanConfig } from './lib/workout.js'
-import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
+import { checkForUpdate } from './lib/updates.js'
+import { nextPrescription, applyPrescription, sessionTarget, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
 import { MOBILE, shareExport, tooBig } from './lib/mobile.js'
 
 const S = () => useStore.getState().S
@@ -30,14 +31,14 @@ const toast = m => ui().toast(m)
 const snd = () => S().sound
 
 /* ============================ custom confirm dialog ============================ */
-function ConfirmDialog({ title, message, confirmText, cancelText, danger, onConfirm, close }) {
+function ConfirmDialog({ title, message, confirmText, cancelText, danger, onConfirm, onCancel, close }) {
   return <div style={{ textAlign: 'center', padding: '4px 0' }}>
     {title && <h3 style={{ marginBottom: 8 }}>{title}</h3>}
     <div className="muted" style={{ marginBottom: 18, lineHeight: 1.5 }}>{message}</div>
     <button className={'btn ' + (danger ? 'danger' : 'primary')} onClick={() => { close(); if (onConfirm) ui().afterClose(onConfirm) }}>{confirmText || t('Confirm')}</button>
     {/* cancelText: false makes it a one-button notice */}
     {cancelText !== false && <><div style={{ height: 8 }} />
-    <Button variant="ghost" className="dim" onClick={close}>{cancelText || t('Cancel')}</Button></>}
+    <Button variant="ghost" className="dim" onClick={() => { close(); if (onCancel) ui().afterClose(onCancel) }}>{cancelText || t('Cancel')}</Button></>}
   </div>
 }
 // Themed replacement for window.confirm — callback-based (no blocking).
@@ -71,8 +72,8 @@ function PlanCatalog({ close, start }) {
       }
     })
     close()
-    toast(t('Loaded “{0}” ({1} routines)', selectedPlan.name, routines.length))
-    nav('/plan')
+    toast(t('Loaded “{0}” ({1} routines)', t(selectedPlan.name), routines.length))
+    ui().afterClose(() => nav('/plan'))
   }
 
   return <>
@@ -105,16 +106,16 @@ function PlanCatalog({ close, start }) {
               <div className="row" style={{ gap: 10, alignItems: 'center' }}>
                 <span className="lrow-i"><Icon name={p.icon || 'barbell'} /></span>
                 <div>
-                  <div className="tt" style={{ fontWeight: 600 }}>{p.name}</div>
+                  <div className="tt" style={{ fontWeight: 600 }}>{t(p.name)}</div>
                   <div className="ss">{p.routines.length} {t(p.routines.length === 1 ? 'routine' : 'routines')} · {p.routines.reduce((acc, r) => acc + r.ex.length, 0)} {t('exercises')}</div>
                 </div>
               </div>
               <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-                <span className={'tag nocap' + (isSel ? ' acc' : '')}>{p.badge}</span>
+                <span className={'tag nocap' + (isSel ? ' acc' : '')}>{t(p.badge)}</span>
                 {isSel && <Icon name="check" className="accent" />}
               </div>
             </div>
-            <div className="dim small" style={{ lineHeight: 1.4 }}>{p.desc}</div>
+            <div className="dim small" style={{ lineHeight: 1.4 }}>{t(p.desc)}</div>
           </div>
         )
       })}
@@ -135,7 +136,7 @@ function PlanCatalog({ close, start }) {
               <div className="row between" style={{ alignItems: 'center' }}>
                 <div className="row" style={{ gap: 8, alignItems: 'center' }}>
                   <span className="lrow-i" style={{ width: 28, height: 28 }}><Icon name={glyphOf(r.emoji)} /></span>
-                  <div className="tt" style={{ fontSize: 15 }}>{r.name}</div>
+                  <div className="tt" style={{ fontSize: 15 }}>{t(r.name)}</div>
                 </div>
                 <div className="row" style={{ gap: 6, alignItems: 'center' }}>
                   <span className="ss">{exCount(r.ex.length)}</span>
@@ -176,7 +177,7 @@ function PlanCatalog({ close, start }) {
     </div>}
 
     <Button variant="primary" icon="sparkles" onClick={apply}>
-      {t('Load “{0}”', selectedPlan.name)}
+      {t('Load “{0}”', t(selectedPlan.name))}
     </Button>
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
@@ -272,6 +273,7 @@ function BwSheet({ required, onDone, close }) {
     {!touched && <div className="small dim" style={{ marginTop: 6 }}>{t('Not your weight? Set it above, or skip it below.')}</div>}
     {required && <>
       <div style={{ height: 8 }} /><Button variant="ghost" className="dim" onClick={() => { close(); if (onDone) ui().afterClose(() => onDone(null)) }}>{t('Start without weighing in')}</Button>
+      <div style={{ height: 2 }} /><Button variant="ghost" className="dim" onClick={() => { update(s => { s.askWeight = false }); close(); toast(t('Weigh-ins are off. Turn them back on in Settings.')); if (onDone) ui().afterClose(() => onDone(null)) }}>{t('Don’t ask before workouts')}</Button>
       <div style={{ height: 2 }} /><Button variant="ghost" className="dim" icon="reset" onClick={() => { close(); ui().afterClose(() => nav('/workout')) }}>{t('Choose a different workout')}</Button>
     </>}
     {!required && recent.length > 0 && <>
@@ -340,17 +342,17 @@ function ImportSummary({ parsed, close }) {
       {t('The file does not say which unit it uses — numbers are imported as they are.')}
     </div>}
     {!isBW && parsed.invalid > 0 && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
-      {t('{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.', parsed.invalid)}
+      {t(parsed.invalid === 1 ? '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.' : '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.', parsed.invalid)}
     </div>}
     {have > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
-      {t('{0} days already have data here and will be left alone.', have)}
+      {t(have === 1 ? '{0} day already has data here and will be left alone.' : '{0} days already have data here and will be left alone.', have)}
     </div>}
     {/* The file rated its sets. Say so: the column is off by default, so the ratings would
         otherwise arrive invisibly and look like they had been dropped. */}
     {!isBW && (parsed.rirSets + parsed.rpeSets) > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
-      {t(effortOf(st) === 'none'
-        ? '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.'
-        : '{0} sets bring an {1} with them.',
+      {t((parsed.rirSets || parsed.rpeSets) === 1
+        ? (effortOf(st) === 'none' ? '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.' : '{0} set brings an {1} with it.')
+        : (effortOf(st) === 'none' ? '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.' : '{0} sets bring an {1} with them.'),
       parsed.rirSets || parsed.rpeSets, parsed.rirSets ? 'RIR' : 'RPE')}
     </div>}
     {!isBW && parsed.unmatchedNames.length > 0 && <>
@@ -370,9 +372,12 @@ function ImportSummary({ parsed, close }) {
 }
 
 /** Read a CSV/XML export, then show what it would do. */
-export function importFromApp(file, onDone) {
-  if (tooBig(file)) { toast(t('This file is too large to import.')); return }
+// onRead runs once the file has been read (or failed): the caller clears its <input> then, not
+// before — on Android clearing it first revokes access to the picked file
+export function importFromApp(file, onDone, onRead) {
+  if (tooBig(file)) { toast(t('This file is too large to import.')); onRead && onRead(); return }
   const rd = new FileReader()
+  rd.onloadend = () => onRead && onRead()
   rd.onload = () => {
     let parsed
     try { parsed = parseImport(String(rd.result), { unit: S().unit }) }
@@ -446,6 +451,9 @@ function OneRM({ ex }) {
 }
 
 function ExerciseDetail({ ex, close }) {
+  // the instruction pack loads when the sheet opens; the steps appear when it has
+  const [, setInstrReady] = useState(false)
+  useEffect(() => { let on = true; loadInstr().then(() => on && setInstrReady(true)); return () => { on = false } }, [ex.id, getLang()])
   const st = useStore(s => s.S)
   const last = lastEntryFor(st, ex.id)
   const best = bestWeightFor(st, ex.id)
@@ -485,7 +493,7 @@ function AddToRoutine({ ex, close }) {
       })
       const r = isNew ? S().routines[S().routines.length - 1] : st.routines.find(x => x.id === rid)
       toast(t('“{0}” added to {1}', ex.n, r ? r.name : t('routine')))
-      if (isNew && r) nav('/plan/r/' + r.id)
+      if (isNew && r) ui().afterClose(() => nav('/plan/r/' + r.id))
     }, null, isNew ? null : st.routines.find(x => x.id === rid))
   }
   return <>
@@ -531,12 +539,12 @@ function CustomExForm({ existing, prefill, onDone, close }) {
   return <>
     <h3>{existing ? t('Edit custom exercise') : t('Create your own exercise')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Name it and pick a body part — it behaves like any other exercise, just without an animation.')}</div>
-    <input className="input" placeholder={t('Exercise name')} value={n} onChange={e => setN(e.target.value)} />
+    <input className="input" aria-label={t('Exercise name')} placeholder={t('Exercise name')} value={n} onChange={e => setN(e.target.value)} />
     <div className="chips" style={{ margin: '12px 0' }}>
-      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => setBp(b)}>{t(b)}</button>)}
+      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} aria-pressed={bp === b} onClick={() => setBp(b)}>{t(b)}</button>)}
     </div>
     {bp === 'cardio' && <div className="small dim row" style={{ marginBottom: 10, gap: 5 }}><Icon name="figureRun" style={{ fontSize: 13 }} />{t('Cardio exercises log time + speed instead of weight × reps.')}</div>}
-    <textarea className="input" rows={4} maxLength={1000} placeholder={t('Description (optional) — setup, cues, anything you want to remember')}
+    <textarea className="input" rows={4} maxLength={1000} aria-label={t('Description (optional)')} placeholder={t('Description (optional) — setup, cues, anything you want to remember')}
       value={desc} onChange={e => setDesc(e.target.value)} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save}>{existing ? t('Save') : t('Create exercise')}</Button>
@@ -596,13 +604,13 @@ function ExercisePicker({ onPick, close }) {
     <div className="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input className="input" placeholder={t('Search {0} exercises…', all.length)} value={q} onChange={e => { setQ(e.target.value); setShown(50) }} /></div>
     <div className="chips" style={{ margin: eqOpts.length > 1 ? '10px 0 6px' : '10px 0' }}>
-      {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} onClick={() => { setBp('★'); setEq(''); setShown(50) }}><Icon name="starFill" style={{ fontSize: 12, display: 'inline-block', marginRight: 4, verticalAlign: '-1px' }} />{t('Chosen')} ({chosenCount})</button>}
+      {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} aria-pressed={bp === '★'} onClick={() => { setBp('★'); setEq(''); setShown(50) }}><Icon name="starFill" style={{ fontSize: 12, display: 'inline-block', marginRight: 4, verticalAlign: '-1px' }} />{t('Chosen')} ({chosenCount})</button>}
       <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(50) }}>{t('All')}</button>
-      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setEq(''); setShown(50) }}>{t(b)}</button>)}
+      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} aria-pressed={bp === b} onClick={() => { setBp(b); setEq(''); setShown(50) }}>{t(b)}</button>)}
     </div>
     {eqOpts.length > 1 && <div className="chips" style={{ marginBottom: 10 }}>
       <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(50) }}>{t('Any equipment')}</button>
-      {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(50) }}>{t(x)}</button>)}
+      {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} aria-pressed={eqOn === x} onClick={() => { setEq(x); setShown(50) }}>{t(x)}</button>)}
     </div>}
     <div className="list">
       {bp !== '★' && <div className="item" onClick={() => customExSheet(null, ex => onPick(ex), q.trim())}>
@@ -725,13 +733,13 @@ function ExConfig({ ex, existing, onSave: save0, onDelete, close, routine }) {
     {!cardio && <div className="sect-b" style={{ marginBottom: 8 }}>
       <Row icon="figureStrength" iconTint="var(--acc)" title={t('Bodyweight')}
         subtitle={bw ? t('No weight to enter — just log the reps.') : t('Ask for a weight on every set.')}>
-        <Switch checked={bw} onChange={v => setC(x => ({ ...x, bodyweight: v, weight: v ? 0 : x.weight }))} />
+        <Switch aria-label={t('Bodyweight')} checked={bw} onChange={v => setC(x => ({ ...x, bodyweight: v, weight: v ? 0 : x.weight }))} />
       </Row>
       {mode === 'reps' && <Row icon="shuffle" iconTint="var(--blue)" title={t('Reps per side')}
         subtitle={perSide ? t('You still log the total: {0} is {1} per side.', c.reps || 0, fmtNum(sideReps(c.reps))) : t('For lunges, single-arm rows and the like.')}>
         {/* Turning it on rounds the target up to an even number, since half of an odd
             total is a rep one side does not get. */}
-        <Switch checked={perSide} onChange={v => setC(x => ({ ...x, side: v || undefined, reps: v ? Math.ceil((x.reps || 0) / 2) * 2 : x.reps }))} />
+        <Switch aria-label={t('Reps per side')} checked={perSide} onChange={v => setC(x => ({ ...x, side: v || undefined, reps: v ? Math.ceil((x.reps || 0) / 2) * 2 : x.reps }))} />
       </Row>}
     </div>}
     {/* A stepper is too wide to sit in a list row next to a label — it squeezes the text to
@@ -807,9 +815,12 @@ function PlanTools({ close }) {
     close(); toast(t('Plan file saved — send it to a friend'))
   }
   const pickFile = ev => {
-    const f = ev.target.files[0]; ev.target.value = ''; if (!f) return
-    if (tooBig(f)) { toast(t('This file is too large to import.')); return }
+    // clear the input only once the read is over: on Android clearing it revokes access to the pick
+    const input = ev.target, f = input.files[0]; if (!f) return
+    if (tooBig(f)) { input.value = ''; toast(t('This file is too large to import.')); return }
     const rd = new FileReader()
+    rd.onloadend = () => { input.value = '' }
+    rd.onerror = () => toast(t('Failed to read file'))
     rd.onload = () => {
       try { const bundle = parsePlan(rd.result); close(); planImportSheet(bundle) }
       catch (e) { toast(t('Import failed: {0}', e.message)) }
@@ -843,8 +854,8 @@ function PlanImport({ bundle, close }) {
   const apply = () => {
     update(s => mergePlan(s, bundle, { schedule }))
     close()
-    toast(t('Added {0} routines to your plan', bundle.routineCount))
-    nav('/plan')
+    toast(t(bundle.routineCount === 1 ? 'Added {0} routine to your plan' : 'Added {0} routines to your plan', bundle.routineCount))
+    ui().afterClose(() => nav('/plan'))
   }
   return <>
     <h3>{bundle.name ? t('Import “{0}”', bundle.name) : t('Import this plan')}</h3>
@@ -863,7 +874,7 @@ function PlanImport({ bundle, close }) {
     </div>}
     {bundle.scheduledDays > 0 && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', borderBottom: '1px solid var(--sep)', marginBottom: 16, gap: 12 }}>
       <div><div className="tt" style={{ fontSize: 15 }}>{t('Use this weekly schedule')}</div><div className="small dim">{t('Replaces your current Mon–Sun assignments.')}</div></div>
-      <Switch checked={schedule} onChange={setSchedule} />
+      <Switch aria-label={t('Use this weekly schedule')} checked={schedule} onChange={setSchedule} />
     </div>}
     <Button variant="primary" onClick={apply}>{t('Add to my plan')}</Button>
     <div style={{ height: 8 }} />
@@ -901,6 +912,8 @@ function PlanUpload({ close }) {
     rd.onerror = () => {
       setErrorMsg(t('Failed to read file'))
     }
+    // clear the input only once the read is over: on Android clearing it revokes access to the pick
+    rd.onloadend = () => { if (fileRef.current) fileRef.current.value = '' }
     rd.readAsText(file)
   }
 
@@ -940,7 +953,7 @@ function PlanUpload({ close }) {
       <div className="tt" style={{ fontSize: 16, fontWeight: 600 }}>{t('Choose or drop plan file')}</div>
       <div className="dim small" style={{ marginTop: 4 }}>{t('Accepts .csv, .json')}</div>
     </div>
-    <input ref={fileRef} type="file" accept=".csv,.json,.txt,.xlsx,text/csv,application/json" onChange={e => { const f = e.target.files[0]; e.target.value = ''; if (f) handleFile(f) }} hidden />
+    <input ref={fileRef} type="file" accept=".csv,.json,.txt,.xlsx,text/csv,application/json" onChange={e => handleFile(e.target.files[0])} hidden />
 
     <div className="card" style={{ padding: '14px', marginBottom: 16, background: 'var(--surface-2)' }}>
       <div className="row between" style={{ alignItems: 'center', marginBottom: 6 }}>
@@ -1076,9 +1089,9 @@ function Calendar({ start, close }) {
   }
   return <>
     <div className="row between" style={{ marginBottom: 2 }}>
-      <button className="iconbtn" onClick={() => setCur(new Date(y, mo - 1, 1))} aria-label="Previous month"><Icon name="chevronLeft" /></button>
+      <button className="iconbtn" onClick={() => setCur(new Date(y, mo - 1, 1))} aria-label={t('Previous month')}><Icon name="chevronLeft" /></button>
       <h3 style={{ margin: 0 }}>{t(MONTHS_LONG[mo])} {y}</h3>
-      <button className="iconbtn" onClick={() => setCur(new Date(y, mo + 1, 1))} aria-label="Next month"><Icon name="chevronRight" /></button>
+      <button className="iconbtn" onClick={() => setCur(new Date(y, mo + 1, 1))} aria-label={t('Next month')}><Icon name="chevronRight" /></button>
     </div>
     <div className="small muted" style={{ textAlign: 'center' }}>{monthWs.length ? `${t(monthWs.length === 1 ? '{0} workout' : '{0} workouts', monthWs.length)} · ${fmtDur(monthMs)} · ${fmtVol(monthVol, st.unit)}` : t('No workouts this month')}</div>
     <div className="cal-grid">{['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(l => <div key={l} className="cal-h">{t(l)}</div>)}{cells}</div>
@@ -1105,9 +1118,29 @@ export function WorkoutRow({ w, onClick }) {
   </div>
 }
 
+/* ============================ update check ============================ */
+// interactive: the person tapped "Check for updates" (say what happened either way);
+// otherwise the opt-in daily check, which only speaks up when there is something new.
+export async function runUpdateCheck(interactive) {
+  try {
+    localStorage.setItem('openfit_update_check', String(Date.now()))
+  } catch { /* private mode */ }
+  try {
+    const r = await checkForUpdate(__APP_VERSION__)
+    if (!r.newer) { if (interactive) toast(t('You have the latest version ({0}).', __APP_VERSION__)); return }
+    confirmSheet({
+      title: t('OPENFIT {0} is available', r.latest),
+      message: t('You have {0}. Download the new APK and install it over this app; your data stays.', __APP_VERSION__),
+      confirmText: t('Open the download page'), cancelText: t('Later'),
+      onConfirm: () => window.open(r.url, '_blank', 'noopener')
+    })
+  } catch { if (interactive) toast(t('Could not check for updates — check your connection.')) }
+}
+
 /* ============================ workout lifecycle ============================ */
 export function startFlow(routineId) {
   const last = lastBW(S())
+  if (S().askWeight === false) { beginWorkout(routineId, last && last.d === todayISO() ? last.w : null); return }
   if (last && last.d === todayISO() && last.w) {
     beginWorkout(routineId, last.w)
     return
@@ -1122,7 +1155,7 @@ export function beginWorkout(routineId, bw) {
   // kept on the entry purely so the workout can explain the number it chose.
   const entries = (r ? r.ex : []).map(cfg => {
     const plan = nextPrescription(st, cfg, r)
-    return { id: cfg.id, sg: cfg.sg, target: { ...cfg }, plan, sets: applyPrescription(sessionSets(st, cfg, r?.format), plan) }
+    return { id: cfg.id, sg: cfg.sg, target: sessionTarget(cfg, plan), plan, sets: applyPrescription(sessionSets(st, cfg, r?.format), plan) }
   })
   update(s => {
     s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries, ...(r?.rest ? { rest: r.rest } : {}), ...(r?.format ? { format: r.format } : {}), ...(r?.cap ? { cap: r.cap } : {}) }

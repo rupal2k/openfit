@@ -10,6 +10,7 @@ import { addEntry, entryTotals, MEALS } from './lib/nutrition.js'
 import { MODELS, downloadBytes, RUNTIME_BYTES } from './lib/vision/catalog.js'
 import { MESSAGES } from './lib/vision/errors.js'
 import { prepImage } from './lib/vision/image.js'
+import { readOnce, clearCaptures } from './lib/mobile.js'
 import { analyzeDish } from './lib/vision/analyzer.js'
 import { useVision, refreshVision, installModel, cancelInstall, removeModel, classify, cancelClassify } from './lib/vision/client.js'
 import { MEAL_LABEL, foodSearchSheet } from './nutrition-sheets.jsx'
@@ -20,6 +21,7 @@ const toast = m => ui().toast(m)
 const mb = b => Math.round((b || 0) / 1e6)
 const quiet = e => { if (e?.kind !== 'CANCELLED') toast(t(e?.message || 'Something went wrong')) }
 const pct = s => Math.round(s * 100) + '%'
+const MAX_PHOTO_BYTES = 40 * 1024 * 1024
 
 function Progress({ loaded, total }) {
   const p = total ? Math.min(100, (loaded / total) * 100) : 0
@@ -80,10 +82,16 @@ function Photo({ iso, meal, close }) {
   useEffect(() => () => { if (useVision.getState().state === 'busy') cancelClassify() }, [])
 
   const pickFile = async e => {
-    const f = e.target.files?.[0]
-    e.target.value = ''
+    const input = e.target, f = input.files?.[0]
     if (!f) return
-    try { const blob = await prepImage(f); setImg({ blob, url: URL.createObjectURL(blob) }) } catch (err) { quiet(err) }
+    // a phone photo is a few MB; a huge file would be copied into memory whole by readOnce
+    if (f.size > MAX_PHOTO_BYTES) { input.value = ''; toast(t('This file is too large to import.')); return }
+    // read before clearing the input: on Android clearing it revokes access to a gallery pick
+    let copy
+    // the browser's read error is jargon ("…permission problems…"): say what happened
+    try { copy = await readOnce(f) } catch { toast(t('Couldn’t read that photo.')); input.value = ''; return } finally { clearCaptures() }
+    try { const blob = await prepImage(copy); setImg({ blob, url: URL.createObjectURL(blob) }) } catch (err) { quiet(err) }
+    finally { input.value = '' }
   }
   const run = async () => {
     try {
