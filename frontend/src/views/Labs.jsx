@@ -9,6 +9,7 @@ import { parseLabText } from '../lib/labs/parse.js'
 import { reviewRows, buildReport, recentValues, recentReports, status, markerSeries, latestByMarker, ageAt, sexOf, guessUnits, byDate } from '../lib/labs/reports.js'
 import { labScores } from '../lib/labs/scores.js'
 import { confirmSheet } from '../sheets.jsx'
+import { privacyScreen } from '../lib/mobile.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented, Section, Row, Check } from '../components/ui.jsx'
@@ -261,6 +262,7 @@ function ScoreRow({ s, sys }) {
 /* ---------------- the page ---------------- */
 
 export default function Labs() {
+  useEffect(() => { privacyScreen(true); return () => privacyScreen(false) }, [])   // results stay out of screenshots and recents
   const S = useStore(s => s.S)
   const fileRef = useRef(null)
   const reports = byDate(S.labs?.reports || [])

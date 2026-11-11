@@ -5,6 +5,7 @@ import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { ACCENTS } from './lib/format.js'
 import { MOBILE } from './lib/mobile.js'
+import { saveMedia, routineExIds } from './lib/media-cache.js'
 import { setLang, useLang } from './lib/i18n.js'
 import { setNav } from './lib/nav.js'
 import { useWakeLock } from './lib/wakelock.js'
@@ -49,6 +50,14 @@ function Shell() {
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
   useEffect(() => { applyPrefs(S.theme, S.accent) }, [S.theme, S.accent])
+  // keep the planned exercises' pictures for offline use (a few seconds after the plan settles)
+  const planIds = routineExIds(S).join(',')
+  useEffect(() => {
+    const run = () => { if (navigator.onLine !== false) saveMedia(planIds ? planIds.split(',') : []).catch(() => {}) }
+    const tm = setTimeout(run, 3000)
+    window.addEventListener('online', run)
+    return () => { clearTimeout(tm); window.removeEventListener('online', run) }
+  }, [planIds])
   useEffect(() => { setLang(S.lang || 'en') }, [S.lang])
   useEffect(() => { document.documentElement.lang = S.lang || 'en' }, [langV, S.lang])
   // every tab/route change starts at the top of the page

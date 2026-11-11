@@ -6,6 +6,7 @@ import { AutoImageProcessor, AutoModelForImageClassification, RawImage, env } fr
 import { MODELS, deviceFiles, fileUrl } from './catalog.js'
 import { verifyBuffer } from './verify.js'
 import { topK } from './topk.js'
+import { pinRuntime } from './runtime.js'
 
 env.allowLocalModels = false
 // Offline, transformers.js still probes optional files it never cached (online they 404 and are
@@ -28,6 +29,8 @@ async function load(id, device, rid) {
   // Not pipeline(): it discovers a model's files by asking the network about the `main` branch,
   // ignoring `revision`, so offline it concludes there is no preprocessor. Loading the two pieces
   // directly keeps every request on the pinned commit — and in the cache.
+  // the inference runtime itself, checked against the hashes pinned at build time
+  await pinRuntime(env.backends.onnx)
   let run
   try {
     const opts = { revision: m.revision, progress_callback }

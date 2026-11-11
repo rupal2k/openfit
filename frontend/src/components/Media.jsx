@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { imgSrc, gifSrc } from '../lib/exercises.js'
+import { useMediaSrc } from '../lib/media-cache.js'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
@@ -11,7 +12,9 @@ import Icon from './Icon.jsx'
 // future workouts (issue #12).
 export default function Media({ ex, id, compact, minimizable }) {
   const [playing, setPlaying] = useState(true)
-  const [broken, setBroken] = useState(false)   // offline and never loaded: say so, not a broken-image icon
+  const src = useMediaSrc(ex.gif ? (playing ? gifSrc(ex) : imgSrc(ex)) : '')
+  const [failed, setFailed] = useState(null)   // the src that failed (offline, never saved): say so, not a broken-image icon
+  const broken = !!src && failed === src
   const gifSize = useStore(s => s.S.gifSize)
   const update = useStore(s => s.update)
   if (!ex.gif) return null
@@ -21,7 +24,7 @@ export default function Media({ ex, id, compact, minimizable }) {
     <div className={'exmedia' + (compact ? ' compact' : '') + (mini ? ' mini' : '')} id={id} onClick={() => setPlaying(p => !p)}>
       {broken
         ? <div className="exmedia-off"><Icon name="dumbbell" /><span>{t('The animation shows once you’re online. Tap ⓘ for written steps.')}</span></div>
-        : <img decoding="async" src={playing ? gifSrc(ex) : imgSrc(ex)} alt={ex.n} onError={() => setBroken(true)} />}
+        : src ? <img decoding="async" src={src} alt={ex.n} onError={() => setFailed(src)} /> : <div className="exmedia-off" aria-hidden="true" />}
       {minimizable && (
         <button className="giftoggle" onClick={toggleSize}>
           <Icon name={mini ? 'expand' : 'minimize'} />{mini ? t('Expand') : t('Minimize')}
@@ -37,7 +40,8 @@ export default function Media({ ex, id, compact, minimizable }) {
 }
 
 export function Thumb({ ex }) {
-  const [broken, setBroken] = useState(false)
-  if (!ex.img || broken) return <div className="thumb thumb-x"><Icon name="dumbbell" /></div>
-  return <img className="thumb" loading="lazy" decoding="async" src={imgSrc(ex)} alt="" onError={() => setBroken(true)} />
+  const src = useMediaSrc(ex.img ? imgSrc(ex) : '')
+  const [failed, setFailed] = useState(null)
+  if (!ex.img || !src || failed === src) return <div className="thumb thumb-x"><Icon name="dumbbell" /></div>
+  return <img className="thumb" loading="lazy" decoding="async" src={src} alt="" onError={() => setFailed(src)} />
 }
