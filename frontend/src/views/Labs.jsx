@@ -78,6 +78,8 @@ function ReadingSheet({ file, isPdf, close }) {
         if (!live.current) return
         text = await ocrText(img, progress, unsure); ocr = true
       }
+      // free the Tesseract worker (WASM heap + model) once the reading is done; it was kept for the session
+      if (ocr) import('../lib/labs/ocr.js').then(m => m.cancelOcr()).catch(() => {})
       const parsed = parseLabText(text, { mdy, ocr })
       if (ocr) {
         const shaky = new Set([...unsure].map(l => l.replace(/\t/g, '  ')))   // same form as row.raw

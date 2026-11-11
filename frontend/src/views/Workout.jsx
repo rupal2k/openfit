@@ -161,7 +161,8 @@ function ActiveWorkout() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
-  const { startRest, stopRest } = useUI()
+  // actions only: subscribing to the whole UI store re-rendered this screen every second of a rest
+  const startRest = useUI(s => s.startRest), stopRest = useUI(s => s.stopRest)
   const working = useUI(s => s.work)
   const A = S.active
   const units = supersetUnits(A.entries)
