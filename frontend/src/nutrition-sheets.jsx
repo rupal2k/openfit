@@ -335,7 +335,7 @@ function Barcode({ iso, meal, close }) {
       </>
       : <div className="small muted" style={{ marginBottom: 12 }}>{t('Automatic scanning isn’t supported here — type the number under the barcode.')}</div>}
     <div className="row" style={{ gap: 8, marginTop: 10 }}>
-      <TextField inputMode="numeric" placeholder={t('Enter barcode (e.g. 3017624010701)')} value={code} onChange={e => setCode(e.target.value)} style={{ flex: 1 }} autoFocus={!('BarcodeDetector' in window)} />
+      <TextField inputMode="numeric" placeholder={t('Enter barcode (e.g. 3017624010701)')} value={code} onChange={e => setCode(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') find(code) }} aria-label={t('Barcode')} enterKeyHint="search" style={{ flex: 1 }} autoFocus={!('BarcodeDetector' in window)} />
       <Button size="sm" variant="tinted" onClick={() => find(code)}>{t('Look up')}</Button>
     </div>
     {msg && <div className="small muted" style={{ marginTop: 8 }}>{msg}</div>}
