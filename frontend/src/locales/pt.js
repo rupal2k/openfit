@@ -403,6 +403,7 @@ export default {
   'The file is in {0} and your profile is in {1} — weights will be converted.': 'O ficheiro está em {0} e o teu perfil em {1} — os pesos serão convertidos.',
   'The file does not say which unit it uses — numbers are imported as they are.': 'O ficheiro não indica a unidade — os números são importados tal como estão.',
   'The file mixes kg and lb — each set is converted to {0}.': 'O ficheiro mistura kg e lb — cada série é convertida para {0}.',
+  '{0} day already has data here and will be left alone.': '{0} dia já tem dados aqui e não será tocado.',
   '{0} days already have data here and will be left alone.': '{0} dias já têm dados aqui e não serão tocados.',
   'Not in the library — added as your own exercises': 'Não estão na biblioteca — adicionados como exercícios teus',
   'Nothing new to import': 'Nada de novo para importar',
@@ -506,7 +507,9 @@ export default {
   'Bodyweight — same target again until every set is clean.': 'Peso do corpo — o mesmo objetivo até todas as séries saírem limpas.',
 
   // --- effort per set (RIR / RPE) ---
+  '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.': '{0} série traz um {1} — liga «Esforço por série» nas definições para o veres.',
   '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.': '{0} séries trazem um {1} — liga «Esforço por série» nas definições para o veres.',
+  '{0} set brings an {1} with it.': '{0} série traz um {1}.',
   '{0} sets bring an {1} with them.': '{0} séries trazem um {1}.',
   'RIR': 'RIR',
   'RPE': 'RPE',
@@ -762,6 +765,7 @@ export default {
   'Save {0} {1}': 'Guardar {0} {1}',
   'start': 'começar',
   'Not your weight? Set it above, or skip it below.': 'Não é o seu peso? Ajuste-o acima ou salte abaixo.',
+  '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.': '{0} série com valores impossíveis (0 reps, peso negativo ou acima do limite) será excluída.',
   '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.': '{0} séries com valores impossíveis (0 reps, peso negativo ou acima do limite) serão excluídas.',
   'Description (optional)': 'Descrição (opcional)',
   'Failed to read file': 'Não foi possível ler o ficheiro',

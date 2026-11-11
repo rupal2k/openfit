@@ -342,17 +342,17 @@ function ImportSummary({ parsed, close }) {
       {t('The file does not say which unit it uses — numbers are imported as they are.')}
     </div>}
     {!isBW && parsed.invalid > 0 && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
-      {t('{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.', parsed.invalid)}
+      {t(parsed.invalid === 1 ? '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.' : '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.', parsed.invalid)}
     </div>}
     {have > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
-      {t('{0} days already have data here and will be left alone.', have)}
+      {t(have === 1 ? '{0} day already has data here and will be left alone.' : '{0} days already have data here and will be left alone.', have)}
     </div>}
     {/* The file rated its sets. Say so: the column is off by default, so the ratings would
         otherwise arrive invisibly and look like they had been dropped. */}
     {!isBW && (parsed.rirSets + parsed.rpeSets) > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
-      {t(effortOf(st) === 'none'
-        ? '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.'
-        : '{0} sets bring an {1} with them.',
+      {t((parsed.rirSets || parsed.rpeSets) === 1
+        ? (effortOf(st) === 'none' ? '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.' : '{0} set brings an {1} with it.')
+        : (effortOf(st) === 'none' ? '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.' : '{0} sets bring an {1} with them.'),
       parsed.rirSets || parsed.rpeSets, parsed.rirSets ? 'RIR' : 'RPE')}
     </div>}
     {!isBW && parsed.unmatchedNames.length > 0 && <>

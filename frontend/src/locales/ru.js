@@ -403,6 +403,7 @@ export default {
   'The file is in {0} and your profile is in {1} — weights will be converted.': 'Файл в {0}, а профиль в {1} — веса будут пересчитаны.',
   'The file does not say which unit it uses — numbers are imported as they are.': 'В файле не указана единица — числа импортируются как есть.',
   'The file mixes kg and lb — each set is converted to {0}.': 'В файле смешаны кг и фунты — каждый подход переводится в {0}.',
+  '{0} day already has data here and will be left alone.': 'В {0} дне уже есть данные — он останется без изменений.',
   '{0} days already have data here and will be left alone.': 'В {0} дней уже есть данные — они останутся без изменений.',
   'Not in the library — added as your own exercises': 'Нет в библиотеке — добавлены как свои упражнения',
   'Nothing new to import': 'Нечего импортировать',
@@ -506,7 +507,9 @@ export default {
   'Bodyweight — same target again until every set is clean.': 'Собственный вес — та же цель, пока все подходы не станут чистыми.',
 
   // --- effort per set (RIR / RPE) ---
+  '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.': '{0} подход несёт с собой {1} — включите «Усилие в подходе» в настройках, чтобы увидеть.',
   '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.': '{0} подходов несут с собой {1} — включите «Усилие в подходе» в настройках, чтобы увидеть.',
+  '{0} set brings an {1} with it.': '{0} подход несёт с собой {1}.',
   '{0} sets bring an {1} with them.': '{0} подходов несут с собой {1}.',
   'RIR': 'RIR',
   'RPE': 'RPE',
@@ -762,6 +765,7 @@ export default {
   'Save {0} {1}': 'Сохранить {0} {1}',
   'start': 'старт',
   'Not your weight? Set it above, or skip it below.': 'Это не ваш вес? Задайте его выше или пропустите ниже.',
+  '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.': 'Подходы с невозможными значениями ({0}: 0 повт., отрицательный или запредельный вес) будут пропущены.',
   '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.': 'Подходы с невозможными значениями ({0}: 0 повт., отрицательный или запредельный вес) будут пропущены.',
   'Description (optional)': 'Описание (необязательно)',
   'Failed to read file': 'Не удалось прочитать файл',

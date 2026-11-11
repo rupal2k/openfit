@@ -403,6 +403,7 @@ export default {
   'The file is in {0} and your profile is in {1} — weights will be converted.': 'Plik jest w {0}, a Twój profil w {1} — ciężary zostaną przeliczone.',
   'The file does not say which unit it uses — numbers are imported as they are.': 'Plik nie podaje jednostki — liczby zostaną zaimportowane bez zmian.',
   'The file mixes kg and lb — each set is converted to {0}.': 'Plik miesza kg i lb — każda seria zostanie przeliczona na {0}.',
+  '{0} day already has data here and will be left alone.': '{0} dzień ma już tutaj dane i pozostanie bez zmian.',
   '{0} days already have data here and will be left alone.': '{0} dni ma już tutaj dane i pozostanie bez zmian.',
   'Not in the library — added as your own exercises': 'Brak w bibliotece — dodane jako własne ćwiczenia',
   'Nothing new to import': 'Brak nowych danych do importu',
@@ -506,7 +507,9 @@ export default {
   'Bodyweight — same target again until every set is clean.': 'Masa własna — ten sam cel, dopóki każda seria nie będzie czysta.',
 
   // --- effort per set (RIR / RPE) ---
+  '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.': '{0} seria ma zapisane {1} — włącz „Wysiłek w serii” w ustawieniach, aby to zobaczyć.',
   '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.': '{0} serii ma zapisane {1} — włącz „Wysiłek w serii” w ustawieniach, aby to zobaczyć.',
+  '{0} set brings an {1} with it.': '{0} seria ma zapisane {1}.',
   '{0} sets bring an {1} with them.': '{0} serii ma zapisane {1}.',
   'RIR': 'RIR',
   'RPE': 'RPE',
@@ -762,6 +765,7 @@ export default {
   'Save {0} {1}': 'Zapisz {0} {1}',
   'start': 'start',
   'Not your weight? Set it above, or skip it below.': 'To nie Twoja waga? Ustaw ją wyżej albo pomiń niżej.',
+  '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.': 'Serie z niemożliwymi wartościami (0 powt., ujemny lub zbyt duży ciężar) zostaną pominięte: {0}.',
   '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.': 'Serie z niemożliwymi wartościami (0 powt., ujemny lub zbyt duży ciężar) zostaną pominięte: {0}.',
   'Description (optional)': 'Opis (opcjonalnie)',
   'Failed to read file': 'Nie udało się odczytać pliku',

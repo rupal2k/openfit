@@ -403,6 +403,7 @@ export default {
   'The file is in {0} and your profile is in {1} — weights will be converted.': 'फ़ाइल {0} में है और आपकी प्रोफ़ाइल {1} में — वज़न बदले जाएंगे।',
   'The file does not say which unit it uses — numbers are imported as they are.': 'फ़ाइल में इकाई नहीं दी — संख्याएँ जस की तस आयात होंगी।',
   'The file mixes kg and lb — each set is converted to {0}.': 'फ़ाइल में kg और lb मिश्रित हैं — हर सेट {0} में बदला जाएगा।',
+  '{0} day already has data here and will be left alone.': '{0} दिन में पहले से डेटा है, वह अछूता रहेगा।',
   '{0} days already have data here and will be left alone.': '{0} दिनों में पहले से डेटा है, वे अछूते रहेंगे।',
   'Not in the library — added as your own exercises': 'लाइब्रेरी में नहीं — अपने व्यायाम के रूप में जोड़े गए',
   'Nothing new to import': 'आयात करने को कुछ नया नहीं',
@@ -506,7 +507,9 @@ export default {
   'Bodyweight — same target again until every set is clean.': 'बॉडीवेट — जब तक हर सेट साफ़ न हो, वही लक्ष्य।',
 
   // --- effort per set (RIR / RPE) ---
+  '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.': '{0} सेट अपने साथ {1} लाता है — इसे देखने के लिए सेटिंग्स में “प्रति सेट मेहनत” चालू करें।',
   '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.': '{0} सेट अपने साथ {1} लाते हैं — इसे देखने के लिए सेटिंग्स में “प्रति सेट मेहनत” चालू करें।',
+  '{0} set brings an {1} with it.': '{0} सेट अपने साथ {1} लाता है।',
   '{0} sets bring an {1} with them.': '{0} सेट अपने साथ {1} लाते हैं।',
   'RIR': 'RIR',
   'RPE': 'RPE',
@@ -762,6 +765,7 @@ export default {
   'Save {0} {1}': '{0} {1} सहेजें',
   'start': 'शुरू',
   'Not your weight? Set it above, or skip it below.': 'यह आपका वज़न नहीं? ऊपर सेट करें, या नीचे छोड़ दें।',
+  '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.': 'असंभव मान वाला {0} सेट (0 रेप्स, नेगेटिव या सीमा से ज़्यादा वज़न) छोड़ दिया जाएगा।',
   '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.': 'असंभव मानों वाले {0} सेट (0 रेप्स, नेगेटिव या सीमा से ज़्यादा वज़न) छोड़ दिए जाएँगे।',
   'Description (optional)': 'विवरण (वैकल्पिक)',
   'Failed to read file': 'फ़ाइल पढ़ी नहीं जा सकी',

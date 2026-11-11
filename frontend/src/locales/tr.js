@@ -403,6 +403,7 @@ export default {
   'The file is in {0} and your profile is in {1} — weights will be converted.': 'Dosya {0}, profilin {1} — ağırlıklar dönüştürülecek.',
   'The file does not say which unit it uses — numbers are imported as they are.': 'Dosya birimi belirtmiyor — sayılar olduğu gibi aktarılıyor.',
   'The file mixes kg and lb — each set is converted to {0}.': 'Dosyada kg ve lb karışık — her set {0} birimine çevriliyor.',
+  '{0} day already has data here and will be left alone.': '{0} günde zaten veri var, bunlara dokunulmayacak.',
   '{0} days already have data here and will be left alone.': '{0} günde zaten veri var, bunlara dokunulmayacak.',
   'Not in the library — added as your own exercises': 'Kütüphanede yok — kendi egzersizlerin olarak eklendi',
   'Nothing new to import': 'İçe aktarılacak yeni bir şey yok',
@@ -506,7 +507,9 @@ export default {
   'Bodyweight — same target again until every set is clean.': 'Vücut ağırlığı — her set temiz çıkana kadar aynı hedef.',
 
   // --- effort per set (RIR / RPE) ---
+  '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.': '{0} set beraberinde bir {1} getiriyor — görmek için Ayarlar’da «Set başına efor» seçeneğini aç.',
   '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.': '{0} set beraberinde bir {1} getiriyor — görmek için Ayarlar’da «Set başına efor» seçeneğini aç.',
+  '{0} set brings an {1} with it.': '{0} set beraberinde bir {1} getiriyor.',
   '{0} sets bring an {1} with them.': '{0} set beraberinde bir {1} getiriyor.',
   'RIR': 'RIR',
   'RPE': 'RPE',
@@ -762,6 +765,7 @@ export default {
   'Save {0} {1}': '{0} {1} kaydet',
   'start': 'başla',
   'Not your weight? Set it above, or skip it below.': 'Kilonuz bu değil mi? Yukarıdan ayarlayın ya da aşağıdan atlayın.',
+  '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.': 'İmkânsız değerli {0} set (0 tekrar, negatif veya sınırı aşan ağırlık) dışarıda bırakılacak.',
   '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.': 'İmkânsız değerli {0} set (0 tekrar, negatif veya sınırı aşan ağırlık) dışarıda bırakılacak.',
   'Description (optional)': 'Açıklama (isteğe bağlı)',
   'Failed to read file': 'Dosya okunamadı',

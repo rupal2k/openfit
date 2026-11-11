@@ -403,6 +403,7 @@ export default {
   'The file is in {0} and your profile is in {1} — weights will be converted.': '파일은 {0}, 프로필은 {1} — 무게가 변환됩니다.',
   'The file does not say which unit it uses — numbers are imported as they are.': '파일에 단위가 없습니다 — 숫자를 그대로 가져옵니다.',
   'The file mixes kg and lb — each set is converted to {0}.': '파일에 kg과 lb가 섞여 있습니다 — 각 세트를 {0}로 변환합니다.',
+  '{0} day already has data here and will be left alone.': '{0}일은 이미 데이터가 있어 그대로 둡니다.',
   '{0} days already have data here and will be left alone.': '{0}일은 이미 데이터가 있어 그대로 둡니다.',
   'Not in the library — added as your own exercises': '라이브러리에 없음 — 내 운동으로 추가됨',
   'Nothing new to import': '가져올 새 항목이 없습니다',
@@ -506,7 +507,9 @@ export default {
   'Bodyweight — same target again until every set is clean.': '맨몸 운동 — 모든 세트가 깔끔해질 때까지 같은 목표로.',
 
   // --- effort per set (RIR / RPE) ---
+  '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.': '{0}개 세트에 {1}이(가) 함께 들어 있습니다 — 설정에서 ‘세트당 강도’를 켜면 보입니다.',
   '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.': '{0}개 세트에 {1}이(가) 함께 들어 있습니다 — 설정에서 ‘세트당 강도’를 켜면 보입니다.',
+  '{0} set brings an {1} with it.': '{0}개 세트에 {1}이(가) 함께 들어 있습니다.',
   '{0} sets bring an {1} with them.': '{0}개 세트에 {1}이(가) 함께 들어 있습니다.',
   'RIR': 'RIR',
   'RPE': 'RPE',
@@ -762,6 +765,7 @@ export default {
   'Save {0} {1}': '{0} {1} 저장',
   'start': '시작',
   'Not your weight? Set it above, or skip it below.': '내 체중이 아닌가요? 위에서 설정하거나 아래에서 건너뛰세요.',
+  '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.': '불가능한 값(0회, 음수 또는 한도 초과 무게)인 세트 {0}개는 제외됩니다.',
   '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.': '불가능한 값(0회, 음수 또는 한도 초과 무게)인 세트 {0}개는 제외됩니다.',
   'Description (optional)': '설명 (선택)',
   'Failed to read file': '파일을 읽지 못했습니다',

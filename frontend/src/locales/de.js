@@ -421,6 +421,7 @@ export default {
   'The file is in {0} and your profile is in {1} — weights will be converted.': 'Die Datei ist in {0}, dein Profil in {1} — die Gewichte werden umgerechnet.',
   'The file does not say which unit it uses — numbers are imported as they are.': 'Die Datei nennt keine Einheit — die Zahlen werden unverändert übernommen.',
   'The file mixes kg and lb — each set is converted to {0}.': 'Die Datei mischt kg und lb — jeder Satz wird in {0} umgerechnet.',
+  '{0} day already has data here and will be left alone.': '{0} Tag hat hier schon Daten und bleibt unangetastet.',
   '{0} days already have data here and will be left alone.': '{0} Tage haben hier schon Daten und bleiben unangetastet.',
   'Not in the library — added as your own exercises': 'Nicht in der Bibliothek — als eigene Übungen angelegt',
   'Nothing new to import': 'Nichts Neues zu importieren',
@@ -524,7 +525,9 @@ export default {
   'Bodyweight — same target again until every set is clean.': 'Körpergewicht — dieselbe Vorgabe, bis jeder Satz sauber sitzt.',
 
   // --- effort per set (RIR / RPE) ---
+  '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.': '{0} Satz bringt ein {1} mit — schalte in den Einstellungen „Anstrengung pro Satz“ ein, um es zu sehen.',
   '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.': '{0} Sätze bringen ein {1} mit — schalte in den Einstellungen „Anstrengung pro Satz“ ein, um es zu sehen.',
+  '{0} set brings an {1} with it.': '{0} Satz bringt ein {1} mit.',
   '{0} sets bring an {1} with them.': '{0} Sätze bringen ein {1} mit.',
   'RIR': 'RIR',
   'RPE': 'RPE',
@@ -827,6 +830,7 @@ export default {
   'Save {0} {1}': '{0} {1} speichern',
   'start': 'starten',
   'Not your weight? Set it above, or skip it below.': 'Nicht dein Gewicht? Oben einstellen oder unten überspringen.',
+  '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.': '{0} Satz mit unmöglichen Werten (0 Wdh., negatives oder zu hohes Gewicht) wird ausgelassen.',
   '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.': '{0} Sätze mit unmöglichen Werten (0 Wdh., negatives oder zu hohes Gewicht) werden ausgelassen.',
   'Description (optional)': 'Beschreibung (optional)',
   'Failed to read file': 'Datei konnte nicht gelesen werden',

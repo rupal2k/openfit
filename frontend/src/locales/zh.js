@@ -403,6 +403,7 @@ export default {
   'The file is in {0} and your profile is in {1} — weights will be converted.': '文件使用 {0}，你的配置使用 {1} — 重量将被换算。',
   'The file does not say which unit it uses — numbers are imported as they are.': '文件未标明单位 — 数字按原样导入。',
   'The file mixes kg and lb — each set is converted to {0}.': '文件中混用了 kg 和 lb — 每组都会换算成 {0}。',
+  '{0} day already has data here and will be left alone.': '有 {0} 天已存在数据，将保持不变。',
   '{0} days already have data here and will be left alone.': '有 {0} 天已存在数据，将保持不变。',
   'Not in the library — added as your own exercises': '不在动作库中 — 已添加为自定义动作',
   'Nothing new to import': '没有新内容可导入',
@@ -506,7 +507,9 @@ export default {
   'Bodyweight — same target again until every set is clean.': '徒手动作——保持同样的目标，直到每组都做干净。',
 
   // --- effort per set (RIR / RPE) ---
+  '{0} set brings an {1} with it — switch on Effort per set in Settings to see it.': '{0} 组自带 {1}——在设置中打开“每组强度”即可看到。',
   '{0} sets bring an {1} with them — switch on Effort per set in Settings to see it.': '{0} 组自带 {1}——在设置中打开“每组强度”即可看到。',
+  '{0} set brings an {1} with it.': '{0} 组自带 {1}。',
   '{0} sets bring an {1} with them.': '{0} 组自带 {1}。',
   'RIR': 'RIR',
   'RPE': 'RPE',
@@ -762,6 +765,7 @@ export default {
   'Save {0} {1}': '保存 {0} {1}',
   'start': '开始',
   'Not your weight? Set it above, or skip it below.': '不是你的体重？在上方调整，或在下方跳过。',
+  '{0} set with impossible values (0 reps, negative or over-limit weight) will be left out.': '{0} 组数值不可能（0 次、负数或超出上限的重量），将不计入。',
   '{0} sets with impossible values (0 reps, negative or over-limit weight) will be left out.': '{0} 组数值不可能（0 次、负数或超出上限的重量），将不计入。',
   'Description (optional)': '描述（可选）',
   'Failed to read file': '无法读取文件',
