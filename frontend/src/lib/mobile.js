@@ -91,6 +91,19 @@ export async function readOnce(f) {
 // most one copy of the health data sits in the cache.
 let lastExport = null
 // Reset everything: no backup or plan file with health data may stay in the app cache.
+// The camera hands its photo back as a full-size JPEG in the app's external files dir
+// (Capacitor's file chooser, getExternalFilesDir(Pictures)); nothing removed it, and on older
+// Android, USB or adb it can be read there: a lab report photo carries name, birth date and
+// results. Delete every capture once its bytes are in memory, on boot (cancelled or killed
+// captures) and on Reset.
+export async function clearCaptures() {
+  if (!MOBILE) return
+  try {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    const { files } = await Filesystem.readdir({ path: 'Pictures', directory: Directory.External })
+    for (const f of files) if (/^JPEG_.*\.jpg$/i.test(f.name)) await Filesystem.deleteFile({ path: 'Pictures/' + f.name, directory: Directory.External }).catch(() => {})
+  } catch { /* no captures yet */ }
+}
 export async function clearExports() {
   if (!MOBILE) return
   try {
@@ -99,6 +112,7 @@ export async function clearExports() {
     for (const f of files) if (/^openfit-(backup|plan)-.*\.json$/.test(f.name)) await Filesystem.deleteFile({ path: f.name, directory: Directory.Cache }).catch(() => {})
   } catch { /* nothing cached */ }
   lastExport = null
+  await clearCaptures()
 }
 export async function shareExport(json, filename) {
   const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')

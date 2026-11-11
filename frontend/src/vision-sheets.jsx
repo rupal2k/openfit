@@ -10,7 +10,7 @@ import { addEntry, entryTotals, MEALS } from './lib/nutrition.js'
 import { MODELS, downloadBytes, RUNTIME_BYTES } from './lib/vision/catalog.js'
 import { MESSAGES } from './lib/vision/errors.js'
 import { prepImage } from './lib/vision/image.js'
-import { readOnce } from './lib/mobile.js'
+import { readOnce, clearCaptures } from './lib/mobile.js'
 import { analyzeDish } from './lib/vision/analyzer.js'
 import { useVision, refreshVision, installModel, cancelInstall, removeModel, classify, cancelClassify } from './lib/vision/client.js'
 import { MEAL_LABEL, foodSearchSheet } from './nutrition-sheets.jsx'
@@ -87,7 +87,7 @@ function Photo({ iso, meal, close }) {
     // a phone photo is a few MB; a huge file would be copied into memory whole by readOnce
     if (f.size > MAX_PHOTO_BYTES) { input.value = ''; toast(t('This file is too large to import.')); return }
     // read before clearing the input: on Android clearing it revokes access to a gallery pick
-    try { const blob = await prepImage(await readOnce(f)); setImg({ blob, url: URL.createObjectURL(blob) }) } catch (err) { quiet(err) }
+    try { const copy = await readOnce(f); clearCaptures(); const blob = await prepImage(copy); setImg({ blob, url: URL.createObjectURL(blob) }) } catch (err) { quiet(err) }
     finally { input.value = '' }
   }
   const run = async () => {

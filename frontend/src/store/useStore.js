@@ -3,7 +3,7 @@ import { api } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
 import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
-import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
+import { MOBILE, nativeLoad, nativeSave, syncReminder, clearCaptures } from '../lib/mobile.js'
 import { mergeState } from '../lib/sync.js'
 import { cleanReports } from '../lib/labs/reports.js'
 import { cleanRoutine, cleanWeek } from '../lib/clean.js'
@@ -242,6 +242,7 @@ export const useStore = create((set, get) => {
         }
         get().setGuest(true)
         syncReminder(get().S)
+        clearCaptures()   // camera photos left by a cancelled or killed capture
         set({ ready: true })
         return
       }
