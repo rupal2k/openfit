@@ -78,6 +78,14 @@ export function privacyScreen(on) {
 export const MAX_IMPORT_BYTES = 20 * 1024 * 1024
 export const tooBig = f => !!f && f.size > MAX_IMPORT_BYTES
 
+// Android WebView + system photo picker: a picked File reads once as a whole, then every later
+// read (blob: URL, <img>, createImageBitmap, FileReader, slice) fails with NotReadableError /
+// ERR_UPLOAD_FILE_CHANGED. Copy it into memory on the first read; work only on the copy.
+// Check the size before calling this.
+export async function readOnce(f) {
+  return new File([await f.arrayBuffer()], f.name, { type: f.type, lastModified: f.lastModified })
+}
+
 // The backup goes to the share sheet from a cache file. The receiving app may read it after
 // Share resolves, so it can't be deleted then; the previous export is removed instead, so at
 // most one copy of the health data sits in the cache.

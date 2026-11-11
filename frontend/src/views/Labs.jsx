@@ -9,7 +9,7 @@ import { parseLabText } from '../lib/labs/parse.js'
 import { reviewRows, buildReport, recentValues, recentReports, status, markerSeries, latestByMarker, ageAt, sexOf, guessUnits, byDate } from '../lib/labs/reports.js'
 import { labScores } from '../lib/labs/scores.js'
 import { confirmSheet } from '../sheets.jsx'
-import { privacyScreen } from '../lib/mobile.js'
+import { privacyScreen, readOnce } from '../lib/mobile.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Segmented, Section, Row, Check } from '../components/ui.jsx'
@@ -37,9 +37,10 @@ const rangeText = (key, m, sys) => {
 // A PDF with a text layer is read directly. A scanned PDF (no usable text) and a photo go through
 // on-device OCR, which takes a few seconds, so a progress sheet stays up while it runs.
 const MAX_FILE = 25 * 1024 * 1024   // a lab report is well under this; bigger files would stall a phone
-function importFile(file) {
+async function importFile(file) {
   const isPdf = /pdf$/i.test(file.type) || /\.pdf$/i.test(file.name)
   if (file.size > MAX_FILE) { toast(t('That file is too large for a lab report (over 25 MB).')); return }
+  try { file = await readOnce(file) } catch { toast(isPdf ? t('Couldn’t read that PDF.') : t('Couldn’t read that photo.')); return }
   ui().openSheet(close => <ReadingSheet file={file} isPdf={isPdf} close={close} />, { locked: true })
 }
 
@@ -278,7 +279,8 @@ export default function Labs() {
   const photoRef = useRef(null)
   const pick = () => fileRef.current?.click()
   const pickPhoto = () => photoRef.current?.click()
-  const onFile = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) importFile(f) }
+  // read before clearing the input: on Android clearing it revokes access to a picked file
+  const onFile = async e => { const input = e.target, f = input.files?.[0]; if (f) await importFile(f); input.value = '' }
   const del = r => confirmSheet({
     title: t('Delete this report?'), message: t('{0} results from {1} will be removed.', r.markers.length, fmtDate(r.d, true)),
     confirmText: t('Delete'), danger: true,

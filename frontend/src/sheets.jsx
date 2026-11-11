@@ -370,9 +370,12 @@ function ImportSummary({ parsed, close }) {
 }
 
 /** Read a CSV/XML export, then show what it would do. */
-export function importFromApp(file, onDone) {
-  if (tooBig(file)) { toast(t('This file is too large to import.')); return }
+// onRead runs once the file has been read (or failed): the caller clears its <input> then, not
+// before — on Android clearing it first revokes access to the picked file
+export function importFromApp(file, onDone, onRead) {
+  if (tooBig(file)) { toast(t('This file is too large to import.')); onRead && onRead(); return }
   const rd = new FileReader()
+  rd.onloadend = () => onRead && onRead()
   rd.onload = () => {
     let parsed
     try { parsed = parseImport(String(rd.result), { unit: S().unit }) }
@@ -807,9 +810,12 @@ function PlanTools({ close }) {
     close(); toast(t('Plan file saved — send it to a friend'))
   }
   const pickFile = ev => {
-    const f = ev.target.files[0]; ev.target.value = ''; if (!f) return
-    if (tooBig(f)) { toast(t('This file is too large to import.')); return }
+    // clear the input only once the read is over: on Android clearing it revokes access to the pick
+    const input = ev.target, f = input.files[0]; if (!f) return
+    if (tooBig(f)) { input.value = ''; toast(t('This file is too large to import.')); return }
     const rd = new FileReader()
+    rd.onloadend = () => { input.value = '' }
+    rd.onerror = () => toast(t('Failed to read file'))
     rd.onload = () => {
       try { const bundle = parsePlan(rd.result); close(); planImportSheet(bundle) }
       catch (e) { toast(t('Import failed: {0}', e.message)) }
@@ -901,6 +907,8 @@ function PlanUpload({ close }) {
     rd.onerror = () => {
       setErrorMsg(t('Failed to read file'))
     }
+    // clear the input only once the read is over: on Android clearing it revokes access to the pick
+    rd.onloadend = () => { if (fileRef.current) fileRef.current.value = '' }
     rd.readAsText(file)
   }
 
@@ -940,7 +948,7 @@ function PlanUpload({ close }) {
       <div className="tt" style={{ fontSize: 16, fontWeight: 600 }}>{t('Choose or drop plan file')}</div>
       <div className="dim small" style={{ marginTop: 4 }}>{t('Accepts .csv, .json')}</div>
     </div>
-    <input ref={fileRef} type="file" accept=".csv,.json,.txt,.xlsx,text/csv,application/json" onChange={e => { const f = e.target.files[0]; e.target.value = ''; if (f) handleFile(f) }} hidden />
+    <input ref={fileRef} type="file" accept=".csv,.json,.txt,.xlsx,text/csv,application/json" onChange={e => handleFile(e.target.files[0])} hidden />
 
     <div className="card" style={{ padding: '14px', marginBottom: 16, background: 'var(--surface-2)' }}>
       <div className="row between" style={{ alignItems: 'center', marginBottom: 6 }}>

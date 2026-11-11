@@ -189,7 +189,7 @@ export default function Settings() {
     <input ref={fileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} aria-label={t('Import backup file')} onChange={doImport} />
     {/* Reset after reading so picking the same file twice still fires onChange. */}
     <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }} aria-label={t('Import from another app')}
-      onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
+      onChange={ev => { const input = ev.target, f = input.files[0]; if (f) importFromApp(f, null, () => { input.value = '' }) }} />
 
     {/* "Add to Home screen" makes no sense inside the native app */}
     {!MOBILE && <Section title={t('Tip')}>

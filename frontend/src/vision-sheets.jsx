@@ -10,6 +10,7 @@ import { addEntry, entryTotals, MEALS } from './lib/nutrition.js'
 import { MODELS, downloadBytes, RUNTIME_BYTES } from './lib/vision/catalog.js'
 import { MESSAGES } from './lib/vision/errors.js'
 import { prepImage } from './lib/vision/image.js'
+import { readOnce } from './lib/mobile.js'
 import { analyzeDish } from './lib/vision/analyzer.js'
 import { useVision, refreshVision, installModel, cancelInstall, removeModel, classify, cancelClassify } from './lib/vision/client.js'
 import { MEAL_LABEL, foodSearchSheet } from './nutrition-sheets.jsx'
@@ -80,10 +81,11 @@ function Photo({ iso, meal, close }) {
   useEffect(() => () => { if (useVision.getState().state === 'busy') cancelClassify() }, [])
 
   const pickFile = async e => {
-    const f = e.target.files?.[0]
-    e.target.value = ''
+    const input = e.target, f = input.files?.[0]
     if (!f) return
-    try { const blob = await prepImage(f); setImg({ blob, url: URL.createObjectURL(blob) }) } catch (err) { quiet(err) }
+    // read before clearing the input: on Android clearing it revokes access to a gallery pick
+    try { const blob = await prepImage(await readOnce(f)); setImg({ blob, url: URL.createObjectURL(blob) }) } catch (err) { quiet(err) }
+    finally { input.value = '' }
   }
   const run = async () => {
     try {

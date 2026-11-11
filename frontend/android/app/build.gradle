@@ -36,6 +36,10 @@ android {
         }
     }
     buildTypes {
+        // debug installs next to the release app (own id and data) so it can be inspected on the phone
+        debug {
+            applicationIdSuffix ".dbg"
+        }
         release {
             if (ksFile.exists()) signingConfig signingConfigs.release
             minifyEnabled false
