@@ -5,7 +5,7 @@ import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipme
 import { fmtDate, fmtNum, fmtVol, fmtDur, durPart, todayISO, uid, exCount, DAYN, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, buildSets, sessionSets, effectiveRoutineId, setsDone, setsDoneActive, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, isBw, isPerSide, sideReps } from './lib/history.js'
 import { beep, vibrate } from './lib/sound.js'
-import { t, instrFor, getLang, INSTR_LANGS } from './lib/i18n.js'
+import { t, instrFor, loadInstr, getLang, INSTR_LANGS } from './lib/i18n.js'
 import { nav } from './lib/nav.js'
 import { starterRoutines, PLAN_TEMPLATES, PLAN_WHERE, instantiatePlan, templateEx } from './lib/starter.js'
 import Media, { Thumb } from './components/Media.jsx'
@@ -20,6 +20,7 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-sha
 import { parseAnyPlan, downloadSampleCSV, downloadSampleJSON } from './lib/plan-upload.js'
 import { estimate1RM, best1RM, REP_CAP } from './lib/onerm.js'
 import { finishSession, recordSession, invalidDoneSets, doubtfulDoneSets, cleanConfig } from './lib/workout.js'
+import { checkForUpdate } from './lib/updates.js'
 import { nextPrescription, applyPrescription, sessionTarget, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
 import { MOBILE, shareExport, tooBig } from './lib/mobile.js'
 
@@ -272,6 +273,7 @@ function BwSheet({ required, onDone, close }) {
     {!touched && <div className="small dim" style={{ marginTop: 6 }}>{t('Not your weight? Set it above, or skip it below.')}</div>}
     {required && <>
       <div style={{ height: 8 }} /><Button variant="ghost" className="dim" onClick={() => { close(); if (onDone) ui().afterClose(() => onDone(null)) }}>{t('Start without weighing in')}</Button>
+      <div style={{ height: 2 }} /><Button variant="ghost" className="dim" onClick={() => { update(s => { s.askWeight = false }); close(); toast(t('Weigh-ins are off. Turn them back on in Settings.')); if (onDone) ui().afterClose(() => onDone(null)) }}>{t('Don’t ask before workouts')}</Button>
       <div style={{ height: 2 }} /><Button variant="ghost" className="dim" icon="reset" onClick={() => { close(); ui().afterClose(() => nav('/workout')) }}>{t('Choose a different workout')}</Button>
     </>}
     {!required && recent.length > 0 && <>
@@ -449,6 +451,9 @@ function OneRM({ ex }) {
 }
 
 function ExerciseDetail({ ex, close }) {
+  // the instruction pack loads when the sheet opens; the steps appear when it has
+  const [, setInstrReady] = useState(false)
+  useEffect(() => { let on = true; loadInstr().then(() => on && setInstrReady(true)); return () => { on = false } }, [ex.id, getLang()])
   const st = useStore(s => s.S)
   const last = lastEntryFor(st, ex.id)
   const best = bestWeightFor(st, ex.id)
@@ -1113,9 +1118,29 @@ export function WorkoutRow({ w, onClick }) {
   </div>
 }
 
+/* ============================ update check ============================ */
+// interactive: the person tapped "Check for updates" (say what happened either way);
+// otherwise the opt-in daily check, which only speaks up when there is something new.
+export async function runUpdateCheck(interactive) {
+  try {
+    localStorage.setItem('openfit_update_check', String(Date.now()))
+  } catch { /* private mode */ }
+  try {
+    const r = await checkForUpdate(__APP_VERSION__)
+    if (!r.newer) { if (interactive) toast(t('You have the latest version ({0}).', __APP_VERSION__)); return }
+    confirmSheet({
+      title: t('OPENFIT {0} is available', r.latest),
+      message: t('You have {0}. Download the new APK and install it over this app; your data stays.', __APP_VERSION__),
+      confirmText: t('Open the download page'), cancelText: t('Later'),
+      onConfirm: () => window.open(r.url, '_blank', 'noopener')
+    })
+  } catch { if (interactive) toast(t('Could not check for updates — check your connection.')) }
+}
+
 /* ============================ workout lifecycle ============================ */
 export function startFlow(routineId) {
   const last = lastBW(S())
+  if (S().askWeight === false) { beginWorkout(routineId, last && last.d === todayISO() ? last.w : null); return }
   if (last && last.d === todayISO() && last.w) {
     beginWorkout(routineId, last.w)
     return

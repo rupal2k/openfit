@@ -319,7 +319,7 @@ export default function Labs() {
         footer={t('Published formulas, for information only. Not medical advice: talk to your doctor about your results.')}>
         {scores.map(s => <ScoreRow key={s.id} s={s} sys={sys} />)}
       </Section>}
-      {latestReport && !Number.isFinite(age) && <p className="dim small">{t('Set your birth year in My Meals to see FIB-4 and biological age.')}</p>}
+      {latestReport && !Number.isFinite(age) && <p className="dim small">{t('Set your birth year in Settings → Your profile to see FIB-4 and biological age.')}</p>}
 
       {Object.entries(CATEGORIES).map(([c, label]) => {
         const items = latest.filter(x => MARKERS[x.key].cat === c)

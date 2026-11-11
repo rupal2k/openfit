@@ -40,6 +40,14 @@ export async function nativeSave(state) {
 // routine in the weekly plan. Cheap enough to run after any state change — the plan or the
 // reminder time may just have been edited. `interactive` gates the OS permission prompt to
 // the Settings toggle; a background resync never pops a dialog.
+// Is OPENFIT allowed to show notifications? (revoked in Android settings = reminders never arrive)
+export async function notificationsAllowed() {
+  if (!MOBILE) return true
+  try {
+    const { LocalNotifications } = await import('@capacitor/local-notifications')
+    return (await LocalNotifications.checkPermissions()).display === 'granted'
+  } catch { return true }
+}
 export async function syncReminder(S, interactive = false) {
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')

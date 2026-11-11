@@ -275,6 +275,8 @@ Paste the repo URL into Coolify's **New Resource → Docker Compose** flow. Copy
 
 The Android build is a standalone Capacitor app. Data stays on the device, and food search calls Open Food Facts directly. Your data is left out of Google's cloud backup: moving to a new phone (Android 12 or later) copies it across, and **Settings → Export backup** works on any version.
 
+Updates: turn on **Settings → Tell me about new versions** (off by default; it only asks GitHub for the latest version number) or tap **Check for updates**. Privacy: see [PRIVACY.md](PRIVACY.md). Translations are machine-written and not yet reviewed by native speakers: **Settings → Report a translation error**.
+
 ```bash
 cd frontend
 npm install
