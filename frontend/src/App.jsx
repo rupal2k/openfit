@@ -4,6 +4,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { ACCENTS } from './lib/format.js'
+import { MOBILE } from './lib/mobile.js'
 import { setLang, useLang } from './lib/i18n.js'
 import { setNav } from './lib/nav.js'
 import { useWakeLock } from './lib/wakelock.js'
@@ -35,6 +36,9 @@ function applyPrefs(theme, accent) {
   de.dataset.accent = ACCENTS[accent] ? accent : 'openfit'
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) meta.content = de.dataset.theme === 'light' ? '#F7FBFA' : '#0D1210'
+  // Android app: dark clock and icons on the light theme (they were white on white)
+  if (MOBILE) import('@capacitor/status-bar').then(({ StatusBar, Style }) =>
+    StatusBar.setStyle({ style: de.dataset.theme === 'light' ? Style.Light : Style.Dark })).catch(() => {})
 }
 
 function Shell() {

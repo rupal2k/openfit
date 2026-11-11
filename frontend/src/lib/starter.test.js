@@ -5,7 +5,8 @@ import { EXIDX } from './exercises.js'
 import { cleanRest } from './workout.js'
 import { buildPlanBundle, parsePlan, mergePlan } from './plan-share.js'
 
-const KIT = { home: ['body weight'], homegym: ['body weight', 'dumbbell', 'kettlebell', 'band', 'resistance band'] }
+const HOMEGYM = ['body weight', 'dumbbell', 'kettlebell', 'band', 'resistance band']
+const KIT = { home: ['body weight'], homegym: HOMEGYM, intervals: HOMEGYM }
 
 describe('plan templates', () => {
   it('every exercise id exists and every plan has a known place', () => {
@@ -56,5 +57,43 @@ describe('one-side moves', () => {
   it('load as per-side rep work, reps counting both sides', () => {
     const b = instantiatePlan(PLAN_TEMPLATES.find(p => p.id === 'home-bw-3')).routines[0]
     expect(b.ex.find(e => e.id === '1460')).toMatchObject({ reps: 24, side: true })
+  })
+})
+
+describe('interval formats', () => {
+  const load = id => instantiatePlan(PLAN_TEMPLATES.find(p => p.id === id)).routines[0]
+  it('Tabata: 4 blocks of two alternating 20 s moves, 10 s rest', () => {
+    const r = load('tabata-express')
+    expect(r).toMatchObject({ format: 'tabata', rest: 10 })
+    const groups = [...new Set(r.ex.map(e => e.sg))]
+    expect(groups).toHaveLength(4)
+    expect(r.ex.every(e => e.mode === 'time' && e.sec === 20 && e.sets === 4)).toBe(true)
+  })
+  it('EMOM: one block of 60 s minutes, each with its rep target', () => {
+    const r = load('emom-20')
+    expect(r.format).toBe('emom')
+    expect(new Set(r.ex.map(e => e.sg)).size).toBe(1)
+    expect(r.ex[0]).toMatchObject({ mode: 'time', sec: 60, reps: 10, sets: 5 })
+    expect(r.ex.reduce((n, e) => n + e.sets, 0)).toBe(20)
+  })
+  it('AMRAP: rep sets with a 15 min cap', () => {
+    const r = load('amrap-15')
+    expect(r).toMatchObject({ format: 'amrap', cap: 900 })
+    expect(r.ex.every(e => !e.mode && e.reps > 0)).toBe(true)
+  })
+  it('interval plans leave the week alone', () => {
+    for (const p of PLAN_TEMPLATES.filter(p => p.where === 'intervals')) expect(instantiatePlan(p).week).toEqual({})
+  })
+  it('format, cap and EMOM reps travel in a shared plan; junk is dropped on import', () => {
+    const r = load('emom-20'), a = load('amrap-15')
+    const bundle = buildPlanBundle({ week: {}, customEx: [], routines: [r, a] }, 'x')
+    expect(bundle.routines[0].format).toBe('emom')
+    expect(bundle.routines[0].ex[0].reps).toBe(10)
+    bundle.routines[0].format = 'crossfit<script>'
+    bundle.routines[1].cap = 99999
+    const s = { unit: 'kg', week: {}, customEx: [], routines: [] }
+    mergePlan(s, parsePlan(JSON.stringify(bundle)))
+    expect(s.routines[0].format).toBeUndefined()
+    expect(s.routines[1]).toMatchObject({ format: 'amrap', cap: 3600 })
   })
 })

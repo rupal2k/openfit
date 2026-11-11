@@ -42,6 +42,8 @@ const ocrAssets = {
 
 export default defineConfig({
   plugins: [react(), dropUnusedOrtWasm, ocrAssets],
+  // shown in Settings, so a phone can tell which build it runs
+  define: { __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version) },
   base: './',
   server: {
     proxy: {

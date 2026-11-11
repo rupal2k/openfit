@@ -91,9 +91,12 @@ export default function Home() {
           <span className="lrow-i"><Icon name="sparkles" /></span>
           <div className="big" style={{ fontSize: 22 }}>{t('Welcome!')}</div>
         </div>
-        <div className="muted small" style={{ marginBottom: 12 }}>{t('Set up your weekly routine to get going — or choose from ready-made workout plans.')}</div>
-        <Button variant="primary" icon="sparkles" onClick={planCatalogSheet}>{t('Choose a workout plan')}</Button>
-        <div style={{ height: 8 }} /><Button onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
+        <div className="muted small" style={{ marginBottom: 12 }}>{t('Where will you train? Pick one and we’ll show plans that fit. Beginner plans come first.')}</div>
+        <div className="start-where">
+          {[['gym', 'barbell', 'At a gym'], ['home', 'figureStrength', 'At home, no equipment'], ['homegym', 'dumbbell', 'Home gym']].map(([w, ic, label]) =>
+            <Button key={w} variant={w === 'home' ? 'primary' : 'tinted'} icon={ic} onClick={() => planCatalogSheet(w)}>{t(label)}</Button>)}
+        </div>
+        <div style={{ height: 8 }} /><Button variant="ghost" onClick={() => nav('/plan')}>{t('Build my own plan')}</Button>
       </div>
     )}
 
@@ -132,9 +135,10 @@ export default function Home() {
         <div>
           <div className="row" style={{ gap: 7, fontSize: 22, fontWeight: 600, letterSpacing: '-.021em' }}>
             <Icon name="flame" style={{ color: 'var(--orange)' }} />
-            {t('{0} week streak', streakWeeks(S))}
+            {S.workouts.length ? t('{0} week streak', streakWeeks(S)) : t('Your streak starts here')}
           </div>
-          <div className="muted small" style={{ marginTop: 2 }}>{wThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}</div>
+          {!S.workouts.length ? <div className="muted small" style={{ marginTop: 2 }}>{t('Finish one workout this week to start it. Any workout counts.')}</div> :
+          <div className="muted small" style={{ marginTop: 2 }}>{wThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {t(S.workouts.length === 1 ? '{0} workout total' : '{0} workouts total', S.workouts.length)}</div>}
         </div>
         <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
       </div>

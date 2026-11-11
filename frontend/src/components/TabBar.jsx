@@ -18,7 +18,8 @@ export default function TabBar({ onStart }) {
 
   const startWorkout = () => {
     if (!S.active) {
-      const r = effectiveRoutine(S, todayISO())
+      const own = loc.pathname.match(/^\/plan\/r\/([^/]+)/)
+      const r = (own && S.routines.find(x => x.id === own[1])) || effectiveRoutine(S, todayISO())
       if (r && r.ex.length) { onStart(r.id); return }
     }
     nav('/workout')

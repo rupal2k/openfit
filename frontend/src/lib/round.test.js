@@ -26,3 +26,40 @@ describe('nextInRound: a circuit goes set 1 of each, then set 2 of each', () => 
     expect(nextInRound(en, [1], 1, 0)).toBe(null)
   })
 })
+
+import { restAfter, chains, cleanCap, cleanFormat } from './history.js'
+describe('format rules', () => {
+  it('rest: standard after the round, Tabata after every interval, EMOM and AMRAP never', () => {
+    expect([restAfter('', false, false), restAfter('', true, false), restAfter('', true, true)]).toEqual([false, true, false])
+    expect([restAfter('tabata', false, false), restAfter('tabata', true, true)]).toEqual([true, false])
+    expect([restAfter('emom', true, false), restAfter('amrap', true, false)]).toEqual([false, false])
+  })
+  it('chaining: circuits, and Tabata/EMOM even for one exercise; never a lone standard hold', () => {
+    expect([chains('', 1), chains('', 2), chains('tabata', 1), chains('emom', 1)]).toEqual([false, true, true, true])
+  })
+  it('cleans format and cap', () => {
+    expect([cleanFormat('emom'), cleanFormat('x'), cleanFormat(undefined)]).toEqual(['emom', '', ''])
+    expect([cleanCap(900), cleanCap(5), cleanCap(1e9), cleanCap('x')]).toEqual([900, 60, 3600, 0])
+  })
+})
+
+import { buildSets } from './history.js'
+describe('a hold stopped early does not become the next target', () => {
+  const S = w => ({ exWeights: {}, workouts: [w], unit: 'kg' })
+  const cfg = { id: '3665', sets: 2, mode: 'time', sec: 40 }
+  it('early: back to the plan; full holds still carry over', () => {
+    const early = S({ d: '2026-11-10', entries: [{ id: '3665', sets: [{ sec: 4, early: true, done: true }, { sec: 45, done: true }] }] })
+    expect(buildSets(early, cfg).map(s => s.sec)).toEqual([40, 45])
+  })
+})
+
+import { sessionSets } from './history.js'
+describe('interval formats keep their own timing', () => {
+  const S = { exWeights: {}, unit: 'kg', workouts: [{ d: '2026-11-10', entries: [{ id: '0662', sets: [{ sec: 40, done: true }] }] }] }
+  const cfg = { id: '0662', sets: 2, mode: 'time', sec: 20 }
+  it('a 40 s hold elsewhere carries into a standard routine but not into Tabata or EMOM', () => {
+    expect(sessionSets(S, cfg, '').map(s => s.sec)).toEqual([40, 40])
+    expect(sessionSets(S, cfg, 'tabata').map(s => s.sec)).toEqual([20, 20])
+    expect(sessionSets(S, { ...cfg, sec: 60 }, 'emom').map(s => s.sec)).toEqual([60, 60])
+  })
+})

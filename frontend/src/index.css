@@ -141,6 +141,24 @@
 :root[data-theme="light"][data-accent="pink"],
 :root[data-theme="light"][data-accent="red"]     { --on-acc:#fff; }
 
+/* Accent as TEXT. Dark theme: the accent itself. Light theme: a darker shade of it, since
+   lime, cyan or gold text on white is ~2:1; these all clear 4.5:1 on bg, surface and surface-2. */
+:root{--acc-ink:var(--acc)}
+:root[data-theme="light"],
+:root[data-theme="light"][data-accent="openfit"],
+:root[data-theme="light"][data-accent="lime"]    { --acc-ink:#3f6212 }
+:root[data-theme="light"][data-accent="cyan"],
+:root[data-theme="light"][data-accent="teal"]    { --acc-ink:#0e7490 }
+:root[data-theme="light"][data-accent="mint"]    { --acc-ink:#0f766e }
+:root[data-theme="light"][data-accent="vfit"]    { --acc-ink:#c8243a }
+:root[data-theme="light"][data-accent="sunrise"],
+:root[data-theme="light"][data-accent="orange"]  { --acc-ink:#92400e }
+:root[data-theme="light"][data-accent="sky"]     { --acc-ink:#0060df }
+:root[data-theme="light"][data-accent="violet"]  { --acc-ink:#8944ab }
+:root[data-theme="light"][data-accent="pink"]    { --acc-ink:#c8103e }
+:root[data-theme="light"][data-accent="red"]     { --acc-ink:#c0141c }
+:root[data-theme="light"][data-accent="gold"]    { --acc-ink:#8a5a00 }
+
 /* ---------------------------------------------------------------- reset -- */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{
@@ -159,7 +177,7 @@ body{
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;letter-spacing:inherit}
 input,select,textarea{font:inherit;color:var(--label);letter-spacing:inherit}
 img{max-width:100%}
-a{color:var(--acc);text-decoration:none}
+a{color:var(--acc-ink);text-decoration:none}
 :focus{outline:none}
 :focus-visible{outline:2.5px solid var(--acc);outline-offset:2px;border-radius:6px}
 button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
@@ -187,7 +205,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 
 .muted{color:var(--label-2)} .dim{color:var(--label-3)}
 .small{font-size:13px;line-height:1.38}
-.accent{color:var(--acc)}
+.accent{color:var(--acc-ink)}
 .capitalize{text-transform:capitalize}
 /* exercise names and body-part/equipment terms arrive lowercase from the dataset,
    so tags and chips capitalise by default. Anything that is a unit or a sentence opts
@@ -221,7 +239,7 @@ body.resting #app{padding-bottom:calc(250px + var(--sab))}
 }
 .iconbtn::before{content:'';position:absolute;inset:-7px;pointer-events:auto}
 .iconbtn:active{background:var(--surface-2);transform:scale(.92)}
-.iconbtn.on-ss{background:var(--acc-soft);color:var(--acc)}
+.iconbtn.on-ss{background:var(--acc-soft);color:var(--acc-ink)}
 
 h4.sec,.sect-t{
   font-size:13px;font-weight:500;letter-spacing:-.004em;color:var(--label-2);
@@ -292,7 +310,7 @@ h4.sec,.sect-t{
   padding:4px 6px;border-radius:6px;transition:background var(--fast);
 }
 .lrow .num:focus{
-  background:var(--surface-2);color:var(--acc);
+  background:var(--surface-2);color:var(--acc-ink);
 }
 .lrow .num::placeholder{color:var(--label-3)}
 /* flex:none would let a long value ("Follow the routine (Linear progression)") run straight
@@ -301,7 +319,7 @@ h4.sec,.sect-t{
 .lrow-v{color:var(--label-2);font-size:17px;letter-spacing:-.012em;flex:0 1 auto;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
 .lrow-c{color:var(--label);font-size:15px;flex:none;--icon-stroke:2.4}
-.lrow-k{color:var(--acc);font-size:17px;flex:none;--icon-stroke:2.4}
+.lrow-k{color:var(--acc-ink);font-size:17px;flex:none;--icon-stroke:2.4}
 .lrow.danger,.lrow.danger .lrow-t{color:var(--red)}
 /* an (i) before a row's control: painted small and dim so the control stays the loud thing,
    but with a finger-sized target like everything else — the padding is the hit area and the
@@ -328,9 +346,9 @@ h4.sec,.sect-t{
   box-shadow:0 4px 16px -2px color-mix(in srgb, var(--acc) 45%, transparent);
 }
 .btn.primary:active{background:var(--acc-2);box-shadow:none}
-.btn.tinted{background:var(--acc-soft);color:var(--acc)}
+.btn.tinted{background:var(--acc-soft);color:var(--acc-ink)}
 .btn.danger{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
-.btn.ghost,.btn.plain{background:none;color:var(--acc);font-weight:500}
+.btn.ghost,.btn.plain{background:none;color:var(--acc-ink);font-weight:500}
 .btn.ghost:active,.btn.plain:active{background:var(--surface-2)}
 .btn.sm{padding:8px 16px;width:auto;font-size:14px;border-radius:var(--r-pill);gap:6px}
 .btn.sm .icn{font-size:16px}
@@ -361,7 +379,7 @@ h4.sec,.sect-t{
 #tabbar button{min-width:0;padding-left:2px;padding-right:2px}
 #tabbar button span{text-align:center;line-height:1.15}   /* words never split ("Exercise|s") */
 #tabbar button .icn{font-size:25px;--icon-stroke:1.65;color:var(--label)}
-#tabbar button.on{color:var(--acc)}
+#tabbar button.on{color:var(--acc-ink)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
 #tabbar button.on span{background:linear-gradient(135deg,var(--acc),var(--acc-2));-webkit-background-clip:text;background-clip:text;color:transparent}
 #tabbar button.on .icn *{stroke:url(#tabGrad)}
@@ -435,7 +453,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 }
 .tag.acc{
   background:var(--acc-soft);
-  color:var(--acc);
+  color:var(--acc-ink);
   font-weight:600;
 }
 :root[data-theme="light"] .tag.acc{color:#3f6212}
@@ -678,7 +696,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 /* why the next target is what it is (issue #17) */
 .progline{
   display:flex;align-items:flex-start;gap:7px;margin:6px 0 2px;
-  font-size:13px;line-height:1.38;color:var(--acc);
+  font-size:13px;line-height:1.38;color:var(--acc-ink);
 }
 .progline.warn{color:var(--yellow)}
 .progline svg{flex:none;margin-top:2px}
@@ -687,9 +705,11 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 .setrow .setgo{
   width:30px;height:30px;border-radius:50%;flex:none;
   display:flex;align-items:center;justify-content:center;
-  background:var(--surface-2);color:var(--acc);font-size:14px;
+  background:var(--surface-2);color:var(--acc-ink);font-size:14px;
   transition:background var(--fast),opacity var(--fast);
 }
+.setrow .setgo{position:relative}
+.setrow .setgo::before{content:'';position:absolute;inset:-7px}   /* 44 px hit area, like .chk */
 .setrow .setgo:disabled{opacity:.3;cursor:default}
 .setrow .setgo:not(:disabled):active{background:var(--surface-3)}
 /* exercise-config sheet: three steppers side by side on narrow phones */
@@ -725,7 +745,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 /* work timer (issue #16): the same bar doing the opposite job — outlined and tinted so a
    glance tells "you are holding this" apart from "you are recovering". */
 #timer.working{border:var(--hair) solid var(--acc)}
-#timer.working .t{color:var(--acc)}
+#timer.working .t{color:var(--acc-ink)}
 #timer.working .grow{flex:1;min-width:0}
 #timer.working .lbl{
   font-size:12px;color:var(--label-2);margin-bottom:5px;text-transform:capitalize;
@@ -784,7 +804,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 }
 /* the row a working set usually lands on — the anchor the others are read against */
 .efftbl .r.on{background:var(--acc-soft)}
-.efftbl .r.on .n{color:var(--acc)}
+.efftbl .r.on .n{color:var(--acc-ink)}
 .efftbl .r.on .f{color:var(--label)}
 
 /* --- glyph picker (replaces the emoji grid) --- */
@@ -940,7 +960,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
   font-weight:400;font-size:15px;color:var(--label);transition:background var(--fast);
 }
 .cal-d:active{background:var(--surface-2)}
-.cal-d.has{background:var(--acc-soft);color:var(--acc)}
+.cal-d.has{background:var(--acc-soft);color:var(--acc-ink)}
 .cal-d.today{box-shadow:inset 0 0 0 1.8px var(--acc)}
 .cal-d i{width:5px;height:5px;border-radius:50%;background:transparent}
 .cal-d i.done{background:var(--acc)}
@@ -958,7 +978,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 /* --- supersets --- */
 .ss-label{
   font-size:12px;font-weight:600;letter-spacing:-.004em;text-transform:none;
-  color:var(--acc);margin:8px 0 5px 4px;display:flex;align-items:center;gap:5px;
+  color:var(--acc-ink);margin:8px 0 5px 4px;display:flex;align-items:center;gap:5px;
 }
 .ss-label .icn{font-size:13px}
 .item.in-ss{box-shadow:inset 3px 0 0 var(--acc)}
@@ -967,11 +987,11 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
   background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--acc-line);
 }
 .ss-hd{
-  font-size:12px;font-weight:600;color:var(--acc);margin-bottom:12px;
+  font-size:12px;font-weight:600;color:var(--acc-ink);margin-bottom:12px;
   text-align:center;display:flex;align-items:center;justify-content:center;gap:5px;
 }
 .ss-ex{position:relative}
-.ss-amp{text-align:center;font-size:15px;font-weight:600;color:var(--acc);margin:14px 0 8px}
+.ss-amp{text-align:center;font-size:15px;font-weight:600;color:var(--acc-ink);margin:14px 0 8px}
 
 /* --- home: greeting header --- */
 .home-hdr{align-items:center}
@@ -1062,6 +1082,13 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 
 /* plan catalogue: Gym / Home / Home gym */
 .plan-where{margin-bottom:14px}
+.exmedia-off{min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;text-align:center;color:var(--label-2);background:var(--surface-2);border-radius:inherit;font-size:14px}
+.exmedia-off .icn{font-size:28px}
+.start-where{display:grid;gap:8px}
+.plan-where button{font-size:14px;line-height:1.15;padding-left:2px;padding-right:2px;overflow-wrap:normal}
+.lib-plans{margin:0 0 12px;display:grid;gap:6px}
+.lib-plans-row{display:flex;flex-wrap:wrap;gap:8px}
+.lib-plans-row .chip{display:inline-flex;align-items:center;gap:6px;min-height:40px}
 
 /* ---------- Labs (blood tests) ---------- */
 .lab-entry{display:flex;align-items:center;gap:12px;width:100%;text-align:left;color:var(--label)}
@@ -1091,7 +1118,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 .lab-warn{color:var(--orange)}
 .lab-date{display:flex;align-items:center;gap:10px;font-weight:600;margin:6px 0 4px}
 .lab-date input{min-height:40px;padding:6px 10px;border-radius:10px;border:var(--hair) solid var(--sep);background:var(--surface-2);color:var(--label);font:inherit}
-.lab-more{display:flex;align-items:center;gap:6px;color:var(--acc);font-weight:600;min-height:44px;background:none}
+.lab-more{display:flex;align-items:center;gap:6px;color:var(--acc-ink);font-weight:600;min-height:44px;background:none}
 .lab-units{margin-bottom:16px}
 .lab-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .lab-reading{padding:8px 0 4px}

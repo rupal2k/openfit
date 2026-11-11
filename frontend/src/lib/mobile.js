@@ -66,9 +66,20 @@ export async function syncReminder(S, interactive = false) {
 
 // WKWebView can't do blob-URL downloads, so the backup goes out through the OS share sheet
 // (Files, AirDrop, mail, …) from a temp file instead.
+// Imported text files above this are refused before they are read: a plan or a backup is a
+// few hundred KB, and reading a huge file can take the WebView down.
+export const MAX_IMPORT_BYTES = 20 * 1024 * 1024
+export const tooBig = f => !!f && f.size > MAX_IMPORT_BYTES
+
+// The backup goes to the share sheet from a cache file. The receiving app may read it after
+// Share resolves, so it can't be deleted then; the previous export is removed instead, so at
+// most one copy of the health data sits in the cache.
+let lastExport = null
 export async function shareExport(json, filename) {
   const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
   const { Share } = await import('@capacitor/share')
+  if (lastExport && lastExport !== filename) await Filesystem.deleteFile({ path: lastExport, directory: Directory.Cache }).catch(() => {})
   const w = await Filesystem.writeFile({ path: filename, directory: Directory.Cache, data: json, encoding: Encoding.UTF8 })
+  lastExport = filename
   await Share.share({ title: filename, url: w.uri })
 }

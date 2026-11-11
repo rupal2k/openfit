@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore.js'
 import { exOr } from '../lib/exercises.js'
 import { uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
-import { supersetUnits, cleanupSg, exLine, modeOf } from '../lib/history.js'
+import { supersetUnits, cleanupSg, exLine, modeOf, fmtSec } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
 import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -60,7 +60,20 @@ export default function RoutineEdit() {
       <SelectRow icon="timer" iconTint="var(--orange)" title={t('Rest timer')} sheetTitle={t('Rest timer')}
         value={r.rest || 0} onChange={v => update(s => { const x = s.routines.find(y => y.id === id); if (v) x.rest = v; else delete x.rest })}
         options={[{ value: 0, label: t('Default ({0})', S.restSec + 's') }, ...[...new Set([10, 15, 20, 30, 45, 60, 90, 120, 180, r.rest || 10])].sort((a, b) => a - b).map(v => ({ value: v, label: v + 's' }))]} />
+      <SelectRow icon="bolt" iconTint="var(--acc)" title={t('Format')} sheetTitle={t('Format')}
+        value={r.format || 'std'} onChange={v => update(s => { const x = s.routines.find(y => y.id === id); if (v === 'std') { delete x.format; delete x.cap } else { x.format = v; if (v === 'amrap' && !x.cap) x.cap = 600; if (v !== 'amrap') delete x.cap } })}
+        options={[
+          { value: 'std', label: t('Standard'), subtitle: t('Rest after each set, or after each round of a superset.') },
+          { value: 'tabata', label: 'Tabata', subtitle: t('Timed sets back to back with the rest after every one. The timer runs the block.') },
+          { value: 'emom', label: 'EMOM', subtitle: t('Each timed set is one minute: do the reps, rest until the next starts.') },
+          { value: 'amrap', label: 'AMRAP', subtitle: t('One clock for the block: as many rounds as you can, no rest timer.') }]} />
+      {r.format === 'amrap' && <SelectRow icon="timer" title={t('Time cap')} sheetTitle={t('Time cap')}
+        value={r.cap || 600} onChange={v => update(s => { s.routines.find(y => y.id === id).cap = v })}
+        options={[...new Set([300, 480, 600, 720, 900, 1200, 1500, 1800, r.cap || 600])].sort((a, b) => a - b).map(v => ({ value: v, label: fmtSec(v) }))} />}
     </div>
+    {r.format && <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
+      {r.format === 'amrap' ? t('Link the exercises into one block; each set is a round.') : t('Link the exercises into blocks and make them timed sets; start the first one and the timer runs the rest.')}
+    </div>}
 
     {r.ex.length ? <div className="list">{r.ex.map((e, i) => {
       // An unresolvable id is shown rather than skipped — hiding it left an entry you

@@ -9,7 +9,7 @@ import { pushSupported, enablePush, disablePush, sendTestPush } from '../lib/pus
 import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
-import { MOBILE, shareExport, syncReminder } from '../lib/mobile.js'
+import { MOBILE, shareExport, syncReminder, tooBig } from '../lib/mobile.js'
 import { loadStarterPlan, confirmSheet, importFromApp, planCatalogSheet, planUploadSheet } from '../sheets.jsx'
 import { VisionSettings } from '../vision-sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -39,6 +39,7 @@ export default function Settings() {
   }
   const doImport = ev => {
     const f = ev.target.files[0]; if (!f) return
+    if (tooBig(f)) { toast(t('This file is too large to import.')); return }
     const rd = new FileReader()
     rd.onload = () => {
       try {
@@ -198,7 +199,7 @@ export default function Settings() {
     </Section>}
 
     <div className="dim small" style={{ textAlign: 'center', marginTop: 4, lineHeight: 1.6 }}>
-      OPENFIT · {t('free & open source (AGPL v3)')}<br />
+      OPENFIT {__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
       <a href="https://github.com/rupal2k/openfit" target="_blank" rel="noopener">source code</a> · exercise data: hasaneyldrm/exercises-dataset (CC)
     </div>
   </div>

@@ -5,7 +5,8 @@ import { bestWeightFor } from '../lib/history.js'
 import { fmtNum } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { Thumb } from '../components/Media.jsx'
-import { exerciseDetailSheet, addToRoutineSheet, customExSheet } from '../sheets.jsx'
+import { exerciseDetailSheet, addToRoutineSheet, customExSheet, planCatalogSheet } from '../sheets.jsx'
+import { PLAN_WHERE } from '../lib/starter.js'
 import Icon from '../components/Icon.jsx'
 import { Button, SelectChip } from '../components/ui.jsx'
 
@@ -28,6 +29,14 @@ export default function Library() {
     <div className="hdr"><div><h1>{t('Exercises')}</h1><div className="sub">{t('{0} exercises with animations', EXDB.length)}</div></div></div>
     <div className="search" style={{ marginBottom: 10 }}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input className="input" placeholder={t('Search…')} aria-label={t('Search exercises')} value={q} onChange={e => { setQ(e.target.value); setShown(40) }} /></div>
+    {/* ready-made workouts start here too, not only from the Plan screen */}
+    <div className="lib-plans" role="group" aria-label={t('Ready-made workouts')}>
+      <div className="small dim">{t('Ready-made workouts')}</div>
+      <div className="lib-plans-row">
+        {PLAN_WHERE.map(([w, label]) => <button key={w} type="button" className="chip nocap" onClick={() => planCatalogSheet(w)}>
+          <Icon name={{ gym: 'barbell', home: 'figureStrength', homegym: 'dumbbell', intervals: 'timer' }[w]} />{t(label)}</button>)}
+      </div>
+    </div>
     {/* dropdowns instead of chip rows: two scrolling rows got cut off at the screen edge */}
     <div className="filters">
       <SelectChip label={t('Body part')} value={bp} none=""

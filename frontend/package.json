@@ -1,7 +1,7 @@
 {
   "name": "openfit-frontend",
   "private": true,
-  "version": "1.5.0",
+  "version": "1.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,10 +13,11 @@
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@capacitor/core": "^7.6.8",
+    "@capacitor/core": "^7.6.9",
     "@capacitor/filesystem": "^7.1.8",
     "@capacitor/local-notifications": "^7.0.7",
     "@capacitor/share": "^7.0.4",
+    "@capacitor/status-bar": "^7.0.6",
     "@huggingface/transformers": "4.3.1",
     "@tesseract.js-data/eng": "^1.0.0",
     "pdfjs-dist": "^6.4.299",
@@ -27,10 +28,10 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@capacitor/android": "^7.6.8",
+    "@capacitor/android": "^7.6.9",
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^7.6.8",
-    "@capacitor/ios": "^7.6.8",
+    "@capacitor/cli": "^7.6.9",
+    "@capacitor/ios": "^7.6.9",
     "@vitejs/plugin-react": "^6.0.3",
     "vite": "^8.1.5",
     "vitest": "^4.1.10"

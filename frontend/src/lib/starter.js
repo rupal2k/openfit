@@ -6,9 +6,11 @@ import { uid } from './format.js'
 const T = { time: true }
 // [id, sets, reps, SIDE]: one leg or arm at a time; reps count both sides (24 = 12 each)
 const SIDE = { side: true }
-export const templateEx = ([id, sets, n, o]) => (o && o.time ? { id, sets, mode: 'time', sec: n, weight: 0 } : { id, sets, reps: n, weight: 0, ...(o && o.side ? { side: true } : {}) })
+// [id, sets, 60, M(10)]: an EMOM minute, 10 reps then rest until the next beep
+const M = reps => ({ time: true, reps })
+export const templateEx = ([id, sets, n, o]) => (o && o.time ? { id, sets, mode: 'time', sec: n, weight: 0, ...(o.reps ? { reps: o.reps } : {}) } : { id, sets, reps: n, weight: 0, ...(o && o.side ? { side: true } : {}) })
 // Where a plan is meant to be done: the catalogue filters on it.
-export const PLAN_WHERE = [['gym', 'Gym'], ['home', 'Home'], ['homegym', 'Home gym']]
+export const PLAN_WHERE = [['gym', 'Gym'], ['home', 'Home'], ['homegym', 'Home gym'], ['intervals', 'Intervals']]
 
 const SPEC = [
   ['Push Day', 'barbell', [['0025', 4, 8], ['0047', 3, 10], ['0426', 3, 10], ['0334', 3, 12], ['0241', 3, 12], ['0251', 3, 10]]],
@@ -22,13 +24,29 @@ export const starterRoutines = () =>
 
 export const PLAN_TEMPLATES = [
   {
+    id: 'beginner-gym-3',
+    where: 'gym',
+    name: 'Beginner Full Body (3‑day)',
+    badge: 'Beginner',
+    daysPerWeek: 3,
+    icon: 'figureStrength',
+    desc: 'New to the gym? Machines and dumbbells only, no barbell technique to learn. Two short workouts, A and B, three days a week. Pick weights you can lift for every rep with good form, and add a little when it feels easy.',
+    scheduleMap: { 1: 0, 3: 1, 5: 0 },
+    routines: [
+      { name: 'Beginner A', emoji: 'figureStrength', rest: 90,
+        ex: [['0739', 3, 12], ['0289', 3, 10], ['2330', 3, 12], ['0405', 3, 10], ['0586', 3, 12], ['3665', 2, 30, T]] },
+      { name: 'Beginner B', emoji: 'dumbbell', rest: 90,
+        ex: [['1760', 3, 10], ['1323', 3, 12], ['0493', 3, 10], ['1459', 3, 10], ['0585', 3, 12], ['0276', 2, 10]] }
+    ]
+  },
+  {
     id: 'ppl-3',
     name: 'Push / Pull / Legs (3‑day)',
     where: 'gym',
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'barbell',
-    desc: 'Classic 3-day split: Push (chest, shoulders, triceps), Pull (back, biceps), and Legs. Great for muscle building and recovery.',
+    desc: 'Three workouts a week, each for different muscles: Push (chest, shoulders, back of the arms), Pull (back, front of the arms) and Legs. Good for building muscle once the basics feel easy.',
     scheduleDays: [1, 3, 5],
     routines: [
       {
@@ -55,7 +73,7 @@ export const PLAN_TEMPLATES = [
     badge: '4 days/wk',
     daysPerWeek: 4,
     icon: 'figureStrength',
-    desc: 'Balanced 4-day split training every muscle group twice a week. Mon Upper A, Tue Lower A, Thu Upper B, Fri Lower B.',
+    desc: 'Four workouts a week, upper body and lower body on alternate days, so every muscle gets trained twice. Mon Upper A, Tue Lower A, Thu Upper B, Fri Lower B.',
     scheduleDays: [1, 2, 4, 5],
     routines: [
       {
@@ -87,7 +105,7 @@ export const PLAN_TEMPLATES = [
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'dumbbell',
-    desc: 'High-frequency whole body training across Mon, Wed, and Fri. Ideal for building solid foundations and busy lifestyles.',
+    desc: 'The whole body in every workout, Mon, Wed and Fri, with barbell lifts. A good next step after the beginner plan, and easy to fit into a busy week.',
     scheduleDays: [1, 3, 5],
     routines: [
       {
@@ -114,7 +132,7 @@ export const PLAN_TEMPLATES = [
     badge: '6 days/wk',
     daysPerWeek: 6,
     icon: 'barbell',
-    desc: 'High-frequency 6-day split repeating Push, Pull, and Legs twice a week. Mon–Sat with Sunday rest.',
+    desc: 'For experienced lifters: Push, Pull and Legs twice a week, Mon to Sat, Sunday off.',
     scheduleMap: { 1: 0, 2: 1, 3: 2, 4: 0, 5: 1, 6: 2 },
     routines: [
       {
@@ -141,7 +159,7 @@ export const PLAN_TEMPLATES = [
     badge: '6 days/wk',
     daysPerWeek: 6,
     icon: 'bolt',
-    desc: 'Classic 6-day split pairing antagonist muscle groups: Chest & Back, Shoulders & Arms, Legs — performed twice a week.',
+    desc: 'For experienced lifters: chest & back, shoulders & arms, and legs, each twice a week over six days.',
     scheduleMap: { 1: 0, 2: 1, 3: 2, 4: 0, 5: 1, 6: 2 },
     routines: [
       {
@@ -166,18 +184,18 @@ export const PLAN_TEMPLATES = [
     id: 'home-bw-3',
     where: 'home',
     name: 'Home Bodyweight Full Body (3‑day)',
-    badge: '3 days/wk',
+    badge: 'Beginner',
     daysPerWeek: 3,
     icon: 'figureStrength',
-    desc: 'Calisthenics strength with no equipment: squats, push-ups, lunges, towel rows and core. A chair and a towel are all you need. Make it harder by adding reps or slowing the lowering phase.',
+    desc: 'Strength with your own body weight, no equipment: squats, push-ups, lunges, towel rows and core. A chair and a towel are all you need. Make it harder by adding reps or slowing the lowering phase.',
     scheduleMap: { 1: 0, 3: 1, 5: 2 },
     routines: [
       { name: 'Bodyweight A', emoji: 'figureStrength', rest: 60,
-        ex: [['1685', 3, 15], ['0662', 3, 10], ['1460', 3, 24, SIDE], ['3013', 3, 15], ['3167', 3, 12], ['3665', 3, 30, T]] },
+        ex: [['1685', 3, 15], ['0493', 3, 10], ['1460', 3, 24, SIDE], ['3013', 3, 15], ['3167', 3, 12], ['3665', 3, 30, T]] },
       { name: 'Bodyweight B', emoji: 'legs', rest: 60,
         ex: [['2368', 3, 20, SIDE], ['0493', 3, 12], ['0129', 3, 12], ['3561', 3, 12], ['0276', 3, 12], ['0705', 2, 30, T]] },
       { name: 'Bodyweight C', emoji: 'abs', rest: 60,
-        ex: [['3769', 3, 24, SIDE], ['0283', 3, 8], ['1373', 3, 20], ['3167', 3, 12], ['0872', 3, 15], ['0630', 3, 40, T]] }
+        ex: [['3769', 3, 24, SIDE], ['0662', 3, 8], ['1373', 3, 20], ['3167', 3, 12], ['0872', 3, 15], ['0630', 3, 40, T]] }
     ]
   },
   {
@@ -187,7 +205,7 @@ export const PLAN_TEMPLATES = [
     badge: '~25 min',
     daysPerWeek: 3,
     icon: 'flame',
-    desc: 'Metabolic circuits with no equipment. Do every move for 40 s back to back, rest 60 s after the round, 4 rounds. Builds stamina and burns a lot in little time.',
+    desc: 'Fast circuits with no equipment. Do every move for 40 s back to back, rest 60 s after the round, 4 rounds. Builds stamina and burns a lot in little time.',
     scheduleMap: { 2: 0, 4: 1, 6: 0 },
     routines: [
       { name: 'HIIT Circuit A', emoji: 'flame', rest: 60, circuit: true,
@@ -217,7 +235,7 @@ export const PLAN_TEMPLATES = [
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'dumbbell',
-    desc: 'Muscle building with a pair of dumbbells and a flat or incline bench. 3–4 sets of 8–12 reps. Alternates A and B through the week.',
+    desc: 'Build muscle with a pair of dumbbells and a bench. 3–4 sets of 8–12 reps. Alternates A and B through the week.',
     scheduleMap: { 1: 0, 3: 1, 5: 0 },
     routines: [
       { name: 'Dumbbell A', emoji: 'dumbbell', rest: 90,
@@ -233,14 +251,77 @@ export const PLAN_TEMPLATES = [
     badge: '3 days/wk',
     daysPerWeek: 3,
     icon: 'kettlebell',
-    desc: 'Functional strength and conditioning with one kettlebell and a resistance band: swings, goblet squats, thrusters, presses and rows. Shorter rests keep the heart rate up.',
+    desc: 'Everyday strength and fitness with one kettlebell and a resistance band: swings, goblet squats, thrusters, presses and rows. Shorter rests keep the heart rate up.',
     scheduleMap: { 1: 0, 3: 0, 5: 0 },
     routines: [
       { name: 'Kettlebell & Band', emoji: 'kettlebell', rest: 60,
         ex: [['0549', 4, 15], ['0534', 3, 12], ['0541', 3, 20, SIDE], ['0997', 3, 12], ['1022', 3, 15], ['1009', 3, 12], ['0550', 3, 10]] }
     ]
+  },
+  // ---- interval formats: the timer runs Tabata and EMOM; AMRAP has one clock for the block ----
+  {
+    id: 'tabata-express',
+    where: 'intervals',
+    name: 'Tabata Express',
+    badge: 'Tabata',
+    daysPerWeek: 0,
+    icon: 'bolt',
+    desc: 'Four 4-minute Tabata blocks with no equipment: 20 s all-out, 10 s rest, 8 intervals alternating two moves. Start the first interval and the timer runs the block. Take a minute between blocks. About 20 min. Doesn’t change your weekly schedule.',
+    routines: [
+      { name: 'Tabata Express', emoji: 'bolt', rest: 10, format: 'tabata', circuit: 2,
+        ex: [['0514', 4, 20, T], ['0662', 4, 20, T], ['0630', 4, 20, T], ['3582', 4, 20, T],
+          ['3223', 4, 20, T], ['3665', 4, 20, T], ['3361', 4, 20, T], ['0687', 4, 20, T]] }
+    ]
+  },
+  {
+    id: 'emom-20',
+    where: 'intervals',
+    name: 'EMOM 20',
+    badge: 'EMOM',
+    daysPerWeek: 0,
+    icon: 'timer',
+    desc: 'Every minute on the minute for 20 minutes, no equipment: push-ups, squats, reverse crunches and burpees in turn, 5 rounds. Do the reps when the minute starts and rest until the beep. Too easy? Add reps. Doesn’t change your weekly schedule.',
+    routines: [
+      { name: 'EMOM 20', emoji: 'timer', format: 'emom', circuit: true,
+        ex: [['0662', 5, 60, M(10)], ['1685', 5, 60, M(15)], ['0872', 5, 60, M(12)], ['1160', 5, 60, M(8)]] }
+    ]
+  },
+  {
+    id: 'amrap-15',
+    where: 'intervals',
+    name: 'AMRAP 15',
+    badge: 'AMRAP',
+    daysPerWeek: 0,
+    icon: 'flame',
+    desc: 'As many rounds as you can in 15 minutes, no equipment: 10 push-ups, 15 squats, 20 walking lunges and 15 reverse crunches. Start the clock, tick each set as you finish it, and beat your round count next time. Doesn’t change your weekly schedule.',
+    routines: [
+      { name: 'AMRAP 15', emoji: 'flame', format: 'amrap', cap: 900, circuit: true,
+        ex: [['0662', 10, 10], ['1685', 10, 15], ['1460', 10, 20, SIDE], ['0872', 10, 15]] }
+    ]
+  },
+  {
+    id: 'kb-emom-16',
+    where: 'intervals',
+    name: 'Kettlebell EMOM 16',
+    badge: 'EMOM',
+    daysPerWeek: 0,
+    icon: 'kettlebell',
+    desc: 'One kettlebell, 16 minutes: 15 swings on odd minutes, 10 goblet squats on even minutes. Rest whatever is left of each minute. Doesn’t change your weekly schedule.',
+    routines: [
+      { name: 'Kettlebell EMOM 16', emoji: 'kettlebell', format: 'emom', circuit: true,
+        ex: [['0549', 8, 60, M(15)], ['0534', 8, 60, M(10)]] }
+    ]
   }
 ]
+
+function groupEx(r) {
+  const n = r.circuit === true ? r.ex.length : r.circuit > 1 ? r.circuit : 1
+  let sg = null
+  return r.ex.map((x, i) => {
+    if (i % n === 0) sg = n > 1 ? 'sg' + uid() : null
+    return { ...templateEx(x), ...(sg ? { sg } : {}) }
+  })
+}
 
 export function instantiatePlan(template) {
   const createdRoutines = template.routines.map(r => ({
@@ -248,8 +329,10 @@ export function instantiatePlan(template) {
     name: r.name,
     emoji: r.emoji,
     ...(r.rest ? { rest: r.rest } : {}),
-    // a circuit is one superset over the whole routine: rest comes after the round
-    ex: (sg => r.ex.map(x => ({ ...templateEx(x), ...(sg ? { sg } : {}) })))(r.circuit ? 'sg' + uid() : null)
+    ...(r.format ? { format: r.format } : {}),
+    ...(r.cap ? { cap: r.cap } : {}),
+    // circuit: true links the whole routine into one block; a number links that many at a time
+    ex: groupEx(r)
   }))
 
   const weekAssignments = {}

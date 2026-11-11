@@ -3,7 +3,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf } from './lib/exercises.js'
 import { fmtDate, fmtNum, fmtVol, fmtDur, durPart, todayISO, uid, exCount, DAYN, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, buildSets, effectiveRoutineId, setsDone, setsDoneActive, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, isBw, isPerSide, sideReps } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, buildSets, sessionSets, effectiveRoutineId, setsDone, setsDoneActive, lastBW, supersetUnits, unitOf, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, isBw, isPerSide, sideReps } from './lib/history.js'
 import { beep, vibrate } from './lib/sound.js'
 import { t, instrFor, getLang, INSTR_LANGS } from './lib/i18n.js'
 import { nav } from './lib/nav.js'
@@ -21,7 +21,7 @@ import { parseAnyPlan, downloadSampleCSV, downloadSampleJSON } from './lib/plan-
 import { estimate1RM, best1RM, REP_CAP } from './lib/onerm.js'
 import { finishSession, recordSession, invalidDoneSets, doubtfulDoneSets, cleanConfig } from './lib/workout.js'
 import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
-import { MOBILE, shareExport } from './lib/mobile.js'
+import { MOBILE, shareExport, tooBig } from './lib/mobile.js'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -34,7 +34,7 @@ function ConfirmDialog({ title, message, confirmText, cancelText, danger, onConf
   return <div style={{ textAlign: 'center', padding: '4px 0' }}>
     {title && <h3 style={{ marginBottom: 8 }}>{title}</h3>}
     <div className="muted" style={{ marginBottom: 18, lineHeight: 1.5 }}>{message}</div>
-    <button className={'btn ' + (danger ? 'danger' : 'primary')} onClick={() => { close(); onConfirm && onConfirm() }}>{confirmText || t('Confirm')}</button>
+    <button className={'btn ' + (danger ? 'danger' : 'primary')} onClick={() => { close(); if (onConfirm) ui().afterClose(onConfirm) }}>{confirmText || t('Confirm')}</button>
     {/* cancelText: false makes it a one-button notice */}
     {cancelText !== false && <><div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{cancelText || t('Cancel')}</Button></>}
@@ -46,12 +46,13 @@ export function confirmSheet(opts) {
 }
 
 /* ============================ plan templates catalog ============================ */
-export const planCatalogSheet = () => ui().openSheet(close => <PlanCatalog close={close} />)
+// start: a PLAN_WHERE tab. Buttons pass their click event straight in, so anything else is the default.
+export const planCatalogSheet = start => ui().openSheet(close => <PlanCatalog close={close} start={PLAN_WHERE.some(([w]) => w === start) ? start : 'gym'} />)
 
-function PlanCatalog({ close }) {
-  const [where, setWhere] = useState('gym')
+function PlanCatalog({ close, start }) {
+  const [where, setWhere] = useState(start)
   const shown = PLAN_TEMPLATES.filter(p => p.where === where)
-  const [selectedId, setSelectedId] = useState(PLAN_TEMPLATES[0].id)
+  const [selectedId, setSelectedId] = useState(shown[0].id)
   const [applySchedule, setApplySchedule] = useState(true)
   const [expandedRoutine, setExpandedRoutine] = useState(null)
   const currentRoutinesCount = (useStore(s => s.S.routines) || []).length
@@ -232,7 +233,10 @@ function BwSheet({ required, onDone, close }) {
   const st = useStore(s => s.S)
   const unit = st.unit
   const bw = lastBW(st)
-  const [v, setV] = useState(bw ? bw.w : 70)
+  const [v, setV0] = useState(bw ? bw.w : 70)
+  // No weigh-in yet: 70 is only where the slider starts, so it can't be saved untouched.
+  const [touched, setTouched] = useState(!!bw)
+  const setV = x => { setTouched(true); setV0(typeof x === 'function' ? x(v) : x) }
   const save = () => {
     const n = Math.round((v || 0) * 10) / 10
     if (!n || n <= 0) { toast(t('Enter a valid weight')); return }
@@ -243,7 +247,7 @@ function BwSheet({ required, onDone, close }) {
       s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
     })
     close()
-    if (onDone) onDone(n); else toast(t('Weight saved'))
+    if (onDone) ui().afterClose(() => onDone(n)); else toast(t('Weight saved'))
   }
   const recent = [...st.bodyweight].reverse().slice(0, 3)
   const delEntry = d => {
@@ -263,10 +267,12 @@ function BwSheet({ required, onDone, close }) {
     <div className="muted small">{required ? t('Slide or tap to set your weight — tracked before every workout so your curve stays honest.') : t('Today') + ', ' + fmtDate(todayISO(), true)}</div>
     <WeightInput value={v} setValue={setV} unit={unit} />
     <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={save}>{required ? t('Save & start workout') : t('Save')}</Button>
+    {/* first weigh-in: the slider starts at 70, so the button names the number it will save */}
+    <Button variant="primary" onClick={save}>{!touched ? t('Save {0} {1}', fmtNum(v), unit) + (required ? ' · ' + t('start') : '') : required ? t('Save & start workout') : t('Save')}</Button>
+    {!touched && <div className="small dim" style={{ marginTop: 6 }}>{t('Not your weight? Set it above, or skip it below.')}</div>}
     {required && <>
-      <div style={{ height: 8 }} /><Button variant="ghost" className="dim" onClick={() => { close(); onDone && onDone(null) }}>{t('Start without weighing in')}</Button>
-      <div style={{ height: 2 }} /><Button variant="ghost" className="dim" icon="reset" onClick={() => { close(); nav('/workout') }}>{t('Choose a different workout')}</Button>
+      <div style={{ height: 8 }} /><Button variant="ghost" className="dim" onClick={() => { close(); if (onDone) ui().afterClose(() => onDone(null)) }}>{t('Start without weighing in')}</Button>
+      <div style={{ height: 2 }} /><Button variant="ghost" className="dim" icon="reset" onClick={() => { close(); ui().afterClose(() => nav('/workout')) }}>{t('Choose a different workout')}</Button>
     </>}
     {!required && recent.length > 0 && <>
       <h4 className="sec">{t('Recent weigh-ins')}</h4>
@@ -365,6 +371,7 @@ function ImportSummary({ parsed, close }) {
 
 /** Read a CSV/XML export, then show what it would do. */
 export function importFromApp(file, onDone) {
+  if (tooBig(file)) { toast(t('This file is too large to import.')); return }
   const rd = new FileReader()
   rd.onload = () => {
     let parsed
@@ -801,6 +808,7 @@ function PlanTools({ close }) {
   }
   const pickFile = ev => {
     const f = ev.target.files[0]; ev.target.value = ''; if (!f) return
+    if (tooBig(f)) { toast(t('This file is too large to import.')); return }
     const rd = new FileReader()
     rd.onload = () => {
       try { const bundle = parsePlan(rd.result); close(); planImportSheet(bundle) }
@@ -878,6 +886,7 @@ function PlanUpload({ close }) {
       setErrorMsg(t('Excel .xlsx files must be saved as CSV (.csv). In Excel: click File → Save As → CSV (Comma delimited).'))
       return
     }
+    if (tooBig(file)) { setErrorMsg(t('This file is too large to import.')); return }
 
     const rd = new FileReader()
     rd.onload = () => {
@@ -927,7 +936,7 @@ function PlanUpload({ close }) {
       }}
       onClick={() => fileRef.current?.click()}
     >
-      <div className="ico" style={{ fontSize: 32, marginBottom: 8, color: 'var(--acc)' }}><Icon name="upload" /></div>
+      <div className="ico" style={{ fontSize: 32, marginBottom: 8, color: 'var(--acc-ink)' }}><Icon name="upload" /></div>
       <div className="tt" style={{ fontSize: 16, fontWeight: 600 }}>{t('Choose or drop plan file')}</div>
       <div className="dim small" style={{ marginTop: 4 }}>{t('Accepts .csv, .json')}</div>
     </div>
@@ -1113,10 +1122,10 @@ export function beginWorkout(routineId, bw) {
   // kept on the entry purely so the workout can explain the number it chose.
   const entries = (r ? r.ex : []).map(cfg => {
     const plan = nextPrescription(st, cfg, r)
-    return { id: cfg.id, sg: cfg.sg, target: { ...cfg }, plan, sets: applyPrescription(buildSets(st, cfg), plan) }
+    return { id: cfg.id, sg: cfg.sg, target: { ...cfg }, plan, sets: applyPrescription(sessionSets(st, cfg, r?.format), plan) }
   })
   update(s => {
-    s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries, ...(r?.rest ? { rest: r.rest } : {}) }
+    s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries, ...(r?.rest ? { rest: r.rest } : {}), ...(r?.format ? { format: r.format } : {}), ...(r?.cap ? { cap: r.cap } : {}) }
   })
   useUI.getState().stopRest(); useUI.getState().stopWork()
   nav('/workout')
@@ -1168,7 +1177,7 @@ function TopWeight({ entryIdx, close }) {
     } else toast(t('Tracked — next time starts at {0}', fmtNum(Math.max(n, (st.exWeights[entry.id] || {}).w || 0)) + ' ' + st.unit))
   }
   return <>
-    <h3 className="capitalize row" style={{ gap: 8 }}><Icon name="checkCircle" style={{ color: 'var(--acc)' }} />{t('{0} done', ex.n)}</h3>
+    <h3 className="capitalize row" style={{ gap: 8 }}><Icon name="checkCircle" style={{ color: 'var(--acc-ink)' }} />{t('{0} done', ex.n)}</h3>
     <div className="muted small">{t('Confirm the weight you worked with — your highest becomes the default next time.')}{!unitDone && unit.length > 1 ? ' ' + t('Then finish the superset partner.') : ''}</div>
     <WeightInput value={v} setValue={setV} unit={st.unit} hi={st.unit === 'lb' ? Math.max(1100, Math.ceil(maxSet || 0)) : Math.max(500, Math.ceil(maxSet || 0))} />
     <div style={{ height: 10 }} />
@@ -1190,7 +1199,7 @@ export const topWeightSheet = entryIdx => ui().openSheet(close => <TopWeight ent
 // Shown when the last exercise's last set is checked — finish, or keep going.
 function WorkoutComplete({ close }) {
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="checkCircle" /></div>
+    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="checkCircle" /></div>
     <h3 style={{ margin: '8px 0' }}>{t("That's the whole workout!")}</h3>
     <div className="muted small" style={{ marginBottom: 16 }}>{t('Every exercise done — great work. Finish up, or keep going and add another exercise.')}</div>
     <Button variant="primary" icon="flag" onClick={() => { close(); finishWorkout() }}>{t('Finish workout')}</Button>
@@ -1203,7 +1212,7 @@ export const workoutCompleteSheet = () => ui().openSheet(close => <WorkoutComple
 function FinishSummary({ w, prs, e1prs = [], close }) {
   const st = useStore(s => s.S)
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="trophy" /></div>
+    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="trophy" /></div>
     <h3 style={{ margin: '8px 0' }}>{t('Workout complete!')}</h3>
     <div className="tiles" style={{ textAlign: 'left' }}>
       <div className="tile"><div className="l">{t('Duration')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{fmtDur(w.end - w.start)}</div></div>
@@ -1218,7 +1227,7 @@ function FinishSummary({ w, prs, e1prs = [], close }) {
     <h4 className="sec" style={{ textAlign: 'left' }}>{t('What you just trained')}</h4>
     <BodyMap load={loadOfWorkouts([w])} body={st.body} />
     <div style={{ height: 14 }} />
-    <Button variant="primary" onClick={() => { close(); nav('/home') }}>{t('Nice!')}</Button>
+    <Button variant="primary" onClick={() => { close(); ui().afterClose(() => nav('/home')) }}>{t('Nice!')}</Button>
   </div>
 }
 export function finishWorkout(sure) {
