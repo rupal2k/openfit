@@ -219,6 +219,9 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
   padding:calc(var(--sat) + 8px) var(--pad) calc(156px + var(--sab));
   max-width:560px;margin:0 auto;
 }
+/* The Android app draws edge to edge: without a strip behind the status bar, scrolled content
+   runs under the clock and icons. Under the tab bar (50) and sheets (100); 0 px on the web. */
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat);background:var(--bg);z-index:45;pointer-events:none}
 /* while the rest timer floats above the tab bar, keep its height scrollable-past
    (the rest variant is two rows tall — ~44px more than the single-row work timer) */
 body.resting #app{padding-bottom:calc(250px + var(--sab))}

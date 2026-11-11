@@ -534,12 +534,12 @@ function CustomExForm({ existing, prefill, onDone, close }) {
   return <>
     <h3>{existing ? t('Edit custom exercise') : t('Create your own exercise')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Name it and pick a body part — it behaves like any other exercise, just without an animation.')}</div>
-    <input className="input" placeholder={t('Exercise name')} value={n} onChange={e => setN(e.target.value)} />
+    <input className="input" aria-label={t('Exercise name')} placeholder={t('Exercise name')} value={n} onChange={e => setN(e.target.value)} />
     <div className="chips" style={{ margin: '12px 0' }}>
-      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => setBp(b)}>{t(b)}</button>)}
+      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} aria-pressed={bp === b} onClick={() => setBp(b)}>{t(b)}</button>)}
     </div>
     {bp === 'cardio' && <div className="small dim row" style={{ marginBottom: 10, gap: 5 }}><Icon name="figureRun" style={{ fontSize: 13 }} />{t('Cardio exercises log time + speed instead of weight × reps.')}</div>}
-    <textarea className="input" rows={4} maxLength={1000} placeholder={t('Description (optional) — setup, cues, anything you want to remember')}
+    <textarea className="input" rows={4} maxLength={1000} aria-label={t('Description (optional)')} placeholder={t('Description (optional) — setup, cues, anything you want to remember')}
       value={desc} onChange={e => setDesc(e.target.value)} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save}>{existing ? t('Save') : t('Create exercise')}</Button>
@@ -599,13 +599,13 @@ function ExercisePicker({ onPick, close }) {
     <div className="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
       <input className="input" placeholder={t('Search {0} exercises…', all.length)} value={q} onChange={e => { setQ(e.target.value); setShown(50) }} /></div>
     <div className="chips" style={{ margin: eqOpts.length > 1 ? '10px 0 6px' : '10px 0' }}>
-      {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} onClick={() => { setBp('★'); setEq(''); setShown(50) }}><Icon name="starFill" style={{ fontSize: 12, display: 'inline-block', marginRight: 4, verticalAlign: '-1px' }} />{t('Chosen')} ({chosenCount})</button>}
+      {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} aria-pressed={bp === '★'} onClick={() => { setBp('★'); setEq(''); setShown(50) }}><Icon name="starFill" style={{ fontSize: 12, display: 'inline-block', marginRight: 4, verticalAlign: '-1px' }} />{t('Chosen')} ({chosenCount})</button>}
       <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(50) }}>{t('All')}</button>
-      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setEq(''); setShown(50) }}>{t(b)}</button>)}
+      {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} aria-pressed={bp === b} onClick={() => { setBp(b); setEq(''); setShown(50) }}>{t(b)}</button>)}
     </div>
     {eqOpts.length > 1 && <div className="chips" style={{ marginBottom: 10 }}>
       <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(50) }}>{t('Any equipment')}</button>
-      {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(50) }}>{t(x)}</button>)}
+      {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} aria-pressed={eqOn === x} onClick={() => { setEq(x); setShown(50) }}>{t(x)}</button>)}
     </div>}
     <div className="list">
       {bp !== '★' && <div className="item" onClick={() => customExSheet(null, ex => onPick(ex), q.trim())}>

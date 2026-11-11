@@ -101,15 +101,17 @@ function ExerciseBlock({ entryIdx, compact, onToggle, onField, onAddSet, onRemov
   }
   // Uses the shared stepper markup so a set row picks up the same control styling
   // as every other +/- field in the app.
-  const cell = (s, i, col, cls) => (
-    <div className={'stp ' + cls}>
-      <button aria-label="Decrease" onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>
+  // screen readers hear "Reps, set 2" rather than an unnamed number between two "Decrease"s
+  const cell = (s, i, col, cls) => {
+    const name = `${col.hd}, ${t('set {0}', i + 1)}`
+    return <div className={'stp ' + cls}>
+      <button aria-label={`${t('Decrease')} ${name}`} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>
       {/* a typed effort is capped — there is no RPE 12, and 12 reps in reserve is a warm-up */}
-      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={s[col.f] ?? ''}
+      <span className="val"><NumberField aria-label={name} decimal={col.dec} nullable={col.opt} value={s[col.f] ?? ''}
         onChange={v => onField(i, col.f, col.eff ? capEffort(col.eff, v) : v)} /></span>
-      <button aria-label="Increase" onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>
+      <button aria-label={`${t('Increase')} ${name}`} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>
     </div>
-  )
+  }
   return <>
     <Media ex={ex} key={entry.id} compact={compact} minimizable />
     <div className="row between" style={{ marginBottom: 6 }}>
@@ -285,7 +287,15 @@ function ActiveWorkout() {
       const { errors, warns } = check(st, e, e.sets[i])
       // a first-timer doesn't know what weight to put in: say how to pick one
       const firstLoad = errors.some(a => a[0] === 'Enter the weight ({0})') && !lastEntryFor(st, e.id)
-      if (errors.length) return confirmSheet({ title: t('Set {0} not logged', i + 1), message: errors.map(a => t(...a)).join(' · ') + (firstLoad ? '. ' + t('New to this exercise? Pick a weight you can lift for every rep with good form. You can change it next time.') : ''), confirmText: t('Fix it'), cancelText: false })
+      // "Fix it" lands in the field to fix (the empty or 0 one in that row), after the sheet
+      // has handed focus back to the checkbox that opened it
+      const opener = document.activeElement
+      const fixIt = () => setTimeout(() => {
+        const row = opener?.closest?.('.setrow'), inputs = row ? [...row.querySelectorAll('input')] : []
+        const inp = inputs.find(x => x.value === '' || +x.value === 0) || inputs[0]
+        if (inp) { inp.focus(); inp.select?.() }
+      })
+      if (errors.length) return confirmSheet({ title: t('Set {0} not logged', i + 1), message: errors.map(a => t(...a)).join(' · ') + (firstLoad ? '. ' + t('New to this exercise? Pick a weight you can lift for every rep with good form. You can change it next time.') : ''), confirmText: t('Fix it'), cancelText: false, onConfirm: fixIt })
       if (warns.length) return confirmSheet({ title: t('Check set {0}', i + 1), message: warns.map(a => t(...a)).join(' · '), confirmText: t('Log anyway'), cancelText: t('Fix it'), onConfirm: () => toggle(idx, i, true) })
     }
     tick(idx, i)
