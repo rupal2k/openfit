@@ -14,6 +14,7 @@ import { EXIDX } from './exercises.js'
 import { MARKERS, CATEGORIES } from './labs/catalog.js'
 import { SCORES } from './labs/scores.js'
 import DISHES from '../data/food101-foods.json'
+import { PLAN_WHERE, PLAN_TEMPLATES } from './starter.js'
 
 const SRC = path.resolve(__dirname, '..')
 const read = f => fs.readFileSync(path.join(SRC, f), 'utf8')
@@ -35,6 +36,8 @@ export function dynamicKeys() {
   // band labels live inside each score's band() function
   add([...read('lib/labs/scores.js').matchAll(/band\('((?:\\'|[^'])*)'/g)].map(m => m[1].replace(/\\'/g, "'")))
   add(Object.values(DISHES).map(d => d.name))   // t(o.food.name) on the photo review
+  add(PLAN_WHERE.map(([, label]) => label))
+  for (const p of PLAN_TEMPLATES) add([p.name, p.badge, p.desc, ...p.routines.map(r => r.name)])
   for (const e of Object.values(EXIDX)) add([e.bp, e.eq, e.tg])
   add(literalTable('nutrition-sheets.jsx', 'MEAL_LABEL'))
   for (const n of ['STATUS', 'TAGS', 'LEGEND']) add(literalTable('views/Labs.jsx', n))

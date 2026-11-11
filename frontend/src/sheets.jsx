@@ -71,7 +71,7 @@ function PlanCatalog({ close, start }) {
       }
     })
     close()
-    toast(t('Loaded “{0}” ({1} routines)', selectedPlan.name, routines.length))
+    toast(t('Loaded “{0}” ({1} routines)', t(selectedPlan.name), routines.length))
     nav('/plan')
   }
 
@@ -105,16 +105,16 @@ function PlanCatalog({ close, start }) {
               <div className="row" style={{ gap: 10, alignItems: 'center' }}>
                 <span className="lrow-i"><Icon name={p.icon || 'barbell'} /></span>
                 <div>
-                  <div className="tt" style={{ fontWeight: 600 }}>{p.name}</div>
+                  <div className="tt" style={{ fontWeight: 600 }}>{t(p.name)}</div>
                   <div className="ss">{p.routines.length} {t(p.routines.length === 1 ? 'routine' : 'routines')} · {p.routines.reduce((acc, r) => acc + r.ex.length, 0)} {t('exercises')}</div>
                 </div>
               </div>
               <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-                <span className={'tag nocap' + (isSel ? ' acc' : '')}>{p.badge}</span>
+                <span className={'tag nocap' + (isSel ? ' acc' : '')}>{t(p.badge)}</span>
                 {isSel && <Icon name="check" className="accent" />}
               </div>
             </div>
-            <div className="dim small" style={{ lineHeight: 1.4 }}>{p.desc}</div>
+            <div className="dim small" style={{ lineHeight: 1.4 }}>{t(p.desc)}</div>
           </div>
         )
       })}
@@ -135,7 +135,7 @@ function PlanCatalog({ close, start }) {
               <div className="row between" style={{ alignItems: 'center' }}>
                 <div className="row" style={{ gap: 8, alignItems: 'center' }}>
                   <span className="lrow-i" style={{ width: 28, height: 28 }}><Icon name={glyphOf(r.emoji)} /></span>
-                  <div className="tt" style={{ fontSize: 15 }}>{r.name}</div>
+                  <div className="tt" style={{ fontSize: 15 }}>{t(r.name)}</div>
                 </div>
                 <div className="row" style={{ gap: 6, alignItems: 'center' }}>
                   <span className="ss">{exCount(r.ex.length)}</span>
@@ -176,7 +176,7 @@ function PlanCatalog({ close, start }) {
     </div>}
 
     <Button variant="primary" icon="sparkles" onClick={apply}>
-      {t('Load “{0}”', selectedPlan.name)}
+      {t('Load “{0}”', t(selectedPlan.name))}
     </Button>
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
