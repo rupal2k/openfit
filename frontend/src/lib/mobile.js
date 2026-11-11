@@ -111,6 +111,12 @@ export async function clearCaptures() {
     const { files } = await Filesystem.readdir({ path: 'Pictures', directory: Directory.External })
     for (const f of files) if (/^JPEG_.*\.jpg$/i.test(f.name)) await Filesystem.deleteFile({ path: 'Pictures/' + f.name, directory: Directory.External }).catch(() => {})
   } catch { /* no captures yet */ }
+  // picked files are copied into cache/picks by the native chooser (PickCopyChromeClient)
+  try {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    const { files } = await Filesystem.readdir({ path: 'picks', directory: Directory.Cache })
+    for (const f of files) await Filesystem.deleteFile({ path: 'picks/' + f.name, directory: Directory.Cache }).catch(() => {})
+  } catch { /* no picks yet */ }
 }
 export async function clearExports() {
   if (!MOBILE) return

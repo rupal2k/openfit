@@ -273,7 +273,10 @@ function ActiveWorkout() {
         useUI.getState().toast(t('Next: {0}', exOr(A2.entries[nx.idx].id).n))
         startTimed(nx.idx, nx.i)
       }
-      if (useUI.getState().timer) useUI.getState().onRestEnd(go)
+      // EMOM: done before the minute is up means rest out the minute; the next starts on its beep
+      const rest = A2.format === 'emom' ? Math.round((A2.entries[idx].sets[i].sec || 60) - elapsed) : 0
+      if (rest > 0) startRest(rest, go)
+      else if (useUI.getState().timer) useUI.getState().onRestEnd(go)
       else go()
     })
   }

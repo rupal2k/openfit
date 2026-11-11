@@ -87,7 +87,10 @@ function Photo({ iso, meal, close }) {
     // a phone photo is a few MB; a huge file would be copied into memory whole by readOnce
     if (f.size > MAX_PHOTO_BYTES) { input.value = ''; toast(t('This file is too large to import.')); return }
     // read before clearing the input: on Android clearing it revokes access to a gallery pick
-    try { const copy = await readOnce(f); clearCaptures(); const blob = await prepImage(copy); setImg({ blob, url: URL.createObjectURL(blob) }) } catch (err) { quiet(err) }
+    let copy
+    // the browser's read error is jargon ("…permission problems…"): say what happened
+    try { copy = await readOnce(f) } catch { toast(t('Couldn’t read that photo.')); input.value = ''; return } finally { clearCaptures() }
+    try { const blob = await prepImage(copy); setImg({ blob, url: URL.createObjectURL(blob) }) } catch (err) { quiet(err) }
     finally { input.value = '' }
   }
   const run = async () => {

@@ -30,7 +30,8 @@ for tab in "My Plan" "My Stats" "My Meals" "Exercises" "Home"; do tap "$tab" exa
 echo "ok: every tab renders"
 
 tap "My Stats" exact
-tap "Blood tests"
+# My Stats lays out its charts after the first paint, which can move the card under a tap: retry
+for i in 1 2 3; do tap "Blood tests"; dump | grep -q 'Take a photo' && break; sleep 2; done
 expect 'Take a photo'
 tap "Take a photo"
 sleep 4

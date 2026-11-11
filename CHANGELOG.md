@@ -26,6 +26,8 @@ Photos work again, every language is complete, and a full accessibility pass.
 - 🚀 Faster start (exercise instructions load when you open an exercise); the food model is checked before it is loaded; sync uploads one at a time.
 - 📥 **Strong import fix:** an unfinished set (0 reps) no longer turns into a cardio set as long as the whole workout; it's dropped and counted.
 - 🧾 A file that isn't an OPENFIT backup gets a plain message instead of a parser error; "Sled 45°" exercise names display correctly; "Added 1 routine" reads right.
+- 🖼️ **PNG photos from the gallery work** (on Samsung, Choose photo with a PNG failed with a "could not be read" error). Picked files are copied into the app first, and the copies are deleted once read.
+- ⏱️ **EMOM:** tapping Done before the minute is up now rests out the minute; the next exercise starts on the minute's beep instead of straight away.
 
 ## v1.6.1 — 2026-11-11
 
