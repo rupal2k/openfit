@@ -30,11 +30,21 @@ const clone = o => JSON.parse(JSON.stringify(o))
 
 export function normalizeState(raw) {
   const s = Object.assign(clone(DEF), raw || {})
+  const plain = o => o && typeof o === 'object' && !Array.isArray(o)
   s.nutrition = {
-    profile: s.nutrition?.profile || null,
-    days: s.nutrition?.days || {},
-    foods: Array.isArray(s.nutrition?.foods) ? s.nutrition.foods : []
+    profile: plain(s.nutrition?.profile) ? s.nutrition.profile : null,
+    days: plain(s.nutrition?.days) ? s.nutrition.days : {},
+    foods: (Array.isArray(s.nutrition?.foods) ? s.nutrition.foods : []).filter(plain)
   }
+  // A backup is untrusted input like a plan file (security audit 1.6.2): only shapes the
+  // screens can render are kept. Custom exercise ids key EXIDX, so prototype names are refused.
+  const BAD_ID = new Set(['__proto__', 'constructor', 'prototype'])
+  s.customEx = (Array.isArray(s.customEx) ? s.customEx : [])
+    .filter(c => plain(c) && typeof c.id === 'string' && c.id && !BAD_ID.has(c.id) && typeof c.n === 'string' && c.n.trim())
+    .map(c => ({ ...c, n: c.n.slice(0, 80), bp: typeof c.bp === 'string' ? c.bp.slice(0, 40) : '', ...(typeof c.desc === 'string' ? { desc: c.desc.slice(0, 1000) } : { desc: undefined }) }))
+  s.workouts = (Array.isArray(s.workouts) ? s.workouts : []).filter(w => plain(w) && Array.isArray(w.entries))
+  s.bodyweight = (Array.isArray(s.bodyweight) ? s.bodyweight : []).filter(b => plain(b) && typeof b.d === 'string' && Number.isFinite(+b.w))
+  if (!plain(s.exWeights)) s.exWeights = {}
   // routines and the week reach every screen: a bad value from a backup or an old build must
   // not crash one on open (no other fields are dropped)
   s.routines = (Array.isArray(s.routines) ? s.routines : []).map(r => cleanRoutine(r, { unit: s.unit })).filter(Boolean)

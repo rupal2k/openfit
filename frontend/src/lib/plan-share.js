@@ -116,11 +116,13 @@ export function mergePlan(s, bundle, { schedule } = {}) {
   s.customEx = s.customEx || []
   const exIdMap = Object.create(null)
   bundle.customEx.forEach(c => {
+    // the simplified plan format copies customEx raw (plan-upload.js): type-check before use
+    if (!c || typeof c.id !== 'string' || typeof c.n !== 'string' || !c.n.trim()) return
     const same = s.customEx.find(x => (x.n || '').toLowerCase() === (c.n || '').toLowerCase() && x.bp === c.bp)
     if (same) { exIdMap[c.id] = same.id; return }
     const nid = uid()
     exIdMap[c.id] = nid
-    s.customEx.push({ id: nid, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) })
+    s.customEx.push({ id: nid, n: c.n.slice(0, 80), bp: typeof c.bp === 'string' ? c.bp.slice(0, 40) : '', ...(typeof c.desc === 'string' && c.desc ? { desc: c.desc.slice(0, 1000) } : {}) })
   })
   const ridMap = Object.create(null)
   let added = 0
