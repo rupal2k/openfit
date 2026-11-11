@@ -52,22 +52,24 @@ export const useUI = create((set, get) => ({
     set({ toastMsg: '', toastUndo: null })
 
     const id = uid()
-    let pushed = false
-    if (typeof window !== 'undefined' && window.history) {
-      try {
-        window.history.pushState({ openfitSheet: id }, '', window.location.href)
-        pushed = true
-      } catch {}
+    set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, pushedHistory: false }] }))
+    const push = () => {
+      if (!get().sheets.some(x => x.id === id) || typeof window === 'undefined' || !window.history) return
+      try { window.history.pushState({ openfitSheet: id }, '', window.location.href) } catch { return }
+      set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, pushedHistory: true } : x) }))
     }
-    set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, pushedHistory: pushed }] }))
+    // A sheet closed just before this one (photo -> review) is still popping its entry. Pushing
+    // now would let that back() eat this sheet's entry, and the next Back would leave the page.
+    get().afterClose(push)
     const close = () => get().closeSheet(id)
     return { id, close, lock: v => set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, locked: v } : x) })) }
   },
   // Run fn after a sheet that was just closed has finished popping its history entry. Closing
   // calls history.back(), which lands later: a nav() made right after close() was undone by it.
   afterClose(fn) {
-    if (poppingDueToClose) afterPop = fn
-    else fn()
+    if (!poppingDueToClose) return fn()
+    const prev = afterPop
+    afterPop = prev ? () => { prev(); fn() } : fn
   },
   closeSheet(id) {
     const list = get().sheets
