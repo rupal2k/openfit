@@ -32,6 +32,9 @@ export const dateLocale = () => DATE_LOCALES[lang] || 'en-GB'
 
 // Translate a source string; {0},{1}… are replaced with args (also on the English fallback).
 export function t(s, ...args) {
+  // QA hook: a tester sets globalThis.__i18nMiss = new Set() to collect strings with no
+  // translation while walking the app (most keys are variables a source scan can't follow)
+  if (lang !== 'en' && !dict[s] && globalThis.__i18nMiss && typeof s === 'string') globalThis.__i18nMiss.add(s)
   let v = dict[s] || s
   for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
   return v
