@@ -68,6 +68,13 @@ export async function syncReminder(S, interactive = false) {
 // (Files, AirDrop, mail, …) from a temp file instead.
 // Imported text files above this are refused before they are read: a plan or a backup is a
 // few hundred KB, and reading a huge file can take the WebView down.
+// Android app: keep a screen out of screenshots and the recent-apps preview while it shows
+// health results (native PrivacyScreen plugin, MainActivity). A no-op on the web.
+export function privacyScreen(on) {
+  if (!MOBILE) return
+  import('@capacitor/core').then(({ registerPlugin }) => registerPlugin('PrivacyScreen').set({ on })).catch(() => {})
+}
+
 export const MAX_IMPORT_BYTES = 20 * 1024 * 1024
 export const tooBig = f => !!f && f.size > MAX_IMPORT_BYTES
 

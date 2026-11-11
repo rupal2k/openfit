@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { createHash } from 'node:crypto'
 
 const backend = process.env.API_TARGET || 'http://127.0.0.1:3000'
 const media = process.env.MEDIA_TARGET || 'http://127.0.0.1:8888'
@@ -10,6 +11,15 @@ const media = process.env.MEDIA_TARGET || 'http://127.0.0.1:8888'
 // onnxruntime-web version) and caches it on first use; onnxruntime-web's own fallback
 // `new URL('…wasm', import.meta.url)` makes Vite emit a copy nothing loads. Drop it so the
 // APK and the PWA don't carry 27 MB of dead weight.
+// The exact runtime files the food model may run (lib/vision/runtime.js verifies downloads
+// against these before anything executes). The asyncify build is the one transformers.js picks.
+const ortPath = f => fileURLToPath(new URL('./node_modules/onnxruntime-web/' + f, import.meta.url))
+const ortSpec = f => { const b = readFileSync(ortPath('dist/' + f)); return { path: f, bytes: b.length, sha256: createHash('sha256').update(b).digest('hex') } }
+const ORT_RUNTIME = {
+  version: JSON.parse(readFileSync(ortPath('package.json'), 'utf8')).version,
+  files: { mjs: ortSpec('ort-wasm-simd-threaded.asyncify.mjs'), wasm: ortSpec('ort-wasm-simd-threaded.asyncify.wasm') },
+}
+
 const dropUnusedOrtWasm = {
   name: 'drop-unused-ort-wasm',
   apply: 'build',
@@ -43,7 +53,7 @@ const ocrAssets = {
 export default defineConfig({
   plugins: [react(), dropUnusedOrtWasm, ocrAssets],
   // shown in Settings, so a phone can tell which build it runs
-  define: { __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version) },
+  define: { __ORT_RUNTIME__: JSON.stringify(ORT_RUNTIME), __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version) },
   base: './',
   server: {
     proxy: {
