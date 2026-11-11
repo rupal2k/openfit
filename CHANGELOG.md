@@ -12,6 +12,11 @@ Photos work again, every language is complete, and a full accessibility pass.
 - 🍎 **Calorie targets** are for adults (18+), never calculated below a safe minimum, and say they are an estimate, not medical advice.
 - 🗑️ **Reset everything** lists what it deletes and also removes cached backup files; **Export** warns that the file contains blood test results.
 - 🛠️ CI no longer attaches a debug APK to public releases.
+- 📈 **Progression fix:** holds ("add time") and bodyweight reps kept the same target after the first step up; they now keep climbing session after session.
+- 🧹 **Camera photos are deleted** as soon as the app has read them (they stayed in the app's storage folder, including photos of lab reports).
+- 🛡️ Backups and plan files from someone else are checked more strictly, so a broken file can't break a screen.
+- ⚡ The workout screen no longer redraws every second while the rest timer runs; the OCR engine is freed after a blood-test import.
+- 🧭 Loading or importing a plan now takes you to My Plan; a fast language switch can't load the wrong language.
 
 ## v1.6.1 — 2026-11-11
 
