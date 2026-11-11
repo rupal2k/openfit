@@ -367,7 +367,8 @@ h4.sec,.sect-t{
   position:fixed;left:0;right:0;bottom:0;z-index:50;
   display:flex;justify-content:space-around;align-items:flex-end;
   padding:7px 6px calc(6px + var(--sab));
-  background:color-mix(in srgb,var(--bg-el) 84%,transparent);
+  /* 94%: at large system font sizes big page text ghosted through an 84% bar behind the labels */
+  background:color-mix(in srgb,var(--bg-el) 94%,transparent);
   backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);
   border-top:1px solid var(--sep-op);
 }
