@@ -91,7 +91,8 @@ export function parsePlan(raw) {
       if (!ok) dropped++
       return ok
     })
-  }))
+  })).filter(r => r.ex.length)   // a routine with nothing we can use is not offered (the week links by id, not position)
+  if (!routines.length) throw new Error(t('Nothing to import from that file'))
   return {
     name: (typeof data.name === 'string' ? data.name : '').trim().slice(0, 80),
     routines,
@@ -122,9 +123,11 @@ export function mergePlan(s, bundle, { schedule } = {}) {
     s.customEx.push({ id: nid, n: c.n, bp: c.bp, ...(c.desc ? { desc: c.desc } : {}) })
   })
   const ridMap = Object.create(null)
+  let added = 0
   bundle.routines.forEach(r => {
     const c = cleanRoutine(r, { unit: s.unit, strict: true, keepId: false, mapId: id => (typeof id === 'string' && exIdMap[id]) || id })
     if (!c) return
+    added++
     if (typeof r.id === 'string') ridMap[r.id] = c.id
     s.routines.push({ ...c, name: c.name || t('Shared routine') })
   })
@@ -134,7 +137,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       if (ridMap[oldId]) s.week[d] = ridMap[oldId]
     })
   }
-  return { routines: bundle.routines.length }
+  return { routines: added }   // what was actually added, not what the file listed
 }
 
 /* ------------------------------- printable PDF ------------------------------- */

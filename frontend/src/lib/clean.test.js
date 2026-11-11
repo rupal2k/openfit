@@ -29,11 +29,11 @@ describe('a hostile plan file cannot store data that breaks a screen', () => {
     expect(s.customEx[0].n).toBe('My move')
   })
   it('week keys are weekdays 0-6 only', () => {
-    const s = merge(bundle({ week: { x: 'r', 9: 'r', 1: 'r', __proto__: 'r' }, routines: [{ id: 'r', name: 'x', ex: [] }] }))
+    const s = merge(bundle({ week: { x: 'r', 9: 'r', 1: 'r', __proto__: 'r' }, routines: [{ id: 'r', name: 'x', ex: [{ id: '0025', sets: 3, reps: 8 }] }] }))
     expect(Object.keys(s.week)).toEqual(['1'])
   })
   it('customs without a usable name are dropped; long text is cut', () => {
-    const p = parsePlan(bundle({ customEx: [{ id: 'a', n: { x: 1 } }, { id: 'b', n: 'y'.repeat(500), bp: 7 }] }))
+    const p = parsePlan(bundle({ customEx: [{ id: 'a', n: { x: 1 } }, { id: 'b', n: 'y'.repeat(500), bp: 7 }], routines: [{ id: 'r', name: 'x', ex: [{ id: 'b', sets: 3, reps: 8 }] }] }))
     expect(p.customEx).toHaveLength(1)
     expect(p.customEx[0].n).toHaveLength(80)
     expect(p.customEx[0].bp).toBe('')
@@ -49,5 +49,16 @@ describe('stored state is repaired, not emptied', () => {
   })
   it('a week entry must point at a routine that exists', () => {
     expect(cleanWeek({ 1: 'a', 2: 'gone', 3: 5, 8: 'a' }, id => id === 'a')).toEqual({ 1: 'a' })
+  })
+})
+
+describe('plan files with nothing usable (on-device audit 1.6.2)', () => {
+  it('a routine left empty after unknown exercises are dropped is not offered', () => {
+    const p = parsePlan(bundle({ routines: [{ id: 'a', name: 'ok', ex: [{ id: '0025', sets: 3, reps: 8 }] }, { id: 'b', name: 'constructor', ex: [{ id: '__proto__', sets: 'x' }] }] }))
+    expect(p.routines.map(r => r.name)).toEqual(['ok'])
+    expect(p.routineCount).toBe(1)
+  })
+  it('a file with no usable routine is refused instead of offering an empty import', () => {
+    expect(() => parsePlan(bundle({ routines: [{ id: 'b', name: 'x', ex: [{ id: 'nope' }] }] }))).toThrow()
   })
 })

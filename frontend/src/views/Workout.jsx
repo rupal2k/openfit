@@ -296,7 +296,7 @@ function ActiveWorkout() {
         if (inp) { inp.focus(); inp.select?.() }
       })
       if (errors.length) return confirmSheet({ title: t('Set {0} not logged', i + 1), message: errors.map(a => t(...a)).join(' · ') + (firstLoad ? '. ' + t('New to this exercise? Pick a weight you can lift for every rep with good form. You can change it next time.') : ''), confirmText: t('Fix it'), cancelText: false, onConfirm: fixIt })
-      if (warns.length) return confirmSheet({ title: t('Check set {0}', i + 1), message: warns.map(a => t(...a)).join(' · '), confirmText: t('Log anyway'), cancelText: t('Fix it'), onConfirm: () => toggle(idx, i, true) })
+      if (warns.length) return confirmSheet({ title: t('Check set {0}', i + 1), message: warns.map(a => t(...a)).join(' · '), confirmText: t('Log anyway'), cancelText: t('Fix it'), onCancel: fixIt, onConfirm: () => toggle(idx, i, true) })
     }
     tick(idx, i)
   }
