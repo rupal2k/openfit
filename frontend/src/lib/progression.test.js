@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  readSession, sessionsFor, stallCount, nextPrescription, applyPrescription,
+  readSession, sessionsFor, stallCount, nextPrescription, applyPrescription, sessionTarget,
   policyFor, defaultIncrement, POLICIES_FOR, DELOAD_AFTER, MAX_BW_SETS
 } from './progression.js'
 import { EXDB } from './exercises.js'
@@ -448,5 +448,31 @@ describe('applyPrescription', () => {
 
   it('never shrinks a session that has already logged sets', () => {
     expect(applyPrescription(sets, { kind: 'up', weight: 60, sets: 1 })).toHaveLength(sets.length)
+  })
+})
+
+// Correctness audit 1.6.2: the session builders recorded { ...cfg } as the target, so the next
+// session was judged against the routine's plan and progression stopped after one step.
+describe('progression keeps going across sessions (sessionTarget)', () => {
+  // Run n sessions through the real path: prescription -> sets -> logged as done -> history.
+  const run = (cfg, n) => {
+    const S = { unit: 'kg', workouts: [] }, seen = []
+    for (let i = 0; i < n; i++) {
+      const p = nextPrescription(S, cfg)
+      const sets = applyPrescription(Array.from({ length: cfg.sets }, () => ({ w: cfg.weight || 0, r: cfg.reps, sec: cfg.sec, done: false })), p)
+        .map(s => ({ ...s, done: true }))   // every set completed as prescribed
+      seen.push(cfg.mode === 'time' ? sets[0].sec : sets[0].r)
+      S.workouts.push({ d: '2026-01-' + String(i + 1).padStart(2, '0'), entries: [{ id: cfg.id, target: sessionTarget(cfg, p), sets }] })
+    }
+    return seen
+  }
+  it('a hold keeps adding time (45 -> 50 -> 55 -> 60)', () => {
+    expect(run({ id: LIFT, sets: 3, mode: 'time', sec: 45, weight: 0, prog: 'time' }, 4)).toEqual([45, 50, 55, 60])
+  })
+  it('bodyweight reps keep climbing (10 -> 11 -> 12 -> 13)', () => {
+    expect(run({ id: LIFT, sets: 3, reps: 10, weight: 0 }, 4)).toEqual([10, 11, 12, 13])
+  })
+  it('weighted rep targets are left as planned (double progression judges the top of the range)', () => {
+    expect(sessionTarget({ reps: 10, repsMin: 8 }, { kind: 'hold', weight: 60, reps: 8 }).reps).toBe(10)
   })
 })

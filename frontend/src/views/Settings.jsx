@@ -40,7 +40,9 @@ export default function Settings() {
   const doImport = ev => {
     const f = ev.target.files[0]; if (!f) return
     if (tooBig(f)) { toast(t('This file is too large to import.')); return }
+    const input = ev.target
     const rd = new FileReader()
+    rd.onloadend = () => { input.value = '' }   // after the read: clearing first revokes an Android pick
     rd.onload = () => {
       try {
         const data = JSON.parse(rd.result)

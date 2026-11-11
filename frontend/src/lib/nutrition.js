@@ -50,6 +50,7 @@ export function targets(S, now = new Date()) {
   if (p.kcal) kcal = p.kcal
   else {
     if (!w || !p.heightCm || !p.birthYear) return null
+    if (ageFrom(p.birthYear, now) < ADULT_AGE) return null   // the IOM adult equations do not apply
     kcal = tdee({ sex: p.sex, age: ageFrom(p.birthYear, now), heightCm: p.heightCm, weightKg: w, pal: p.pal }) + (GOAL_ADJ[p.goal] ?? 0)
     kcal = Math.max(kcal, KCAL_FLOOR[p.sex] ?? KCAL_FLOOR.other)
   }

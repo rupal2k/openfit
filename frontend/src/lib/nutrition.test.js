@@ -144,3 +144,14 @@ describe('target safety (PM audit 1.6.2)', () => {
   })
   it('the sheet only takes adult birth years', () => expect(ADULT_AGE).toBe(18))
 })
+
+describe('adults only, inside targets() (correctness audit 1.6.2)', () => {
+  it('a profile saved under the old rule (age 12) gets no calculated target', () => {
+    const s = S({ nutrition: { profile: { sex: 'male', birthYear: 2014, heightCm: 150, pal: 'active', goal: 'maintain', kcal: null }, days: {}, foods: [] } })
+    expect(targets(s, NOW)).toBeNull()
+  })
+  it('a typed override still applies (it is the person\'s own number)', () => {
+    const s = S({ nutrition: { profile: { sex: 'male', birthYear: 2014, heightCm: 150, pal: 'active', goal: 'maintain', kcal: 2000 }, days: {}, foods: [] } })
+    expect(targets(s, NOW).kcal).toBe(2000)
+  })
+})

@@ -247,6 +247,23 @@ export function nextPrescription(S, cfg, routine) {
  * Apply a prescription to freshly built sets. Only the fields the policy actually decided
  * are touched, and only on sets that have not been logged yet.
  */
+/**
+ * The target a session records, so the next one is judged against what was prescribed
+ * (readSession reads `target`). Holds store the prescribed seconds and bodyweight work the
+ * prescribed reps and sets: their goal *is* the prescription, and recording the routine's
+ * plan instead froze "add time" and bodyweight progression after one step (45→50→50→50 s).
+ * Weighted reps keep the plan's reps: the double policy judges against the top of the range,
+ * not the lower number it asks for while building back up.
+ */
+export function sessionTarget(cfg, p) {
+  const t = { ...cfg }
+  if (!p || p.kind === 'off' || p.kind === 'first') return t
+  if (p.sec != null) t.sec = p.sec
+  if (p.weight === 0 && p.reps != null) t.reps = p.reps
+  if (p.weight === 0 && p.sets > 0) t.sets = p.sets
+  return t
+}
+
 export function applyPrescription(sets, p) {
   if (!p || p.kind === 'off' || p.kind === 'first') return sets
   const out = sets.map(s => {

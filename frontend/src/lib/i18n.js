@@ -24,6 +24,7 @@ let lang = 'en'
 let dict = {}
 let instr = null            // { exId: [steps] } for the current language, null = English
 let version = 0
+let loadGen = 0   // newest setLang call wins
 const subs = new Set()
 const notify = () => { version++; subs.forEach(f => f()) }
 
@@ -46,10 +47,13 @@ export async function setLang(l) {
   if (!LANGS[l]) l = 'en'
   if (l === lang && version > 0) return
   lang = l
+  const gen = ++loadGen
   try {
-    dict = l === 'en' ? {} : (await localePacks['../locales/' + l + '.js']()).default
-    instr = l === 'en' || !INSTR_LANGS.includes(l) ? null : (await instrPacks['../instr/' + l + '.js']()).default
-  } catch (e) { dict = {}; instr = null }
+    const d = l === 'en' ? {} : (await localePacks['../locales/' + l + '.js']()).default
+    const ins = l === 'en' || !INSTR_LANGS.includes(l) ? null : (await instrPacks['../instr/' + l + '.js']()).default
+    if (gen !== loadGen) return
+    dict = d; instr = ins
+  } catch (e) { if (gen !== loadGen) return; dict = {}; instr = null }
   notify()
 }
 

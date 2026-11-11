@@ -20,7 +20,7 @@ import { buildPlanBundle, parsePlan, mergePlan, printPlan } from './lib/plan-sha
 import { parseAnyPlan, downloadSampleCSV, downloadSampleJSON } from './lib/plan-upload.js'
 import { estimate1RM, best1RM, REP_CAP } from './lib/onerm.js'
 import { finishSession, recordSession, invalidDoneSets, doubtfulDoneSets, cleanConfig } from './lib/workout.js'
-import { nextPrescription, applyPrescription, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
+import { nextPrescription, applyPrescription, sessionTarget, policyFor, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS } from './lib/progression.js'
 import { MOBILE, shareExport, tooBig } from './lib/mobile.js'
 
 const S = () => useStore.getState().S
@@ -72,7 +72,7 @@ function PlanCatalog({ close, start }) {
     })
     close()
     toast(t('Loaded “{0}” ({1} routines)', t(selectedPlan.name), routines.length))
-    nav('/plan')
+    ui().afterClose(() => nav('/plan'))
   }
 
   return <>
@@ -488,7 +488,7 @@ function AddToRoutine({ ex, close }) {
       })
       const r = isNew ? S().routines[S().routines.length - 1] : st.routines.find(x => x.id === rid)
       toast(t('“{0}” added to {1}', ex.n, r ? r.name : t('routine')))
-      if (isNew && r) nav('/plan/r/' + r.id)
+      if (isNew && r) ui().afterClose(() => nav('/plan/r/' + r.id))
     }, null, isNew ? null : st.routines.find(x => x.id === rid))
   }
   return <>
@@ -850,7 +850,7 @@ function PlanImport({ bundle, close }) {
     update(s => mergePlan(s, bundle, { schedule }))
     close()
     toast(t('Added {0} routines to your plan', bundle.routineCount))
-    nav('/plan')
+    ui().afterClose(() => nav('/plan'))
   }
   return <>
     <h3>{bundle.name ? t('Import “{0}”', bundle.name) : t('Import this plan')}</h3>
@@ -1130,7 +1130,7 @@ export function beginWorkout(routineId, bw) {
   // kept on the entry purely so the workout can explain the number it chose.
   const entries = (r ? r.ex : []).map(cfg => {
     const plan = nextPrescription(st, cfg, r)
-    return { id: cfg.id, sg: cfg.sg, target: { ...cfg }, plan, sets: applyPrescription(sessionSets(st, cfg, r?.format), plan) }
+    return { id: cfg.id, sg: cfg.sg, target: sessionTarget(cfg, plan), plan, sets: applyPrescription(sessionSets(st, cfg, r?.format), plan) }
   })
   update(s => {
     s.active = { id: uid(), d: todayISO(), start: Date.now(), routineId, name: r ? r.name : t('Freestyle'), bw: bw || null, cur: 0, entries, ...(r?.rest ? { rest: r.rest } : {}), ...(r?.format ? { format: r.format } : {}), ...(r?.cap ? { cap: r.cap } : {}) }
