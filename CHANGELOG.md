@@ -17,6 +17,13 @@ Photos work again, every language is complete, and a full accessibility pass.
 - 🛡️ Backups and plan files from someone else are checked more strictly, so a broken file can't break a screen.
 - ⚡ The workout screen no longer redraws every second while the rest timer runs; the OCR engine is freed after a blood-test import.
 - 🧭 Loading or importing a plan now takes you to My Plan; a fast language switch can't load the wrong language.
+- 🔔 **Know about updates:** Settings → Check for updates, or turn on "Tell me about new versions" (off by default; it only asks GitHub for the latest version number).
+- ⚖️ **kg or lb from the start:** pick it on the welcome card. Switching later offers to convert every weight you've logged.
+- 🙋 **Your profile** in Settings (sex, birth year, height). **Weigh-ins before workouts can be turned off.**
+- 📵 The reminder card tells you when Android has notifications off for OPENFIT.
+- 🐞 After a crash you can share an error report (the error and app version only).
+- 🗣️ Report a translation error from Settings; a privacy policy (PRIVACY.md).
+- 🚀 Faster start (exercise instructions load when you open an exercise); the food model is checked before it is loaded; sync uploads one at a time.
 
 ## v1.6.1 — 2026-11-11
 

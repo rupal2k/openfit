@@ -85,7 +85,8 @@ Run on a real device with the **signed release APK**, installed over the previou
 - [ ] Settings → "All data stays on this phone"; no sign-in screen in the app
 - [ ] (Android 12+) device-to-device transfer copies data; cloud backup does not include it (spot check via `adb shell bmgr` optional)
 
-## Rules for every build (no exceptions)
+## Rules for every build
+- The **Android smoke** workflow (`.github/workflows/android-e2e.yml`, `frontend/e2e/smoke.sh`) must pass on the PR: app starts on an emulator, every tab renders, Take a photo opens a camera app. Run `bash frontend/e2e/smoke.sh <apk>` against a phone too. (no exceptions)
 - Run the WHOLE list, every module, not only what changed. Record pass/fail per item with the device and build.
 - Test on two brands: Samsung (S21 FE) and Nothing Phone 1. "Take photo" must open each phone's own camera.
 - Native paths (camera, gallery picker, file picker, share sheet, notifications, back button) are driven through the real
