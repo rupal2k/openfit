@@ -49,6 +49,7 @@
   --blue:   #0a84ff;
   --green:  #30D158;
   --red:    #FF453A;
+  --red-ink:#FF6B61;   /* red text on a red-tinted fill: 4.5:1 on dark */
   --orange: #FF9D57;
   --yellow: #ffd60a;
   --teal:   #22d3ee;
@@ -87,7 +88,7 @@
   --surface-3: #E2E8F0;
 
   --label:     #29294C;   /* Midnight Navy */
-  --label-2:   #6A6A80;   /* navy-derived secondary */
+  --label-2:   #5F5F78;   /* navy-derived secondary */
   --label-3:   #6A6A80;   /* WCAG 4.5:1 compliant caption */
   --label-4:   rgba(41,41,76,.14);
 
@@ -97,6 +98,7 @@
   --blue:   #007aff;
   --green:  #1E9E4A;
   --red:    #D70015;
+  --red-ink:#B0000F;   /* red text on a red-tinted fill: 4.5:1 on light */
   --orange: #ea580c;
   --yellow: #b45309;
   --teal:   #0891b2;
@@ -213,6 +215,8 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
    Title Case. The compound selectors are needed: .tag/.chip come later in this file
    and would otherwise win on source order. */
 .nocap,.tag.nocap,.chip.nocap{text-transform:none}
+/* read by screen readers, not shown */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 /* ---------------------------------------------------------------- layout -- */
 #app{
@@ -350,7 +354,7 @@ h4.sec,.sect-t{
 }
 .btn.primary:active{background:var(--acc-2);box-shadow:none}
 .btn.tinted{background:var(--acc-soft);color:var(--acc-ink)}
-.btn.danger{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+.btn.danger{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red-ink)}
 .btn.ghost,.btn.plain{background:none;color:var(--acc-ink);font-weight:500}
 .btn.ghost:active,.btn.plain:active{background:var(--surface-2)}
 .btn.sm{padding:8px 16px;width:auto;font-size:14px;border-radius:var(--r-pill);gap:6px}
@@ -910,7 +914,7 @@ body.resting #startfab{bottom:calc(240px + var(--sab))}
 .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .mchip{font-size:12px;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--label-2)}
 .mchip.miss{background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
-:root[data-theme="light"] .mchip.miss{color:#B4530A;background:rgba(254,215,170,.45)}
+:root[data-theme="light"] .mchip.miss{color:#96430A;background:rgba(254,215,170,.45)}
 
 /* --- stat tiles --- */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}

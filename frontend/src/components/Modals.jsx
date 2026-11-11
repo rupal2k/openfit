@@ -63,6 +63,9 @@ function Sheet({ sheet }) {
     const prevActive = document.activeElement
     const el = ref.current
     if (el) {
+      // the dialog is named by its own heading (axe: aria-dialog-name)
+      const h = el.querySelector('h1, h2, h3')
+      if (h) { h.id = h.id || 'sheet-h-' + sheet.id; el.setAttribute('aria-labelledby', h.id) }
       const focusable = el.querySelector('input:not([disabled]), button:not([disabled]), [tabindex="0"]')
       if (focusable) focusable.focus()
     }

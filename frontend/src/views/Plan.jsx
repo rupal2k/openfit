@@ -25,7 +25,7 @@ export default function Plan() {
       <button className="iconbtn" onClick={planToolsSheet} aria-label={t('Share your plan')} title={t('Share your plan')}><Icon name="upload" /></button>
     </div>
     <div className="cols"><div>
-      <h4 className="sec">{t('Week schedule')}</h4>
+      <h4 className="sec" aria-level={2}>{t('Week schedule')}</h4>
       <div className="list" style={{ display: 'flex', flexDirection: 'column' }}>
         {[1, 2, 3, 4, 5, 6, 0].map(d => {
           const r = S.routines.find(x => x.id === S.week[d])
@@ -37,7 +37,7 @@ export default function Plan() {
       </div>
     </div><div>
       <div className="row between" style={{ marginTop: 22, marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
-        <h4 className="sec" style={{ margin: 0 }}>{t('Routines')}</h4>
+        <h4 className="sec" aria-level={2} style={{ margin: 0 }}>{t('Routines')}</h4>
         <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
           <Button size="sm" variant="tinted" icon="upload" onClick={planUploadSheet}>{t('Upload')}</Button>
           <Button size="sm" variant="tinted" icon="sparkles" onClick={planCatalogSheet}>{t('Templates')}</Button>

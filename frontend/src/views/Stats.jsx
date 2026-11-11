@@ -63,7 +63,7 @@ function MuscleBalance({ S }) {
         <span className="v">{t('{0} sets', sets(m))}</span>
       </div>)}
       {missed.length > 0 && <>
-        <h4 className="sec" style={{ marginTop: 12 }}>{on ? t('No hard sets in this period') : t('Not trained in this period')}</h4>
+        <h4 className="sec" aria-level={2} style={{ marginTop: 12 }}>{on ? t('No hard sets in this period') : t('Not trained in this period')}</h4>
         <div className="mchips">{missed.map(m => <span key={m} className="mchip miss">{t(MUSCLE_NAME[m])}</span>)}</div>
       </>}
       {!missed.length && worked.length > 0 &&
@@ -113,10 +113,10 @@ function EffortCard({ S }) {
         {t('Effort per set is switched off — turn it on in Settings to keep rating.')}
       </div>}
       {pts.length > 1 && <>
-        <h4 className="sec" style={{ marginTop: 12 }}>{t('Week by week')}</h4>
+        <h4 className="sec" aria-level={2} style={{ marginTop: 12 }}>{t('Week by week')}</h4>
         <div className="chart"><LineChart points={pts} h={140} unit={hd} color="var(--yellow)" invert={kind === 'rir'} /></div>
       </>}
-      <h4 className="sec" style={{ marginTop: 12 }}>{t('Where the sets land')}</h4>
+      <h4 className="sec" aria-level={2} style={{ marginTop: 12 }}>{t('Where the sets land')}</h4>
       {hist.map(b => <div key={b.rir} className="mrow">
         <span className="nm">{hd} {binLabel(b)}</span>
         <span className="bar"><i style={{ width: Math.round(b.n / maxBin * 100) + '%', background: b.rir <= HARD_RIR ? 'var(--yellow)' : 'var(--label-3)' }} /></span>
@@ -265,7 +265,7 @@ export default function Stats() {
 
     {S.workouts.length > 0 && <>
       <div className="row between" style={{ marginBottom: 10 }}>
-        <h4 className="sec" style={{ margin: 0 }}>{t('Recent workouts')}</h4>
+        <h4 className="sec" aria-level={2} style={{ margin: 0 }}>{t('Recent workouts')}</h4>
         <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={() => nav('/history')}>{t('All')} {S.workouts.length}</Button>
       </div>
       <div className="list">{[...S.workouts].reverse().slice(0, 6).map(w => <WorkoutRow key={w.id} w={w} onClick={() => workoutDetailSheet(w)} />)}</div>

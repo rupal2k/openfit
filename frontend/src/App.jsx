@@ -78,7 +78,7 @@ function Shell() {
     <>
       {/* keyed on the route: a view that throws is contained, and switching tabs
           re-mounts the boundary, so the tab bar is always a way out */}
-      <div id="app" className="vfade" key={loc.pathname}>
+      <main id="app" className="vfade" key={loc.pathname}>
         <ErrorBoundary>
           {!authed ? <Login /> : (
             <Routes>
@@ -97,7 +97,7 @@ function Shell() {
             </Routes>
           )}
         </ErrorBoundary>
-      </div>
+      </main>
       <TabBar onStart={startFlow} />
       <RestTimer />
       <Modals />
