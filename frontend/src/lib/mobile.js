@@ -90,6 +90,16 @@ export async function readOnce(f) {
 // Share resolves, so it can't be deleted then; the previous export is removed instead, so at
 // most one copy of the health data sits in the cache.
 let lastExport = null
+// Reset everything: no backup or plan file with health data may stay in the app cache.
+export async function clearExports() {
+  if (!MOBILE) return
+  try {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    const { files } = await Filesystem.readdir({ path: '', directory: Directory.Cache })
+    for (const f of files) if (/^openfit-(backup|plan)-.*\.json$/.test(f.name)) await Filesystem.deleteFile({ path: f.name, directory: Directory.Cache }).catch(() => {})
+  } catch { /* nothing cached */ }
+  lastExport = null
+}
 export async function shareExport(json, filename) {
   const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
   const { Share } = await import('@capacitor/share')

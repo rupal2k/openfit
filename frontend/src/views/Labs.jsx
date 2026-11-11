@@ -265,6 +265,7 @@ function ScoreRow({ s, sys }) {
 export default function Labs() {
   useEffect(() => { privacyScreen(true); return () => privacyScreen(false) }, [])   // results stay out of screenshots and recents
   const S = useStore(s => s.S)
+  const user = useStore(s => s.user)   // signed in to a self-hosted server: reports sync there
   const fileRef = useRef(null)
   const reports = byDate(S.labs?.reports || [])
   const sys = S.labs?.units || 'si'
@@ -289,7 +290,7 @@ export default function Labs() {
 
   return <div className="narrow">
     <div className="hdr">
-      <div><h1>{t('Blood tests')}</h1><div className="sub">{t('Read on this device. Never uploaded.')}</div></div>
+      <div><h1>{t('Blood tests')}</h1><div className="sub">{user ? t('Read on this device. Synced only to your own server.') : t('Read on this device. Never uploaded.')}</div></div>
       <div className="row" style={{ gap: 6 }}>
         <button className="iconbtn" onClick={pickPhoto} aria-label={t('Photograph a lab report')}><Icon name="camera" /></button>
         <button className="iconbtn" onClick={pick} aria-label={t('Import a lab report PDF')}><Icon name="upload" /></button>

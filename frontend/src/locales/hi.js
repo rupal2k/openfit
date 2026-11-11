@@ -1177,4 +1177,21 @@ export default {
 
   // --- strings added in 1.6.2 ---
   'At home': 'घर पर',
+
+  // --- strings added in 1.6.2 ---
+  'Muscle map, front': 'मांसपेशी नक्शा, आगे',
+  'Muscle map, back': 'मांसपेशी नक्शा, पीछे',
+  'Back': 'वापस',
+  'Refresh': 'रीफ़्रेश करें',
+  'Previous week': 'पिछला हफ़्ता',
+  'Next week': 'अगला हफ़्ता',
+  'Read on this device. Synced only to your own server.': 'इसी डिवाइस पर पढ़ा गया। सिर्फ़ आपके अपने सर्वर से सिंक होता है।',
+  'Includes your blood test results. Keep the file private.': 'इसमें आपके ब्लड टेस्ट के नतीजे हैं। फ़ाइल निजी रखें।',
+  'Deletes everything on this device: plan, workouts, body weight, meals and foods, blood tests and settings. This cannot be undone.': 'इस डिवाइस से सब कुछ हटा देता है: योजना, वर्कआउट, शरीर का वज़न, खाना और खाद्य, ब्लड टेस्ट और सेटिंग्स। इसे वापस नहीं किया जा सकता।',
+  'Routine name': 'रूटीन का नाम',
+  'Move up': 'ऊपर ले जाएँ',
+  'Move down': 'नीचे ले जाएँ',
+  'An estimate for adults, not medical advice. Pregnant, under 18 or managing a health condition? Ask a doctor or dietitian.': 'वयस्कों के लिए एक अनुमान, चिकित्सीय सलाह नहीं। गर्भवती हैं, 18 से कम उम्र है या कोई बीमारी है? डॉक्टर या डाइटीशियन से पूछें।',
+  'Previous month': 'पिछला महीना',
+  'Next month': 'अगला महीना',
 }

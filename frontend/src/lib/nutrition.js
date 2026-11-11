@@ -7,6 +7,11 @@ import { uid } from './format.js'
 export const MEALS = ['breakfast', 'lunch', 'dinner', 'snack']
 export const PAL = { sedentary: 1.25, low: 1.5, active: 1.75, very: 2.2 }
 export const GOAL_ADJ = { lose: -500, maintain: 0, gain: 500 }
+// A calculated goal never goes below these (common clinical minimums without supervision).
+// A typed calorie override is the person's own choice and is not raised.
+export const KCAL_FLOOR = { female: 1200, male: 1500, other: 1350 }
+// The IOM adult equations are for adults; the targets sheet takes birth years up to this age.
+export const ADULT_AGE = 18
 const PROTEIN_PER_KG = 1.6
 const FAT_SHARE = 0.25
 const LB = 0.45359237
@@ -46,6 +51,7 @@ export function targets(S, now = new Date()) {
   else {
     if (!w || !p.heightCm || !p.birthYear) return null
     kcal = tdee({ sex: p.sex, age: ageFrom(p.birthYear, now), heightCm: p.heightCm, weightKg: w, pal: p.pal }) + (GOAL_ADJ[p.goal] ?? 0)
+    kcal = Math.max(kcal, KCAL_FLOOR[p.sex] ?? KCAL_FLOOR.other)
   }
   kcal = Math.round(kcal)
   const protein = w ? Math.round(w * PROTEIN_PER_KG) : Math.round(kcal * 0.25 / 4)

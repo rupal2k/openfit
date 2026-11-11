@@ -1177,4 +1177,21 @@ export default {
 
   // --- strings added in 1.6.2 ---
   'At home': '居家',
+
+  // --- strings added in 1.6.2 ---
+  'Muscle map, front': '肌肉图，正面',
+  'Muscle map, back': '肌肉图，背面',
+  'Back': '返回',
+  'Refresh': '刷新',
+  'Previous week': '上一周',
+  'Next week': '下一周',
+  'Read on this device. Synced only to your own server.': '在本设备上读取，只会同步到你自己的服务器。',
+  'Includes your blood test results. Keep the file private.': '包含你的血液检查结果，请妥善保管文件。',
+  'Deletes everything on this device: plan, workouts, body weight, meals and foods, blood tests and settings. This cannot be undone.': '删除这台设备上的所有内容：计划、训练、体重、饮食与食物、血液检查和设置。无法撤销。',
+  'Routine name': '训练日名称',
+  'Move up': '上移',
+  'Move down': '下移',
+  'An estimate for adults, not medical advice. Pregnant, under 18 or managing a health condition? Ask a doctor or dietitian.': '仅为成人估算，不构成医疗建议。怀孕、未满 18 岁或患有疾病？请咨询医生或营养师。',
+  'Previous month': '上个月',
+  'Next month': '下个月',
 }

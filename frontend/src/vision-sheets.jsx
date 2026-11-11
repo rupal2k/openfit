@@ -21,6 +21,7 @@ const toast = m => ui().toast(m)
 const mb = b => Math.round((b || 0) / 1e6)
 const quiet = e => { if (e?.kind !== 'CANCELLED') toast(t(e?.message || 'Something went wrong')) }
 const pct = s => Math.round(s * 100) + '%'
+const MAX_PHOTO_BYTES = 40 * 1024 * 1024
 
 function Progress({ loaded, total }) {
   const p = total ? Math.min(100, (loaded / total) * 100) : 0
@@ -83,6 +84,8 @@ function Photo({ iso, meal, close }) {
   const pickFile = async e => {
     const input = e.target, f = input.files?.[0]
     if (!f) return
+    // a phone photo is a few MB; a huge file would be copied into memory whole by readOnce
+    if (f.size > MAX_PHOTO_BYTES) { input.value = ''; toast(t('This file is too large to import.')); return }
     // read before clearing the input: on Android clearing it revokes access to a gallery pick
     try { const blob = await prepImage(await readOnce(f)); setImg({ blob, url: URL.createObjectURL(blob) }) } catch (err) { quiet(err) }
     finally { input.value = '' }

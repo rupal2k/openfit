@@ -1177,4 +1177,21 @@ export default {
 
   // --- strings added in 1.6.2 ---
   'At home': '집에서',
+
+  // --- strings added in 1.6.2 ---
+  'Muscle map, front': '근육 지도, 앞',
+  'Muscle map, back': '근육 지도, 뒤',
+  'Back': '뒤로',
+  'Refresh': '새로 고침',
+  'Previous week': '이전 주',
+  'Next week': '다음 주',
+  'Read on this device. Synced only to your own server.': '이 기기에서 읽음. 내 서버와만 동기화됩니다.',
+  'Includes your blood test results. Keep the file private.': '혈액 검사 결과가 포함됩니다. 파일을 비공개로 보관하세요.',
+  'Deletes everything on this device: plan, workouts, body weight, meals and foods, blood tests and settings. This cannot be undone.': '이 기기의 모든 것을 삭제합니다: 계획, 운동, 체중, 식단과 음식, 혈액 검사, 설정. 되돌릴 수 없습니다.',
+  'Routine name': '루틴 이름',
+  'Move up': '위로 이동',
+  'Move down': '아래로 이동',
+  'An estimate for adults, not medical advice. Pregnant, under 18 or managing a health condition? Ask a doctor or dietitian.': '성인용 추정치이며 의료 조언이 아닙니다. 임신 중이거나 18세 미만이거나 질환이 있나요? 의사나 영양사와 상담하세요.',
+  'Previous month': '이전 달',
+  'Next month': '다음 달',
 }

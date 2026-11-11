@@ -9,7 +9,7 @@ import { pushSupported, enablePush, disablePush, sendTestPush } from '../lib/pus
 import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, LANGS, INSTR_LANGS } from '../lib/i18n.js'
 import { DEMO, REPO } from '../lib/demo.js'
-import { MOBILE, shareExport, syncReminder, tooBig } from '../lib/mobile.js'
+import { MOBILE, shareExport, syncReminder, tooBig, clearExports } from '../lib/mobile.js'
 import { loadStarterPlan, confirmSheet, importFromApp, planCatalogSheet, planUploadSheet } from '../sheets.jsx'
 import { VisionSettings } from '../vision-sheets.jsx'
 import Icon from '../components/Icon.jsx'
@@ -183,8 +183,8 @@ export default function Settings() {
         subtitle={t('FitNotes, Strong, Hevy — or body weight from Apple Health')}
         accessory="chevron" onClick={() => importRef.current.click()} />
       <Row icon="upload" iconTint="var(--blue)" title={t('Import backup')} accessory="chevron" onClick={() => fileRef.current.click()} />
-      <Row icon="download" iconTint="var(--blue)" title={t('Export backup (JSON)')} accessory="chevron" onClick={doExport} />
-      <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={() => confirmSheet({ title: t('Reset everything?'), message: t('Deletes your plan, workouts and body weight on this device. This cannot be undone.'), confirmText: t('Delete everything'), danger: true, onConfirm: () => { replaceState(JSON.parse(JSON.stringify(DEF)), true); nav('/home'); toast(t('All data reset')) } })} />
+      <Row icon="download" iconTint="var(--blue)" title={t('Export backup (JSON)')} subtitle={t('Includes your blood test results. Keep the file private.')} accessory="chevron" onClick={doExport} />
+      <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={() => confirmSheet({ title: t('Reset everything?'), message: t('Deletes everything on this device: plan, workouts, body weight, meals and foods, blood tests and settings. This cannot be undone.'), confirmText: t('Delete everything'), danger: true, onConfirm: () => { replaceState(JSON.parse(JSON.stringify(DEF)), true); clearExports(); nav('/home'); toast(t('All data reset')) } })} />
     </Section>
     <input ref={fileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} aria-label={t('Import backup file')} onChange={doImport} />
     {/* Reset after reading so picking the same file twice still fires onChange. */}
@@ -200,7 +200,7 @@ export default function Settings() {
 
     <div className="dim small" style={{ textAlign: 'center', marginTop: 4, lineHeight: 1.6 }}>
       OPENFIT {__APP_VERSION__} · {t('free & open source (AGPL v3)')}<br />
-      <a href="https://github.com/rupal2k/openfit" target="_blank" rel="noopener">source code</a> · exercise data: hasaneyldrm/exercises-dataset (CC)
+      <a href="https://github.com/rupal2k/openfit" target="_blank" rel="noopener" style={{ textDecoration: 'underline' }}>source code</a> · exercise data: hasaneyldrm/exercises-dataset (CC)
     </div>
   </div>
 }

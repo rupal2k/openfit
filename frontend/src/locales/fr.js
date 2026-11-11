@@ -1177,4 +1177,21 @@ export default {
 
   // --- strings added in 1.6.2 ---
   'At home': 'À la maison',
+
+  // --- strings added in 1.6.2 ---
+  'Muscle map, front': 'Carte musculaire, face',
+  'Muscle map, back': 'Carte musculaire, dos',
+  'Back': 'Retour',
+  'Refresh': 'Actualiser',
+  'Previous week': 'Semaine précédente',
+  'Next week': 'Semaine suivante',
+  'Read on this device. Synced only to your own server.': 'Lu sur cet appareil. Synchronisé uniquement avec votre propre serveur.',
+  'Includes your blood test results. Keep the file private.': 'Contient vos analyses de sang. Gardez le fichier privé.',
+  'Deletes everything on this device: plan, workouts, body weight, meals and foods, blood tests and settings. This cannot be undone.': 'Supprime tout sur cet appareil : plan, séances, poids, repas et aliments, analyses de sang et réglages. Action irréversible.',
+  'Routine name': 'Nom de la routine',
+  'Move up': 'Monter',
+  'Move down': 'Descendre',
+  'An estimate for adults, not medical advice. Pregnant, under 18 or managing a health condition? Ask a doctor or dietitian.': 'Une estimation pour adultes, pas un avis médical. Enceinte, moins de 18 ans ou suivi pour une maladie ? Demandez à un médecin ou à un diététicien.',
+  'Previous month': 'Mois précédent',
+  'Next month': 'Mois suivant',
 }

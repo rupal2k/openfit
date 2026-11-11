@@ -1177,4 +1177,21 @@ export default {
 
   // --- strings added in 1.6.2 ---
   'At home': 'Evde',
+
+  // --- strings added in 1.6.2 ---
+  'Muscle map, front': 'Kas haritası, ön',
+  'Muscle map, back': 'Kas haritası, arka',
+  'Back': 'Geri',
+  'Refresh': 'Yenile',
+  'Previous week': 'Önceki hafta',
+  'Next week': 'Sonraki hafta',
+  'Read on this device. Synced only to your own server.': 'Bu cihazda okundu. Yalnızca kendi sunucunuzla eşitlenir.',
+  'Includes your blood test results. Keep the file private.': 'Kan tahlili sonuçlarınızı içerir. Dosyayı gizli tutun.',
+  'Deletes everything on this device: plan, workouts, body weight, meals and foods, blood tests and settings. This cannot be undone.': 'Bu cihazdaki her şeyi siler: plan, antrenmanlar, vücut ağırlığı, öğünler ve yiyecekler, kan tahlilleri ve ayarlar. Geri alınamaz.',
+  'Routine name': 'Rutin adı',
+  'Move up': 'Yukarı taşı',
+  'Move down': 'Aşağı taşı',
+  'An estimate for adults, not medical advice. Pregnant, under 18 or managing a health condition? Ask a doctor or dietitian.': 'Yetişkinler için bir tahmindir, tıbbi tavsiye değildir. Hamile, 18 yaşından küçük ya da bir hastalığınız mı var? Bir doktora veya diyetisyene danışın.',
+  'Previous month': 'Önceki ay',
+  'Next month': 'Sonraki ay',
 }

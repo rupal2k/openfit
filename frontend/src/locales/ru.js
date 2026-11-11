@@ -1177,4 +1177,21 @@ export default {
 
   // --- strings added in 1.6.2 ---
   'At home': 'Дома',
+
+  // --- strings added in 1.6.2 ---
+  'Muscle map, front': 'Карта мышц, спереди',
+  'Muscle map, back': 'Карта мышц, сзади',
+  'Back': 'Назад',
+  'Refresh': 'Обновить',
+  'Previous week': 'Предыдущая неделя',
+  'Next week': 'Следующая неделя',
+  'Read on this device. Synced only to your own server.': 'Прочитано на этом устройстве. Синхронизируется только с вашим сервером.',
+  'Includes your blood test results. Keep the file private.': 'Содержит ваши анализы крови. Храните файл в тайне.',
+  'Deletes everything on this device: plan, workouts, body weight, meals and foods, blood tests and settings. This cannot be undone.': 'Удаляет всё на этом устройстве: план, тренировки, вес тела, питание и продукты, анализы крови и настройки. Отменить нельзя.',
+  'Routine name': 'Название программы',
+  'Move up': 'Вверх',
+  'Move down': 'Вниз',
+  'An estimate for adults, not medical advice. Pregnant, under 18 or managing a health condition? Ask a doctor or dietitian.': 'Оценка для взрослых, не медицинская рекомендация. Беременны, младше 18 лет или есть заболевание? Обратитесь к врачу или диетологу.',
+  'Previous month': 'Предыдущий месяц',
+  'Next month': 'Следующий месяц',
 }
