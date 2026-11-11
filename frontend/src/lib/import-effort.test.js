@@ -22,6 +22,17 @@ describe('importing effort from another app', () => {
     expect(p.rirSets).toBe(0)
   })
 
+  it("doesn't read Strong's workout Duration as a set time (0-rep row is dropped, not cardio)", () => {
+    const FULL = 'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE'
+    const p = rows(FULL,
+      '2026-11-01 08:00:00,Push Day,1h 2m,Bench Press (Barbell),1,60,8,0,0,,,7',
+      '2026-11-01 08:00:00,Push Day,1h 2m,Bench Press (Barbell),2,60,0,0,0,,,')
+    expect(setsOf(p)).toEqual([expect.objectContaining({ w: 60, r: 8 })])
+    expect(setsOf(p).some(s => s.min !== undefined)).toBe(false)
+    expect(p.sets).toBe(1)
+    expect(p.invalid).toBe(1)
+  })
+
   it('reads the RPE Strong writes per set', () => {
     const p = rows(STRONG,
       '2026-01-12 18:00:00,Push,Bench Press (Barbell),1,60,10,0,7.5')

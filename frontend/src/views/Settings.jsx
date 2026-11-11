@@ -61,9 +61,9 @@ export default function Settings() {
     rd.onload = () => {
       try {
         const data = JSON.parse(rd.result)
-        if (!data.workouts && !data.routines && !data.nutrition) throw new Error('not an OPENFIT backup')
+        if (!data || (!data.workouts && !data.routines && !data.nutrition)) throw new Error('not an OPENFIT backup')
         confirmSheet({ title: t('Import backup?'), message: t('This replaces all current data with the backup file.'), confirmText: t('Import'), danger: true, onConfirm: () => { replaceState(normalizeState(data), true); toast(t('Backup imported')) } })
-      } catch (e) { toast(t('Import failed: {0}', e.message)) }
+      } catch { toast(t('Import failed: {0}', t('That file isn’t an OPENFIT backup.'))) }   // not the parser's message: it quotes the file
     }
     rd.readAsText(f)
   }

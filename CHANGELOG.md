@@ -24,6 +24,8 @@ Photos work again, every language is complete, and a full accessibility pass.
 - 🐞 After a crash you can share an error report (the error and app version only).
 - 🗣️ Report a translation error from Settings; a privacy policy (PRIVACY.md).
 - 🚀 Faster start (exercise instructions load when you open an exercise); the food model is checked before it is loaded; sync uploads one at a time.
+- 📥 **Strong import fix:** an unfinished set (0 reps) no longer turns into a cardio set as long as the whole workout; it's dropped and counted.
+- 🧾 A file that isn't an OPENFIT backup gets a plain message instead of a parser error; "Sled 45°" exercise names display correctly; "Added 1 routine" reads right.
 
 ## v1.6.1 — 2026-11-11
 

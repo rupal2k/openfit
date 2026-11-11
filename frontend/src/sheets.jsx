@@ -854,7 +854,7 @@ function PlanImport({ bundle, close }) {
   const apply = () => {
     update(s => mergePlan(s, bundle, { schedule }))
     close()
-    toast(t('Added {0} routines to your plan', bundle.routineCount))
+    toast(t(bundle.routineCount === 1 ? 'Added {0} routine to your plan' : 'Added {0} routines to your plan', bundle.routineCount))
     ui().afterClose(() => nav('/plan'))
   }
   return <>

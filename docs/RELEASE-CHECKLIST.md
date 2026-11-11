@@ -48,7 +48,7 @@ Run on a real device with the **signed release APK**, installed over the previou
 
 ## 7. My Stats and History
 - [ ] Muscle map (incl. hard-sets mode), effort card, heatmap, body weight, exercise curves render with data and when empty
-- [ ] History opens and edits a past workout
+- [ ] History opens a past workout (sets, PRs); Delete asks first and removes it
 
 ## 8. My Meals
 - [ ] Targets sheet computes calories/macros; manual override
